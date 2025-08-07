@@ -11,8 +11,6 @@ export default function LoginScreen( ) {
     'mapaAgencia': undefined;
   };
 
-
-
   const [cedula, setCedula] = useState('');
   const [password, setPassword] = useState('');
   const [rememberMe, setRememberMe] = useState(false);

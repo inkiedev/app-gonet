@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { ReactElement } from 'react';
 import {
   Image,
   ImageSourcePropType,
@@ -8,24 +8,26 @@ import {
   View,
 } from 'react-native';
 
-type BotonGonetProps = {
-  title: string;
-  logo: ImageSourcePropType;
+type ButtonProps = {
+  logo?: ImageSourcePropType;
   onPress: () => void;
+  children: ReactElement;
 };
 
-const BotonGonet: React.FC<BotonGonetProps> = ({ title, logo, onPress }) => {
+const Button: React.FC<ButtonProps> = ({ logo,  onPress, children }) => {
   return (
     <TouchableOpacity style={styles.button} onPress={onPress}>
       <View style={styles.content}>
-        <Image source={logo} style={styles.logo} resizeMode="contain" />
-        <Text style={styles.title}>{title}</Text>
+        {
+          logo && <Image source={logo} style={styles.logo} resizeMode="contain" />  
+        }
+        { children }
       </View>
     </TouchableOpacity>
   );
 };
 
-export default BotonGonet;
+export default Button;
 
 const styles = StyleSheet.create({
   button: {
@@ -35,8 +37,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 20,
     marginVertical: 10,
     marginHorizontal: 20,
-    elevation: 4, // sombra en Android
-    shadowColor: '#000', // sombra en iOS
+    elevation: 4, 
+    shadowColor: '#000', 
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.2,
     shadowRadius: 4,
@@ -53,7 +55,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
     color: '#222',
-    marginLeft: 12, // Reemplazo de gap
+    marginLeft: 12, 
   },
   
 });

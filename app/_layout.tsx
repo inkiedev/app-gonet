@@ -14,7 +14,6 @@ export default function RootLayout() {
   });
 
   if (!loaded) {
-    // Async font loading only occurs in development.
     return null;
   }
 
@@ -22,9 +21,8 @@ export default function RootLayout() {
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
       <Stack>
         <Stack.Screen name="index" options={{ headerShown: false }} />
-        <Stack.Screen name="mapaAgencia" options={{ title: "Regresar" }} />
         <Stack.Screen name="login" options={{ title: "Regresar" }} />
-        <Stack.Screen name="+not-found" />
+        <Stack.Screen name="home" options={{ headerShown: false }} />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
