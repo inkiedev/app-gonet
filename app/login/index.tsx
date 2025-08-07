@@ -1,9 +1,9 @@
+import Button from '@/components/Button';
 import { useNavigation } from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import React, { useState } from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Button, Checkbox, TextInput } from 'react-native-paper';
-
+import { Checkbox, TextInput } from 'react-native-paper';
 export default function LoginScreen( ) {
 
   type RootStackParamList = {
@@ -49,9 +49,10 @@ export default function LoginScreen( ) {
         <Text>Recordarme</Text>
       </View>
 
-      <Button mode="contained" onPress={handleLogin} style={styles.loginButton}>
-        Ingresar
-      </Button>
+      
+
+      <Button texto="123" onPress={() => console.log('Presionado')} />
+
 
       <View style={styles.linkContainer}>
         <TouchableOpacity>
