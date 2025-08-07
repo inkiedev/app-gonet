@@ -1,12 +1,5 @@
-import Button from '@/components/Button';
 import { useRouter } from 'expo-router';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
-import { View, Text } from 'react-native';
-
-type RootStackParamList = {
-  'login': undefined;
-  'home': undefined;
-};
+import { View, Text, Button } from 'react-native';
 
 export default function IndexScreen() {
   const navigation = useRouter();
@@ -15,15 +8,11 @@ export default function IndexScreen() {
     <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <View>
           {
-            <Button onPress={() => navigation.push('/login')}>
-              <Text>Login</Text>
-            </Button>
+            <Button title="Login" onPress={() => navigation.push('/login')} />
           }
 
           {
-            <Button onPress={() => navigation.push('/home')}>
-              <Text>Home</Text>
-            </Button>
+            <Button title="Home" onPress={() => navigation.push('/home')} />
           }
       </View>      
     </View>
