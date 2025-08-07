@@ -1,3 +1,6 @@
+// esta nota es el home
+
+
 import { Image } from 'expo-image';
 import { Platform, StyleSheet } from 'react-native';
 
@@ -9,14 +12,18 @@ import { ThemedView } from '@/components/ThemedView';
 export default function HomeScreen() {
   return (
     <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
+      headerBackgroundColor={{ light: '#588d62ff', dark: '#1D3D47' }}
       headerImage={
-        <Image
+        <Image 
           source={require('@/assets/images/partial-react-logo.png')}
           style={styles.reactLogo}
         />
       }>
-      <ThemedView style={styles.titleContainer}>
+      <ThemedView >
+        <Image
+          source={require('@/assets/images/gonetPublicidad2.jpg')}
+          style={styles.publicidadGonet}
+        />
         <ThemedText type="title">Welcome!</ThemedText>
         <HelloWave />
       </ThemedView>
@@ -66,10 +73,18 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
+    height: "40%",
+    width: '100%',
+    //bottom: 0,
     left: 0,
-    position: 'absolute',
+    
+  },
+    publicidadGonet: {
+    
+    width: '100%',
+    height: 200,
+    //bottom: 0,
+    left: 0,
+    
   },
 });
