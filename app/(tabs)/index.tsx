@@ -11,8 +11,12 @@ import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 import { StyleSheet } from 'react-native';
 
 
+
+
+
 type RootStackParamList = {
   'app/(tabs)/explore': undefined;
+  'mapaAgencia': undefined;
   // add other routes here if needed
 };
 export default function HomeScreen() {
@@ -31,7 +35,7 @@ export default function HomeScreen() {
       {  <BotonGonet
         title="Ir a Servicios"
         logo={require('@/assets/images/favicon.png')}
-        onPress={() => navigation.navigate('@/app/(tabs)/explore')}
+        onPress={() => navigation.navigate('mapaAgencia')}
       />}
        {  <BotonGonet
         title="Planes"
