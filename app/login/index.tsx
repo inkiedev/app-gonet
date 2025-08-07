@@ -1,107 +1,65 @@
-import Button from '@/components/Button';
-import { useNavigation } from '@react-navigation/native';
-import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
+//import InputField from '@/components/custom-input';
+import FontAwesome from '@expo/vector-icons/FontAwesome';
+
+import Button from '@/components/custom-button';
+import InputField from '@/components/custom-input';
+import CustomImage from '@/components/icon-gonet';
 import React, { useState } from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import { Checkbox, TextInput } from 'react-native-paper';
-export default function LoginScreen( ) {
+import { ImageBackground, Text, TouchableOpacity, View } from 'react-native';
 
-  type RootStackParamList = {
-    'explore': undefined;
-    'mapaAgencia': undefined;
-  };
-
-  const [cedula, setCedula] = useState('');
+const LoginScreen = () => {
+  const [user, setUser] = useState('');
   const [password, setPassword] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
-  const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
-
-  const handleLogin = () => {
-    console.log('Login:', { cedula, password, rememberMe });
-  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.title}>Iniciar Sesión</Text>
 
-      <TextInput
-        label="Cédula o RUC"
-        value={cedula}
-        onChangeText={setCedula}
-        style={styles.input}
-        mode="outlined"
+      <ImageBackground source={require('@/assets/images/fondo_login.jpg')}  style={{ flex: 1, justifyContent: 'center', alignItems: 'center', zIndex : 2 }}>
+
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text style={{ fontSize: 26, marginBottom: 20 , color: 'white', fontFamily : 'arial'}}>BIENVENIDO</Text>
+      <CustomImage/>
+
+<TouchableOpacity onPress={() => console.log('Icon pressed')}>
+  <View style={{
+    backgroundColor: 'white',
+    width: 50,
+    borderRadius: 50,
+    padding: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 10,
+  }}>
+    <FontAwesome name="user" size={32} color="#04bbb2ff" style ={{justifyContent: 'center'}}/>
+  </View>
+
+  
+</TouchableOpacity>
+<Text style={{ fontSize: 10, marginBottom: 0 , color: 'white', fontFamily : 'arial'}}>¿Nuevo Usuario?</Text>
+<Text style={{ fontSize: 10, marginBottom: 10 , color: 'white', fontFamily : 'arial'}}>Registrate aqui</Text>
+
+
+
+<Text style ={{color:'white', fontFamily:"times new roman" , marginBottom: 20}}> _____________________________________________ </Text>
+
+
+      <InputField
+        placeholder="Nombre de Usuario"
+        value={user}
+        onChangeText={setUser}
+        keyboardType="numeric"
       />
-
-      <TextInput
-        label="Contraseña"
+      <InputField
+        placeholder="Contraseña"
         value={password}
         onChangeText={setPassword}
         secureTextEntry
-        style={styles.input}
-        mode="outlined"
       />
-
-      <View style={styles.rememberContainer}>
-        <Checkbox
-          status={rememberMe ? 'checked' : 'unchecked'}
-          onPress={() => setRememberMe(!rememberMe)}
-        />
-        <Text>Recordarme</Text>
-      </View>
-
-      
-
-      <Button texto="123" onPress={() => console.log('Presionado')} />
-
-
-      <View style={styles.linkContainer}>
-        <TouchableOpacity>
-          <Text style={styles.link}>¿Olvidó la contraseña?</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <Text style={styles.link}>Registrarse</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity>
-          <Text style={styles.link}>Contáctanos</Text>
-        </TouchableOpacity>
-      </View>
+      <Button text="Inicia Sesión" onPress={() => console.log(user, password)} />
     </View>
+        
+        </ImageBackground>
+  
   );
-}
+};
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: 'center',
-    backgroundColor: '#fff',
-  },
-  title: {
-    fontSize: 26,
-    marginBottom: 30,
-    textAlign: 'center',
-    fontWeight: 'bold',
-  },
-  input: {
-    marginBottom: 16,
-  },
-  rememberContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 20,
-  },
-  loginButton: {
-    marginBottom: 30,
-    paddingVertical: 5,
-  },
-  linkContainer: {
-    alignItems: 'center',
-  },
-  link: {
-    color: '#007BFF',
-    marginTop: 10,
-    fontSize: 15,
-  },
-});
+export default LoginScreen;
