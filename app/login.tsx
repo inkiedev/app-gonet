@@ -6,11 +6,11 @@ import { Button, Checkbox, TextInput } from 'react-native-paper';
 
 export default function LoginScreen( ) {
 
-    type RootStackParamList = {
-  'explore': undefined;
-  'mapaAgencia': undefined;
-  // add other routes here if needed
-};
+  type RootStackParamList = {
+    'explore': undefined;
+    'mapaAgencia': undefined;
+  };
+
 
 
   const [cedula, setCedula] = useState('');
@@ -19,9 +19,7 @@ export default function LoginScreen( ) {
   const navigation = useNavigation<NativeStackNavigationProp<RootStackParamList>>();
 
   const handleLogin = () => {
-    // Aquí colocas la lógica de autenticación
     console.log('Login:', { cedula, password, rememberMe });
-     navigation.navigate('screenPrivada'); // ejemplo de redirección
   };
 
   return (
