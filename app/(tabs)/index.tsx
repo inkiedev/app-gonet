@@ -15,7 +15,7 @@ import { StyleSheet } from 'react-native';
 
 
 type RootStackParamList = {
-  'app/(tabs)/explore': undefined;
+  'explore': undefined;
   'mapaAgencia': undefined;
   // add other routes here if needed
 };
@@ -40,19 +40,19 @@ export default function HomeScreen() {
        {  <BotonGonet
         title="Planes"
         logo={require('@/assets/images/favicon.png')}
-        onPress={() => navigation.navigate('app/(tabs)/explore')}
+        onPress={() => navigation.navigate('explore')}
       />}
 
        {  <BotonGonet
         title="Pagos"
         logo={require('@/assets/images/favicon.png')}
-        onPress={() => navigation.navigate('app/(tabs)/explore')}
+        onPress={() => navigation.navigate('explore')}
       />}
 
        {  <BotonGonet
-        title="Cliente"
+        title="Cliente Inicio de sesión"
         logo={require('@/assets/images/favicon.png')}
-        onPress={() => navigation.navigate('app/(tabs)/explore')}
+        onPress={() => navigation.navigate('login')}
       />}
 
 
