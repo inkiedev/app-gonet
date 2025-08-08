@@ -1,29 +1,4 @@
 import React from 'react';
-<<<<<<< HEAD
-import { StyleSheet, Text, TouchableOpacity } from 'react-native';
-
-type ButtonProps = {
-  texto: string;
-  onPress?: () => void;
-  colorFondo?: string;
-  colorTexto?: string;
-};
-
-const Button: React.FC<ButtonProps> = ({
-  texto,
-  onPress,
-  colorFondo = "#00fe9b",
-  colorTexto = '#009a92',
-}) => {
-  return (
-    <TouchableOpacity
-      onPress={onPress}
-      style={[styles.button, { backgroundColor: colorFondo }]}
-      activeOpacity={0.8}
-    >
-      <Text style={[styles.texto, { color: colorTexto }]}>{texto}</Text>
-    </TouchableOpacity>
-=======
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 type ButtonProps = {
@@ -39,7 +14,7 @@ const Button: React.FC<ButtonProps> = ({
   onPress,
   backgroundColor = '#00fe9b',
   textColor = '#009a92',
-  width = 200, // valor por defecto
+  width = 200,
 }) => {
   return (
     <View style={styles.container}>
@@ -54,28 +29,10 @@ const Button: React.FC<ButtonProps> = ({
         <Text style={[styles.buttonText, { color: textColor }]}>{text}</Text>
       </TouchableOpacity>
     </View>
->>>>>>> b36764c2d5c145bd55cfb6ed21e41b63c5d6fb38
   );
 };
 
 const styles = StyleSheet.create({
-<<<<<<< HEAD
-  button: {
-    paddingVertical: 12,
-    paddingHorizontal: 20,
-    borderRadius: 8, // esquinas redondeadas
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 2, // sombra para Android
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 }, // sombra iOS
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  texto: {
-    fontSize: 16,
-    fontWeight: 'bold',
-=======
   container: {
     alignItems: 'center', // centra horizontalmente
     marginVertical: 8, // espaciado vertical opcional
@@ -99,7 +56,6 @@ const styles = StyleSheet.create({
     color: 'white', fontStyle : "italic",
     fontFamily: 'falcon', // Asegúrate de que la fuente 'falcon' esté disponible en tu proyecto
     
->>>>>>> b36764c2d5c145bd55cfb6ed21e41b63c5d6fb38
   },
 });
 
