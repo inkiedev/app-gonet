@@ -1,23 +1,68 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, StyleSheet, TouchableWithoutFeedback } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '@/components/card';
-import { FontAwesome, Ionicons, FontAwesome5, AntDesign, Entypo, SimpleLineIcons, FontAwesome6, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, FontAwesome5, AntDesign, Entypo, SimpleLineIcons, FontAwesome6, MaterialCommunityIcons, MaterialIcons, Foundation } from '@expo/vector-icons';
 import SpeedCircle from '@/components/speed-circle';
-import { LinearGradient } from 'expo-linear-gradient';
 import IconWithBadge from '@/components/home/icon-with-badge';
+import { Animated, TouchableOpacity, Dimensions } from 'react-native';
+import { useRouter } from 'expo-router';
+
+const screenWidth = Dimensions.get('window').width;
+const screenHeight = Dimensions.get('window').height;
 
 const Home: React.FC = () => {
+  const [menuVisible, setMenuVisible] = useState(false);
+  const slideAnim = useRef(new Animated.Value(-screenWidth * 0.5)).current;
+  const fadeAnim = useRef(new Animated.Value(0)).current;
+  const navigation = useRouter();
+
+  const toggleMenu = () => {
+    if (menuVisible) {
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: -screenWidth * 0.5,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        })
+      ]).start(() => setMenuVisible(false));
+    } else {
+      // Apertura del menú
+      setMenuVisible(true);
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(fadeAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        })
+      ]).start();
+    }
+  };
+
     return (
       <SafeAreaView style={styles.container}>
         <View>
           <View style={styles.header}>
-            <Entypo name="menu" size={24} color="#00ff9b" />
+            <TouchableOpacity onPress={toggleMenu}>
+              <Entypo name="menu" size={24} color="#00ff9b" />
+            </TouchableOpacity>
             <View style={styles.namesContainer}>
               <Text style={{ color: '#009a94', fontSize: 16, fontStyle: 'italic' }}>Juan</Text>
               <Text style={{ color: '#009a94', fontSize: 16, fontStyle:'italic' }}>Gonzales</Text>
             </View>
-            <FontAwesome name="user" size={24} color="#00ff9b" />
+            <TouchableOpacity onPress={() => navigation.push('/home/ajustes')}>
+              <FontAwesome name="user" size={24} color="#00ff9b" />
+            </TouchableOpacity>
           </View>
         </View>
         <View style={styles.main}>
@@ -90,36 +135,25 @@ const Home: React.FC = () => {
             </View>
           </View>
         </View>
-        <View style={styles.footer}>
-          <LinearGradient
-            colors={['#00543b', '#00d280', '#006a54']}
-            locations={[0, 0.5, 1]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={styles.gradient}
-          >
-            <View style={styles.iconsContainer}>
-              <Card>
-                <FontAwesome name="instagram" size={20} color="black" />
-              </Card>
-              <Card>
-                <FontAwesome name="facebook" size={20} color="black" />
-              </Card>
-              <Card>
-                <Ionicons name="globe-outline" size={20} color="black" />
-              </Card>
-              <Card>
-                <FontAwesome name="twitter" size={20} color="black" />
-              </Card>
-              <Card>
-                <Ionicons name="location-sharp" size={20} color="black" />
-              </Card>
-            </View>
-            <View>
-              <Text style={{ color: '#fff', fontSize: 10, marginTop: 25 }}>Ver 2.00.00.01</Text>
-            </View>
-          </LinearGradient>
-        </View>
+        {menuVisible && (
+          <TouchableWithoutFeedback onPress={toggleMenu}>
+            <Animated.View style={[styles.overlay, { opacity: fadeAnim }]}>
+              <SafeAreaView style={styles.safeMenuWrapper}>
+                <Animated.View
+                  style={[
+                    styles.menuContainer,
+                    { transform: [{ translateX: slideAnim }] }
+                  ]}
+                >
+                  <Text style={styles.menuItem}>Inicio</Text>
+                  <Text style={styles.menuItem}>Perfil</Text>
+                  <Text style={styles.menuItem}>Ajustes</Text>
+                  <Text style={styles.menuItem}>Cerrar Sesión</Text>
+                </Animated.View>
+              </SafeAreaView>
+            </Animated.View>
+          </TouchableWithoutFeedback>
+        )}
       </SafeAreaView>
     );
 };
@@ -158,26 +192,8 @@ const styles = StyleSheet.create({
     paddingLeft: 30,
     paddingRight: 30,
   },
-  footer: {
-    width: '100%',
-    height: 150,
-  },
-  iconsContainer: {
-    width: '80%',
-    alignItems: 'center',
-    display: 'flex',
-    flexDirection: 'row',
-  },
   planContainer: {
     width: 275,
-  },
-  gradient: {
-    flex: 1,
-    width: '100%',
-      display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   iconLegend: {
     color: '#009a94',
@@ -198,6 +214,41 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     marginBottom: 70,
+  },
+  overlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+    height: '100%',
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    zIndex: 998,
+  },
+
+  safeMenuWrapper: {
+    flex: 1,
+  },
+
+  menuContainer: {
+    width: screenWidth * 0.5,
+    height: screenHeight * 0.5,
+    backgroundColor: '#fff',
+    padding: 20,
+    borderTopRightRadius: 20,
+    borderBottomRightRadius: 20,
+    elevation: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 4,
+    zIndex: 999,
+  },
+
+  menuItem: {
+    fontSize: 16,
+    color: '#009a94',
+    fontStyle: 'italic',
+    marginBottom: 15,
   },
 });
 
