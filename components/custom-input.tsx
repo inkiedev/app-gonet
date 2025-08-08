@@ -53,7 +53,7 @@ const inputRef = React.createRef<TextInput>();
 const styles = StyleSheet.create({
   container: {
     position: 'relative',
-    marginVertical: 8,
+    marginVertical: 7,
     backgroundColor: '#fff',
     borderRadius: 12,
     elevation: 2,
@@ -62,7 +62,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     marginBottom: 3,
-    height: 50,
+    height: 35,
     justifyContent: 'center',
   },
   placeholderContainer: {
@@ -71,14 +71,14 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   placeholder: {
-    fontSize: 20,
+    fontSize: 18,
     fontStyle: 'italic',
     fontFamily: 'work-sans',
     color: '#208f9eff',
   },
   input: {
-    height: 50,
-    fontSize: 20,
+    height: 40,
+    fontSize: 15,
     fontStyle: 'italic',
     fontFamily: 'work-sans',
     color: '#227492ff',

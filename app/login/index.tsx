@@ -33,7 +33,7 @@ const LoginScreen = () => {
 <TouchableOpacity onPress={() => console.log('Icon pressed forget password')}>
   <View style={{
     backgroundColor: 'white',
-    width: 55,
+    width: 58,
     borderRadius: 50,
     padding: 12,
     alignItems: 'center',
@@ -52,7 +52,7 @@ const LoginScreen = () => {
 <Text style={{ fontSize: 10, marginBottom: 10 , color: 'white', fontFamily : 'arial',fontWeight:"bold"}}>Registrate aqui</Text>
 
 
-  <View style={{ height: 1, backgroundColor: 'white', minWidth : "70%",marginTop: 10 , marginBottom: 20 }} />
+  <View style={{ height: 1, backgroundColor: 'white', minWidth : "70%",marginTop: 10 , marginBottom: 30 }} />
 
 
       <InputField
