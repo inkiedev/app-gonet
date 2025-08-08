@@ -5,7 +5,7 @@ import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 const fields = [
-  { label: 'Nombre', value: 'John Doe' },
+  { label: 'Nombre', value: 'Juan Gonzales Gonzales' },
   {label: 'Cédula', value:'0102525225-1'},
   { label: 'Correo', value: 'john@example.com' },
 
@@ -14,7 +14,7 @@ const fields = [
 ];
 
 
-const Settings: React.FC = () => {
+const Settings: React.FC = () => {        
     const navigation = useRouter();
 
 
