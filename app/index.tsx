@@ -1,5 +1,5 @@
 import { useRouter } from 'expo-router';
-import { View, Text, Button } from 'react-native';
+import { Button, View } from 'react-native';
 
 export default function IndexScreen() {
   const navigation = useRouter();
@@ -13,6 +13,11 @@ export default function IndexScreen() {
         {
           <Button title="Home" onPress={() => navigation.push('/home')} />
         }
+        {
+          <Button title="Agencias" onPress={() => navigation.push('/home/agencias')} />
+
+        }
+
       </View>      
     </View>
   );
