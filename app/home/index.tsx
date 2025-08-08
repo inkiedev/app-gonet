@@ -4,16 +4,19 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '@/components/card';
 import { FontAwesome, Ionicons, FontAwesome5, AntDesign, Entypo } from '@expo/vector-icons';
 import SpeedCircle from '@/components/speed-circle';
-
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Home: React.FC = () => {
     return (
       <SafeAreaView style={styles.container}>
         <View>
           <View style={styles.header}>
-            <Entypo name="menu" size={24} color="black" />
-            <Text style={{ color: '#000', fontSize: 18 }}>Juan Gonzales</Text>
-            <FontAwesome name="user" size={24} color="black" />
+            <Entypo name="menu" size={24} color="#00ff9b" />
+            <View style={styles.namesContainer}>
+              <Text style={{ color: '#009a94', fontSize: 16, fontStyle: 'italic' }}>Juan</Text>
+              <Text style={{ color: '#009a94', fontSize: 16, fontStyle:'italic' }}>Gonzales</Text>
+            </View>
+            <FontAwesome name="user" size={24} color="#00ff9b" />
           </View>
         </View>
         <View style={styles.main}>
@@ -31,29 +34,37 @@ const Home: React.FC = () => {
           </Card>
         </View>
         <View>
-          <Text>Información adicional</Text>
+          <View></View>
         </View>
         <View style={styles.footer}>
-          <View style={styles.iconsContainer}>
-            <Card>
-              <FontAwesome name="instagram" size={20} color="black" />
-            </Card>
-            <Card>
-              <FontAwesome name="facebook" size={20} color="black" />
-            </Card>
-            <Card>
-              <Ionicons name="globe-outline" size={20} color="black" />
-            </Card>
-            <Card>
-              <FontAwesome name="twitter" size={20} color="black" />
-            </Card>
-            <Card>
-              <Ionicons name="location-sharp" size={20} color="black" />
-            </Card>
-          </View>
-          <View>
-            <Text style={{ color: '#fff', fontSize: 10, marginTop: 25 }}>Ver 2.00.00.01</Text>
-          </View>
+          <LinearGradient
+            colors={['#00543b', '#00d280', '#006a54']}
+            locations={[0, 0.5, 1]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={styles.gradient}
+          >
+            <View style={styles.iconsContainer}>
+              <Card>
+                <FontAwesome name="instagram" size={20} color="black" />
+              </Card>
+              <Card>
+                <FontAwesome name="facebook" size={20} color="black" />
+              </Card>
+              <Card>
+                <Ionicons name="globe-outline" size={20} color="black" />
+              </Card>
+              <Card>
+                <FontAwesome name="twitter" size={20} color="black" />
+              </Card>
+              <Card>
+                <Ionicons name="location-sharp" size={20} color="black" />
+              </Card>
+            </View>
+            <View>
+              <Text style={{ color: '#fff', fontSize: 10, marginTop: 25 }}>Ver 2.00.00.01</Text>
+            </View>
+          </LinearGradient>
         </View>
       </SafeAreaView>
     );
@@ -70,10 +81,20 @@ const styles = StyleSheet.create({
   header: {
     flexDirection: 'row',
     width: '100%',
-    justifyContent: 'space-around',
+    justifyContent: 'space-between',
+    paddingLeft: 30,
+    paddingRight: 30,
+    marginTop: 10,
     alignItems: 'center',
     backgroundColor: 'transparent',
-  },  
+  },
+  namesContainer: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginLeft: 10, 
+  },
   main: {
     flex: 1,
     width: '100%',
@@ -82,11 +103,6 @@ const styles = StyleSheet.create({
   footer: {
     width: '100%',
     height: 150,
-    backgroundColor: '#24d88dff',
-    display: 'flex',
-    flexDirection: 'column',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   iconsContainer: {
     width: '80%',
@@ -96,6 +112,14 @@ const styles = StyleSheet.create({
   },
   planContainer: {
     width: 275,
+  },
+  gradient: {
+    flex: 1,
+    width: '100%',
+      display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
+    alignItems: 'center',
   },
 });
 
