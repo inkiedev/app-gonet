@@ -38,9 +38,9 @@ const styles = StyleSheet.create({
     marginVertical: 8, // espaciado vertical opcional
   },
   button: {
-    paddingVertical: 8,
+    paddingVertical: 4,
     paddingHorizontal: 20,
-    borderRadius: 8,
+    borderRadius: 10,
     alignItems: 'center',
     justifyContent: 'center',
     elevation: 2,
@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
     
   },
   buttonText: {
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: 'bold',
     color: 'white', fontStyle : "italic",
     fontFamily: 'falcon', // Asegúrate de que la fuente 'falcon' esté disponible en tu proyecto
