@@ -2,9 +2,10 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import Card from '@/components/card';
-import { FontAwesome, Ionicons, FontAwesome5, AntDesign, Entypo } from '@expo/vector-icons';
+import { FontAwesome, Ionicons, FontAwesome5, AntDesign, Entypo, SimpleLineIcons, FontAwesome6, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import SpeedCircle from '@/components/speed-circle';
 import { LinearGradient } from 'expo-linear-gradient';
+import IconWithBadge from '@/components/home/icon-with-badge';
 
 const Home: React.FC = () => {
     return (
@@ -32,9 +33,62 @@ const Home: React.FC = () => {
             </View>
             <Text style={{ color: '#009a94', marginTop: 15, marginBottom: 5, fontSize: 15, textAlign: "left", fontStyle: "italic", textDecorationLine: "underline"  }}>Ver Detalles</Text>
           </Card>
-        </View>
-        <View>
-          <View></View>
+          <View style={styles.optionsContainer}>
+            <View style={styles.optionsButton}>
+              <IconWithBadge
+                IconComponent={SimpleLineIcons}
+                name="envelope"
+                size={55}
+                color="#000000"
+                badgeCount={2}
+              />
+              <Text style={styles.iconLegend}>
+                Mensajes
+              </Text>
+            </View>
+            <View style={styles.optionsButton}>
+              <IconWithBadge
+                IconComponent={FontAwesome6}
+                name="hand-holding-dollar"
+                size={55}
+                color="#000000"
+                badgeCount={undefined}
+              />
+              <Text style={styles.iconLegend}>
+                Pagos
+              </Text>
+            </View>
+            <View style={styles.optionsButton}>
+              <IconWithBadge
+                IconComponent={Ionicons}
+                name="logo-apple"
+                size={55}
+                color="#000000"
+                badgeCount={"+"}
+                badgeStyles={{
+                  alignSelf: 'center',
+                  position: 'absolute',
+                  bottom: 0,
+                  right: 25
+                }}
+              />
+              <Text style={styles.iconLegend}>
+                +Servicios
+              </Text>
+            </View>
+            <View style={styles.optionsButton}>
+              <IconWithBadge
+                IconComponent={MaterialIcons}
+                name="contact-support"
+                size={55}
+                color="#000000"
+                badgeCount={undefined}
+              />
+              <Text style={styles.iconLegend}>
+                Mensajes
+              </Text>
+            </View>
+          </View>
         </View>
         <View style={styles.footer}>
           <LinearGradient
@@ -97,8 +151,12 @@ const styles = StyleSheet.create({
   },
   main: {
     flex: 1,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'center',
     width: '100%',
-    padding: 60,
+    paddingLeft: 30,
+    paddingRight: 30,
   },
   footer: {
     width: '100%',
@@ -120,6 +178,26 @@ const styles = StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  iconLegend: {
+    color: '#009a94',
+    fontSize: 12,
+    textAlign: 'center',
+    fontStyle: 'italic',
+  },
+  optionsButton: {
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    gap: 20,
+    marginTop: 20,
+  },
+  optionsContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 70,
   },
 });
 
