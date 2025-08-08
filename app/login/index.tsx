@@ -19,10 +19,10 @@ const LoginScreen = () => {
       <Text style={{ fontSize: 26, marginBottom: 20 , color: 'white', fontFamily : 'arial'}}>BIENVENIDO</Text>
       <CustomImage/>
 
-<TouchableOpacity onPress={() => console.log('Icon pressed')}>
+<TouchableOpacity onPress={() => console.log('Icon pressed forget password')}>
   <View style={{
     backgroundColor: 'white',
-    width: 50,
+    width: 55,
     borderRadius: 50,
     padding: 12,
     alignItems: 'center',
@@ -34,12 +34,19 @@ const LoginScreen = () => {
 
   
 </TouchableOpacity>
-<Text style={{ fontSize: 10, marginBottom: 0 , color: 'white', fontFamily : 'arial'}}>¿Nuevo Usuario?</Text>
-<Text style={{ fontSize: 10, marginBottom: 10 , color: 'white', fontFamily : 'arial'}}>Registrate aqui</Text>
 
 
 
-<Text style ={{color:'white', fontFamily:"times new roman" , marginBottom: 20}}> _____________________________________________ </Text>
+<Text style={{ fontSize: 10, marginBottom: 0 , color: 'white', fontFamily : 'arial',fontWeight:"bold"}}>¿Nuevo Usuario?</Text>
+<Text style={{ fontSize: 10, marginBottom: 10 , color: 'white', fontFamily : 'arial',fontWeight:"bold"}}>Registrate aqui</Text>
+
+
+  <View style={{ height: 1, backgroundColor: 'white', minWidth : "70%",marginTop: 10 , marginBottom: 20 }} />
+
+
+
+
+
 
 
       <InputField

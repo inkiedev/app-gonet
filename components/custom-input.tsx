@@ -16,7 +16,7 @@ const InputField: React.FC<InputFieldProps> = ({
   onChangeText,
   secureTextEntry = false,
   keyboardType = 'default',
-  width = 350,
+  width = 300,
 }) => {
   return (
     <View style={[styles.container, { width }]}>
@@ -53,8 +53,8 @@ const styles = StyleSheet.create({
     fontFamily: 'work-sans',
     color: '#227492ff',
     width: '100%',
-    textAlign: 'center', // ✅ Centra el texto horizontalmente
-    transform: [{ scaleY: 0.8 }], // ✅ Forma correcta en React Native
+    textAlign: 'center', //  Centra el texto horizontalmente
+    transform: [{ scaleY: 0.8 }], //  Forma correcta en React Native
   },
 });
 
