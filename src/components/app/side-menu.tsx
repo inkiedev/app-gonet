@@ -66,28 +66,58 @@ export const SideMenu: React.FC<SideMenuProps> = ({
                                                     testID,
                                                   }) => {
   const slideAnim = React.useRef(new Animated.Value(-screenWidth * 0.6)).current;
+  const opacityAnim = React.useRef(new Animated.Value(0)).current;
+  const [isAnimating, setIsAnimating] = React.useState(false);
+  const [shouldRender, setShouldRender] = React.useState(visible);
 
   React.useEffect(() => {
     if (visible) {
-      Animated.timing(slideAnim, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    } else {
-      Animated.timing(slideAnim, {
-        toValue: -screenWidth * 0.6,
-        duration: 300,
-        useNativeDriver: true,
-      }).start();
-    }
-  }, [visible, slideAnim]);
+      setShouldRender(true);
+      setIsAnimating(true);
 
-  if (!visible) return null;
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setIsAnimating(false);
+      });
+    } else if (shouldRender) {
+      setIsAnimating(true);
+
+      Animated.parallel([
+        Animated.timing(slideAnim, {
+          toValue: -screenWidth * 0.6,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(opacityAnim, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        setShouldRender(false);
+        setIsAnimating(false);
+      });
+    }
+  }, [visible, slideAnim, opacityAnim, shouldRender]);
+
+  if (!shouldRender && !isAnimating) return null;
 
   return (
     <TouchableWithoutFeedback onPress={onClose}>
-      <View style={styles.overlay} testID={testID}>
+      <Animated.View
+        style={[styles.overlay, { opacity: opacityAnim }]}
+        testID={testID}
+      >
         <SafeAreaView style={styles.container}>
           <Animated.View
             style={[
@@ -112,7 +142,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({
             </TouchableWithoutFeedback>
           </Animated.View>
         </SafeAreaView>
-      </View>
+      </Animated.View>
     </TouchableWithoutFeedback>
   );
 };

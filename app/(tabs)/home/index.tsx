@@ -2,11 +2,16 @@ import React, { useState } from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useRouter } from 'expo-router';
-import { FontAwesome5, AntDesign, SimpleLineIcons, FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+  withTiming,
+  interpolate,
+} from 'react-native-reanimated';
+import { SimpleLineIcons, FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
 
 import { Header } from '@/components/layout/header';
-import { Card } from '@/components/ui/card';
-import { SpeedCircle } from '@/components/app/speed-circle';
+import { ExpandableCard } from '@/components/app/expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { theme } from '@/styles/theme';
@@ -45,14 +50,53 @@ const iconOptions = [
 
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [cardExpanded, setCardExpanded] = useState(false);
   const router = useRouter();
+
+  const animationValue = useSharedValue(0);
+
+  React.useEffect(() => {
+    animationValue.value = withTiming(cardExpanded ? 1 : 0, {
+      duration: 400,
+    });
+  }, [cardExpanded, animationValue]);
+
+  const animatedIconsStyle = useAnimatedStyle(() => {
+    const opacity = interpolate(
+      animationValue.value,
+      [0, 0.3, 1],
+      [1, 0.3, 0],
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    );
+
+    const translateY = interpolate(
+      animationValue.value,
+      [0, 1],
+      [0, 100],
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
+    );
+
+    return {
+      opacity,
+      transform: [{ translateY }],
+      pointerEvents: cardExpanded ? 'none' : 'auto',
+    };
+  });
 
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
   };
 
+  const closeMenu = () => {
+    setMenuVisible(false);
+  };
+
   const handleProfilePress = () => {
     router.push('/home/ajustes');
+  };
+
+  const handleCardToggle = () => {
+    setCardExpanded(!cardExpanded);
   };
 
   return (
@@ -76,20 +120,15 @@ export default function HomeScreen() {
       />
 
       <View style={styles.content}>
-        <Card style={styles.planCard} variant="elevated">
-          <Text style={styles.planTitle}>{mockUser.plan}</Text>
-          <SpeedCircle speed={mockUser.speed} />
-          <View style={styles.planFeatures}>
-            <Text style={styles.featuresText}>
-              Incluye: <AntDesign name="Safety" size={15} color={theme.colors.primaryDark} />{' '}
-              <FontAwesome5 name="wifi" size={15} color={theme.colors.primaryDark} />{' '}
-              <FontAwesome5 name="dollar-sign" size={15} color={theme.colors.primaryDark} />
-            </Text>
-          </View>
-          <Text style={styles.detailsLink}>Ver Detalles</Text>
-        </Card>
+        <ExpandableCard
+          plan={mockUser.plan}
+          speed={mockUser.speed}
+          isExpanded={cardExpanded}
+          onToggle={handleCardToggle}
+          style={styles.planCard}
+        />
 
-        <View style={styles.iconsGrid}>
+        <Animated.View style={[styles.iconsGrid, animatedIconsStyle]}>
           {iconOptions.map((option, index) => (
             <IconWithBadge
               key={index}
@@ -97,18 +136,18 @@ export default function HomeScreen() {
               name={option.name}
               label={option.label}
               badgeCount={option.badgeCount}
-              onPress={() => console.log(`Pressed ${option.label}`)}
+              onPress={() => console.log(`press ${option.label}`)}
             />
           ))}
-        </View>
+        </Animated.View>
       </View>
 
       <SideMenu
         visible={menuVisible}
-        onClose={() => setMenuVisible(false)}
+        onClose={closeMenu}
         onItemPress={(item: string) => {
           console.log(`Menu item pressed: ${item}`);
-          setMenuVisible(false);
+          closeMenu();
         }}
       />
     </SafeAreaView>
@@ -136,35 +175,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xl,
   },
   planCard: {
-    width: '100%',
-    maxWidth: 300,
     alignSelf: 'center',
     marginVertical: theme.spacing.lg,
-  },
-  planTitle: {
-    color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.xxl,
-    fontStyle: 'italic',
-    fontWeight: theme.fontWeight.bold,
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  planFeatures: {
-    width: '100%',
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.sm,
-  },
-  featuresText: {
-    color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.md,
-    fontStyle: 'italic',
-  },
-  detailsLink: {
-    color: theme.colors.primaryDark,
-    marginTop: theme.spacing.md,
-    fontSize: theme.fontSize.sm,
-    fontStyle: 'italic',
-    textDecorationLine: 'underline',
   },
   iconsGrid: {
     flexDirection: 'row',
