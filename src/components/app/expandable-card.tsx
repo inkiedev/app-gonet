@@ -1,17 +1,41 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
-  interpolate,
-  Extrapolate,
-} from 'react-native-reanimated';
-import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
-import { Card } from '@/components/ui/card';
 import { SpeedCircle } from '@/components/app/speed-circle';
+import { Card } from '@/components/ui/card';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Animated, {
+  Extrapolate,
+  interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
+} from 'react-native-reanimated';
+
+const features = [
+  {
+    icon: 'Safety',
+    title: 'Lite Tv Streaming',
+    detail: '5 meses',
+    value: '1 pantalla',
+    canUpgrade: true
+  },
+  {
+    icon: 'wifi',
+    title: 'Wifi Total',
+    detail: '2 Routers',
+    value: 'Wifi6',
+    canUpgrade: true
+  },
+  {
+    icon: 'upload',
+    title: 'Precio Promocional',
+    detail: '$ 19.90',
+    value: 'x 8 Pagos',
+    canUpgrade: false
+  },
+];
 
 interface ExpandableCardProps extends BaseComponentProps {
   plan: string;
@@ -97,31 +121,17 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
 
         <Animated.View style={animatedDetailsStyle}>
           <View style={styles.detailsContainer}>
-            <DetailRow
-              icon="wifi"
-              title="Velocidad de descarga"
-              value={`${speed} Mbps`}
-            />
-            <DetailRow
-              icon="upload"
-              title="Velocidad de subida"
-              value={`${Math.floor(speed / 10)} Mbps`}
-            />
-            <DetailRow
-              icon="shield-check"
-              title="Antivirus incluido"
-              value="Sí"
-            />
-            <DetailRow
-              icon="users"
-              title="Dispositivos conectados"
-              value="Ilimitados"
-            />
-            <DetailRow
-              icon="clock"
-              title="Soporte técnico"
-              value="24/7"
-            />
+            {features.map((feature, index) => (
+              <DetailRow
+                key={index}
+                icon={feature.icon}
+                title={feature.title}
+                detail={feature.detail}
+                value={feature.value}
+                canUpgrade={feature.canUpgrade}
+              />
+            ))}
+            <Text style={styles.addServiceText}>+ Agrega mas servicios</Text>
           </View>
         </Animated.View>
       </Card>
@@ -132,16 +142,18 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
 interface DetailRowProps {
   icon: string;
   title: string;
+  detail: string;
   value: string;
+  canUpgrade?: boolean;
 }
 
-const DetailRow: React.FC<DetailRowProps> = ({ icon, title, value }) => (
+const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUpgrade }) => (
   <View style={styles.detailRow}>
-    <View style={styles.detailLeft}>
-      <FontAwesome5 name={icon} size={16} color={theme.colors.primary} />
-      <Text style={styles.detailTitle}>{title}</Text>
-    </View>
+    <FontAwesome5 name={icon} size={16} color={theme.colors.primary} />
+    <Text style={styles.detailTitle}>{title}</Text>
+    <Text style={styles.detailDetail}>{detail}</Text>
     <Text style={styles.detailValue}>{value}</Text>
+    <Text>{ canUpgrade && '+' }</Text>
   </View>
 );
 
@@ -186,31 +198,45 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textDecorationLine: 'underline',
   },
-  detailsContainer: {
-    paddingHorizontal: theme.spacing.md,
-    paddingTop: theme.spacing.md,
-  },
   detailRow: {
+    width: '100%',
+    padding: 10,
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     paddingVertical: theme.spacing.sm,
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border.light,
+    borderBottomColor: theme.colors.border.medium,
   },
   detailLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: theme.spacing.sm,
-    flex: 1,
+    gap: theme.spacing.xs,
   },
   detailTitle: {
-    fontSize: theme.fontSize.sm,
+    fontSize: theme.fontSize.xs,
+    maxWidth: theme.spacing.xxl * 2,
+    textAlign: 'center',
     color: theme.colors.text.primary,
     fontWeight: theme.fontWeight.medium,
   },
+  detailsContainer: {
+    width: '100%',
+  },
+  detailDetail: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primaryDark,
+    fontWeight: theme.fontWeight.semibold,
+  },
   detailValue: {
     fontSize: theme.fontSize.sm,
+    color: theme.colors.primaryDark,
+    fontWeight: theme.fontWeight.semibold,
+  },
+  addServiceText: {
+    paddingVertical: theme.spacing.md,
+    textAlign: 'center',
+    fontSize: theme.fontSize.xs,
     color: theme.colors.primaryDark,
     fontWeight: theme.fontWeight.semibold,
   },
