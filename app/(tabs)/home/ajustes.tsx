@@ -1,14 +1,14 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, Alert } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { Header } from '@/components/layout/header';
-import { Button } from '@/components/ui/custom-button';
 import { Card } from '@/components/ui/card';
-import { theme } from '@/styles/theme';
+import { Button } from '@/components/ui/custom-button';
 import { useResponsive } from '@/hooks/use-responsive';
+import { theme } from '@/styles/theme';
 
 interface UserField {
   label: string;
@@ -21,7 +21,7 @@ const user = {
   email: 'asdf@gmail.com',
   phone: '0990909809',
   address: 'Av. Cerca 1-01 y Transversal',
-  name: 'John Doe',
+  name: 'Juan Gonzales Gonzales',
 }
 
 export default function AjustesScreen() {
