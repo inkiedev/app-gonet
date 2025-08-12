@@ -53,7 +53,7 @@ export const Button: React.FC<ButtonProps> = ({
     styles[`${variant}Text`],
     styles[`${size}Text`],
   ];
-
+  
   return (
     <TouchableOpacity
       style={buttonStyle}

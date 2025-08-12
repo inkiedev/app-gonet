@@ -13,10 +13,7 @@ export default function IndexScreen() {
         {
           <Button title="Home" onPress={() => navigation.push('/home')} />
         }
-        {
-          <Button title="Agencias" onPress={() => navigation.push('/home/agencias')} />
-
-        }
+       
 
       </View>      
     </View>

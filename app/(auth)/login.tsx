@@ -73,6 +73,8 @@ export default function LoginScreen() {
 
               <FontAwesome name = {"user"} style = {styles.iconFP}/>
 
+            
+
               <View style={styles.userSection}>
                 <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
                 <Text style={styles.registerText}>Regístrate aquí</Text>

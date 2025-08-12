@@ -1,7 +1,6 @@
 export const theme = {
   colors: {
     primary: '#00fe9b',
-    
     primaryDark: '#009a94',
     secondary: '#07938d',
     background: '#f0f0f0',
@@ -10,12 +9,10 @@ export const theme = {
     success: '#00aa44',
     warning: '#ffaa00',
     text: {
-      primary: '#333333ff',
+      primary: '#333333',
       secondary: '#666666',
       inverse: '#ffffff',
       disabled: '#999999',
-      darkGreen: '#008781ff',
-
     },
     border: {
       light: '#e0e0e0',
