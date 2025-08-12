@@ -78,7 +78,7 @@ export default function AjustesScreen() {
           icon: 'close',
           onPress: handleCancel,
         } : undefined}
-        variant="default"
+        variant="transparent"
       />
 
       <ScrollView
@@ -206,7 +206,6 @@ const UserInfoRow: React.FC<UserInfoRowProps> = ({
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,

@@ -1,8 +1,9 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity } from 'react-native';
-import { IconProps } from '@expo/vector-icons/build/createIconSet';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import { IconProps } from '@expo/vector-icons/build/createIconSet';
+import React from 'react';
+import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import Badge from './badge';
 
 interface IconWithBadgeProps extends BaseComponentProps {
   IconComponent: React.ComponentType<IconProps<any>>;
@@ -38,15 +39,7 @@ export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
     >
       <View style={styles.iconContainer}>
         <IconComponent name={name} size={size} color={color} />
-        {showBadge && (
-          <View style={styles.badge}>
-            <Text style={styles.badgeText}>
-              {typeof badgeCount === 'number'
-                ? badgeCount > 99 ? '99+' : badgeCount.toString()
-                : badgeCount}
-            </Text>
-          </View>
-        )}
+        {showBadge && <Badge count={badgeCount} style={styles.badge} />}
       </View>
       {label && <Text style={styles.label}>{label}</Text>}
     </Container>
@@ -58,29 +51,17 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: theme.spacing.xs,
   },
+  badge: {
+    position: 'absolute',
+    top: -5,
+    right: -5,
+  },
   iconContainer: {
     position: 'relative',
     width: 70,
     height: 55,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  badge: {
-    position: 'absolute',
-    top: -5,
-    right: -5,
-    minWidth: 20,
-    height: 20,
-    borderRadius: theme.borderRadius.full,
-    backgroundColor: theme.colors.primary,
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingHorizontal: theme.spacing.xs,
-  },
-  badgeText: {
-    color: theme.colors.text.primary,
-    fontSize: theme.fontSize.xs,
-    fontWeight: theme.fontWeight.bold,
   },
   label: {
     fontSize: theme.fontSize.xs,

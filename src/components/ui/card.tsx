@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, StyleSheet, ViewStyle } from 'react-native';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import React from 'react';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 
 interface CardProps extends BaseComponentProps {
   children: React.ReactNode;
