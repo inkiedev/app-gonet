@@ -1,7 +1,7 @@
-import React from 'react';
-import { View, Text, StyleSheet } from 'react-native';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import React from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 
 interface SpeedCircleProps extends BaseComponentProps {
   speed: number;

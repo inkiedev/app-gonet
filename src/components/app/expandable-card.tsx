@@ -6,12 +6,12 @@ import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Animated, {
-  Extrapolate,
   interpolate,
   useAnimatedStyle,
   useSharedValue,
   withTiming,
 } from 'react-native-reanimated';
+import Badge from './badge';
 
 const features = [
   {
@@ -65,14 +65,14 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       expandAnimation.value,
       [0, 0.3, 1],
       [0, 0, 1],
-      Extrapolate.CLAMP
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
     );
 
     const maxHeight = interpolate(
       expandAnimation.value,
       [0, 1],
       [0, 200],
-      Extrapolate.CLAMP
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
     );
 
     return {
@@ -87,7 +87,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       expandAnimation.value,
       [0, 1],
       [0, 180],
-      Extrapolate.CLAMP
+      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
     );
 
     return {
@@ -100,7 +100,10 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       <Card style={styles.card} variant="elevated">
         <Text style={styles.planTitle}>{plan}</Text>
 
-        <SpeedCircle speed={speed} />
+        <View style={styles.speedContainer}>
+          <SpeedCircle speed={speed} />
+          <View style={styles.speedShadow}></View>
+        </View>
 
         <View style={styles.planFeatures}>
           <Text style={styles.featuresText}>
@@ -131,7 +134,10 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
                 canUpgrade={feature.canUpgrade}
               />
             ))}
-            <Text style={styles.addServiceText}>+ Agrega mas servicios</Text>
+            <View style={styles.addServiceContainer}>
+              <Badge count={"+"} />
+              <Text style={styles.addServiceText}>Agrega mas servicios</Text>
+            </View>
           </View>
         </Animated.View>
       </Card>
@@ -153,7 +159,7 @@ const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUp
     <Text style={styles.detailTitle}>{title}</Text>
     <Text style={styles.detailDetail}>{detail}</Text>
     <Text style={styles.detailValue}>{value}</Text>
-    <Text>{ canUpgrade && '+' }</Text>
+    { canUpgrade ? <Badge count={"+"} /> : <Text> </Text> }
   </View>
 );
 
@@ -165,6 +171,7 @@ const styles = StyleSheet.create({
   card: {
     width: '100%',
     alignItems: 'center',
+    borderRadius: theme.borderRadius.full,
   },
   planTitle: {
     color: theme.colors.primaryDark,
@@ -229,7 +236,7 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.semibold,
   },
   detailValue: {
-    fontSize: theme.fontSize.sm,
+    fontSize: theme.fontSize.xs,
     color: theme.colors.primaryDark,
     fontWeight: theme.fontWeight.semibold,
   },
@@ -240,4 +247,25 @@ const styles = StyleSheet.create({
     color: theme.colors.primaryDark,
     fontWeight: theme.fontWeight.semibold,
   },
+  addServiceContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.md,
+  },
+  speedShadow: {
+    marginVertical: theme.spacing.sm,
+    width: 10,
+    height: 10,
+    transform: [{ scaleX: 9  }],
+    filter: 'blur(2px)',
+    opacity: 0.2,
+    borderRadius: 50,
+    backgroundColor: theme.colors.text.primary,
+    elevation: 5,
+  },
+  speedContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  }
 });

@@ -1,19 +1,19 @@
-import React, { useState } from 'react';
-import { View, Text, StyleSheet } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { FontAwesome6, Ionicons, MaterialIcons, SimpleLineIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
 import Animated, {
-  useSharedValue,
-  useAnimatedStyle,
-  withTiming,
   interpolate,
+  useAnimatedStyle,
+  useSharedValue,
+  withTiming,
 } from 'react-native-reanimated';
-import { SimpleLineIcons, FontAwesome6, Ionicons, MaterialIcons } from '@expo/vector-icons';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
-import { Header } from '@/components/layout/header';
 import { ExpandableCard } from '@/components/app/expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
+import { Header } from '@/components/layout/header';
 import { theme } from '@/styles/theme';
 
 const mockUser = {
@@ -157,7 +157,6 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
   },
   userInfo: {
     alignItems: 'center',
