@@ -1,14 +1,14 @@
+import { theme } from '@/styles/theme';
+import { BaseComponentProps, Size, Variant } from '@/types/common';
 import React from 'react';
 import {
-  TouchableOpacity,
-  Text,
   ActivityIndicator,
   StyleSheet,
-  ViewStyle,
+  Text,
   TextStyle,
+  TouchableOpacity,
+  ViewStyle,
 } from 'react-native';
-import { theme } from '@/styles/theme';
-import { BaseComponentProps, Variant, Size } from '@/types/common';
 
 interface ButtonProps extends BaseComponentProps {
   title: string;
@@ -123,9 +123,10 @@ const styles = StyleSheet.create({
   text: {
     fontWeight: theme.fontWeight.semibold,
     textAlign: 'center',
+    
   },
   primaryText: {
-    color: theme.colors.text.inverse,
+    color: theme.colors.primaryDark,
   },
   secondaryText: {
     color: theme.colors.text.inverse,

@@ -1,24 +1,25 @@
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'expo-router';
 import React from 'react';
+import { Controller, useForm } from 'react-hook-form';
 import {
-  View,
-  Text,
-  StyleSheet,
+  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
-  Alert,
+  StyleSheet,
+  Text,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useRouter } from 'expo-router';
-import { useForm, Controller } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 import * as z from 'zod';
 
+import { AppLogo } from '@/components/app/app-logo';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
-import { AppLogo } from '@/components/app/app-logo';
 import { theme } from '@/styles/theme';
+import { FontAwesome } from '@expo/vector-icons';
 
 const loginSchema = z.object({
   username: z.string().min(3, 'Mínimo 3 caracteres'),
@@ -70,6 +71,8 @@ export default function LoginScreen() {
 
               <AppLogo variant="small" />
 
+              <FontAwesome name = {"user"} style = {styles.iconFP}/>
+
               <View style={styles.userSection}>
                 <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
                 <Text style={styles.registerText}>Regístrate aquí</Text>
@@ -110,7 +113,7 @@ export default function LoginScreen() {
                   )}
                 />
 
-                <Button
+                <Button 
                   title="Iniciar Sesión"
                   onPress={handleSubmit(onSubmit)}
                   loading={isSubmitting}
@@ -175,4 +178,11 @@ const styles = StyleSheet.create({
     width: '100%',
     maxWidth: 300,
   },
+  iconFP : {
+
+    color: theme.colors.surface,
+    fontSize: theme.fontSize.xl*2,
+
+  },
+
 });
