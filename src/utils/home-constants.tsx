@@ -1,4 +1,4 @@
-import { FontAwesome, Ionicons, FontAwesome5, AntDesign, Entypo, SimpleLineIcons, FontAwesome6, MaterialCommunityIcons, MaterialIcons, Foundation, Feather } from '@expo/vector-icons';
+import { FontAwesome, Entypo,  MaterialCommunityIcons, MaterialIcons,  Feather } from '@expo/vector-icons';
 
 export const optionsMenu = [
   {
