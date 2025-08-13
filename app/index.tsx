@@ -14,9 +14,7 @@ export default function IndexScreen() {
           <Button title="Home" onPress={() => navigation.push('/home')} />
         }
        {
-
         <Button title = "agencias" onPress={() => navigation.push('/home/agencias')} />
-
        }
 
       </View>      

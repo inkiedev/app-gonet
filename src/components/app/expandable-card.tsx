@@ -254,7 +254,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.md,
   },
   speedShadow: {
-    marginVertical: theme.spacing.sm,
+    marginVertical: theme.spacing.md,
     width: 10,
     height: 10,
     transform: [{ scaleX: 9  }],

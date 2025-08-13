@@ -11,8 +11,7 @@ export default function TabsLayout() {
   return (
     <SafeAreaProvider>
       <View style={styles.container}>
-        <StatusBar style="auto" />
-
+        <StatusBar style="dark" />
         <LinearGradient
           colors={['#ffffff', '#dfdfdfff', '#ffffff']}
           locations={[0.1, 0.5, 0.9]}
@@ -23,7 +22,6 @@ export default function TabsLayout() {
         >
           <Slot />
         </LinearGradient>
-
         <Footer />
       </View>
     </SafeAreaProvider>
@@ -33,7 +31,7 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background,
+    backgroundColor: theme.colors.primaryDark,
   },
   content: {
     flex: 1,

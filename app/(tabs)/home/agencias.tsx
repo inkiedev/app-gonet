@@ -1,18 +1,25 @@
+import { Header } from "@/components/layout/header";
+import { useRouter } from "expo-router";
 import React from "react";
-import { StyleSheet, View } from "react-native";
+import { StyleSheet } from "react-native";
 import MapView, { Marker } from "react-native-maps";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function App() {
-  // Coordenadas de ejemplo — cámbialas por las tuyas
+  const router = useRouter();
   const initialRegion = {
-    latitude: -2.170998,    // ej: Cuenca, Ecuador (cambia)
+    latitude: -2.170998,    
     longitude: -78.922359,
     latitudeDelta: 0.05,
     longitudeDelta: 0.05,
   };
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
+      <Header leftAction={{
+        icon: "arrow-back",
+        onPress: () => router.back()
+      }} title="Agencias" />
       <MapView
         style={styles.map}
         initialRegion={initialRegion}
@@ -26,11 +33,11 @@ export default function App() {
           description="Marcador de ejemplo"
         />
       </MapView>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1 },
-  map: { flex: 1 },
+  map: { flex: 1},
 });
