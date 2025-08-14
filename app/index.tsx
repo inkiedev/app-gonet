@@ -14,7 +14,7 @@ const gridItems: ItemProps[] = [
   { id: "1", title: "Agencias", route: "/home/agencias" },
   { id: "2", title: "Home", route: "/home" },
   { id: "3", title: "Login", route: "/login" },
-  { id: "4", title: "Configuración" },
+  { id: "4", title: "Pago", route: "/pagos" },
   { id: "5", title: "Servicios" },
   { id: "6", title: "Soporte", route: "/soporte" },
   { id: "7", title: "Perfil" , route: "/home/perfil" },
@@ -27,7 +27,7 @@ export default function IndexScreens() {
 
   const handleItemPress = (item: ItemProps) => {
     if (item.route) {
-      router.push(item.route );
+      router.push(item.route);
     }
   };
 
