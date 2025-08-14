@@ -83,6 +83,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     flexDirection: 'row',
+    alignSelf: 'center',
     ...theme.shadows.sm,
   },
   primary: {

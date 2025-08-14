@@ -1,6 +1,9 @@
 import { Header } from "@/components/layout/header";
-import { Select } from "@/components/ui/custom-select";
+import { Button } from "@/components/ui/custom-button";
+import { Select, SelectOption } from "@/components/ui/custom-select";
+import { PlanCard } from "@/components/ui/plan-card";
 import { theme } from "@/styles/theme";
+import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -16,57 +19,86 @@ interface Account {
   name: string;
 }
 
+interface Account {
+  id: string;
+  name: string;
+  address: string;
+}
+
 interface Plan {
   id: string;
   name: string;
-  speedMbps: number;
   price: number;
+  finalPrice: number;
+  details: string[];
 }
 
-interface InternetPlansProps {
-  accounts: Account[];
-  currentPlan: Plan;
-  availablePlans: Plan[];
-}
+const accounts: SelectOption<Account>[] = [
+  {
+    value: { id: "800030", name: "GoEssencial 250Mbps", address: "Av Paseo de los Cañaris y Yanaurco" }
+  },
+  {
+    value: { id: "800040", name: "GoPlus 450Mbps", address: "Av Gonzales Suarez y Max Uhle" }
+  },
+  {
+    value: { id: "800050", name: "Fibra 1000", address: "Av de la Prensa y Av. 10 de Agosto" }
+  },
+];
 
-  interface Plan {
-    id: string;
-    name: string;
-    speedMbps: number;
-    price: number;
+const currentPlan = {
+  speedMbps: 250,
+};
+
+const availablePlans: Plan[] = [
+  { 
+    id: "p1", 
+    name: "GoEssencial 300 Mbps", 
+    price: 19.90, 
+    finalPrice: 22.89, 
+    details: [
+      'Hasta 100 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p2",
+    name: "GoPlus 450 Mbps",
+    price: 29.90,
+    finalPrice: 34.89,
+    details: [
+      'Hasta 200 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p3",
+    name: "GoPlus 500 Mbps",
+    price: 39.90,
+    finalPrice: 45.89,
+    details: [
+      'Hasta 500 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p4",
+    name: "GoConnect 700 Mbps",
+    price: 59.90,
+    finalPrice: 69.89,
+    details: [
+      'Hasta 1000 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
   }
-
-  const accounts: { label: string; value: Plan }[] = [
-    {
-      label: "p1",
-      value: { id: "p2", name: "Fibra 100", speedMbps: 100, price: 19.99 }
-    },
-    {
-      label: "p3",
-      value: { id: "p3", name: "Fibra 500", speedMbps: 500, price: 39.99 }
-    },
-    {
-      label: "p4",
-      value: { id: "p4", name: "Fibra 1000", speedMbps: 1000, price: 59.99 }
-    },
-  ];
-
-  const currentPlan = {
-    id: "p1",
-    name: "Fibra Plus",
-    speedMbps: 300,
-    price: 29.99,
-  };
-
-  const availablePlans = [
-    { id: "p2", name: "Fibra 100", speedMbps: 100, price: 19.99 },
-    { id: "p3", name: "Fibra 500", speedMbps: 500, price: 39.99 },
-    { id: "p4", name: "Fibra 1000", speedMbps: 1000, price: 59.99 },
-  ];
+];
 
 
 export default function InternetPlans() {
-  const [selectedAccount, setSelectedAccount] = useState<Plan>();
+  const [selectedAccount, setSelectedAccount] = useState<Account>();
   const router = useRouter();
 
   const handleGoBack = () => {
@@ -76,20 +108,18 @@ export default function InternetPlans() {
   return (
     <SafeAreaView style={styles.container} edges={["top"]}>
       <Header
-              title="Mi Plan"
-              leftAction={{
-                icon: "arrow-back",
-                onPress: handleGoBack,
-              }}
-              variant="default"
-            />
+        title="Mi Plan"
+        leftAction={{
+          icon: "arrow-back",
+          onPress: handleGoBack,
+        }}
+        variant="default"
+      />
 
-      {/* HEADER FIJO */}
       <View style={styles.header}>
-        <Text style={styles.headerTitle}>Tu plan actual</Text>
-        <Text style={styles.planName}>{currentPlan.name}</Text>
-        <Text style={styles.planDetails}>
-          {currentPlan.speedMbps} Mbps — ${currentPlan.price.toFixed(2)}
+        <Text style={styles.contentTitle}>Plan actual</Text>
+        <Text style={styles.currentSpeed}>
+          Velocidad: {currentPlan.speedMbps} Mbps
         </Text>
 
         <Select
@@ -99,29 +129,38 @@ export default function InternetPlans() {
           renderItem={(option, index, isSelected) => {
             return (
               <View>
-                <Text>{option.value.id}</Text>
-                <Text style={[styles.accountButtonText]}>{option.value.name}</Text>
-                <Text>{option.value.speedMbps} Mbps — ${option.value.price.toFixed(2)}</Text>
+                <Text style={styles.selectText}># {option.value.id}</Text>
+                <Text style={styles.selectText}>{option.value.name}</Text>
+                <Text style={styles.selectText}>{option.value.address}</Text>
               </View>
             );
           }}
           variant="outline"
           size="md"
+          leftIcon={<Foundation name="info" size={24} color="black" />}
         />
       </View>
 
-      {/* SCROLL DE PLANES */}
       <ScrollView
         contentContainerStyle={styles.scrollContent}
         style={styles.scrollView}
       >
+        <Text style={styles.contentTitle}>Actualizar Plan</Text>
         {availablePlans.map((plan) => (
-          <View key={plan.id} style={styles.planCard}>
-            <Text style={styles.planName}>{plan.name}</Text>
-            <Text style={styles.planDetails}>
-              {plan.speedMbps} Mbps — ${plan.price.toFixed(2)}
-            </Text>
-          </View>
+          <PlanCard title={plan.name} key={plan.id}>
+            <View style={styles.planContainer}>
+              <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
+              <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
+              <View style={styles.planDetails}>
+                {
+                  plan.details.map((detail, index) => (
+                    <Text key={index} style={styles.planDetail}>{`\u2022 ${detail}`}</Text>
+                  ))
+                }
+              </View>
+              <Button title="Actualizar" onPress={() => {}} />
+            </View>
+          </PlanCard>
         ))}
       </ScrollView>
     </SafeAreaView>
@@ -140,21 +179,46 @@ const styles = StyleSheet.create({
     borderBottomColor: theme.colors.border.light,
     ...theme.shadows.sm,
   },
-  headerTitle: {
+  currentSpeed: {
+    textAlign: "center",
     fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
     marginBottom: theme.spacing.sm,
+  },
+  contentTitle: {
+    textAlign: "center",
+    fontSize: theme.fontSize.xxl,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.primaryDark,
+  },
+  planContainer: {
+    paddingHorizontal: theme.spacing.sm,
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing.sm,
+    alignItems: 'center'
   },
   planName: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.semibold,
     color: theme.colors.primaryDark,
   },
+  planPrice: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primaryDark,
+  },
+  planFinalPrice: {
+    fontSize: theme.fontSize.md,
+  },
   planDetails: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.text.secondary,
-    marginBottom: theme.spacing.sm,
+    width: '100%',
+    marginVertical: theme.spacing.xs,
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "column"
+  },
+  planDetail: {
+    fontSize: theme.fontSize.md,
   },
   accountSelector: {
     flexDirection: "row",
@@ -184,10 +248,11 @@ const styles = StyleSheet.create({
     padding: theme.spacing.md,
     gap: theme.spacing.md,
   },
-  planCard: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    ...theme.shadows.sm,
+  selectText: {
+    fontSize: theme.fontSize.sm,
+    textTransform: 'uppercase'
   },
+  updateButton: {
+
+  }
 });

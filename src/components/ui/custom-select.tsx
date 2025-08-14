@@ -15,9 +15,7 @@ import {
 } from 'react-native';
 
 export interface SelectOption<T = any> {
-  label: string;
   value: T;
-  color?: string;
   disabled?: boolean;
 }
 
@@ -52,8 +50,13 @@ export const Select = <T,>({
   style,
   testID,
 }: SelectProps<T>) => {
+  const MAX_MODAL_HEIGHT = 300;
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
+  const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
+  const [itemHeights, setItemHeights] = useState<number[]>([]);
+
+  const selectRef = useRef<View>(null);
   const animatedHeight = useRef(new Animated.Value(0)).current;
   const animatedOpacity = useRef(new Animated.Value(0)).current;
   const animatedRotation = useRef(new Animated.Value(0)).current;
@@ -61,15 +64,15 @@ export const Select = <T,>({
   const hasError = Boolean(error);
   const selectedOption = options.find(option => option.value === value);
 
-  const ITEM_HEIGHT = 48;
-  const MAX_VISIBLE_ITEMS = 5;
+  const totalHeight = itemHeights.reduce((sum, h) => sum + h, 0);
+  const dropdownHeight = Math.min(totalHeight, MAX_MODAL_HEIGHT);
 
   useEffect(() => {
     if (isOpen) {
       setIsFocused(true);
       Animated.parallel([
         Animated.timing(animatedHeight, {
-          toValue: Math.min(options.length, MAX_VISIBLE_ITEMS) * ITEM_HEIGHT,
+          toValue: dropdownHeight,
           duration: 300,
           useNativeDriver: false,
         }),
@@ -102,12 +105,10 @@ export const Select = <T,>({
           useNativeDriver: true,
         }),
       ]).start(() => {
-        if (!isOpen) {
-          setIsFocused(false);
-        }
+        if (!isOpen) setIsFocused(false);
       });
     }
-  }, [isOpen]);
+  }, [isOpen, dropdownHeight]);
 
   const containerStyle: ViewStyle[] = [
     styles.selectContainer,
@@ -115,49 +116,52 @@ export const Select = <T,>({
     styles[`${size}Container`],
   ];
 
-  if (isFocused) {
-    containerStyle.push(styles.focused);
-  }
-
-  if (hasError) {
-    containerStyle.push(styles.error);
-  }
-
-  if (disabled) {
-    containerStyle.push(styles.disabled);
-  }
+  if (isFocused) containerStyle.push(styles.focused);
+  if (hasError) containerStyle.push(styles.error);
+  if (disabled) containerStyle.push(styles.disabled);
 
   const mainContainerStyle: ViewStyle[] = [styles.container];
-  if (style) {
-    mainContainerStyle.push(style);
-  }
+  if (style) mainContainerStyle.push(style);
 
   const getSizeStyles = () => {
     switch (size) {
-      case 'sm':
-        return { fontSize: theme.fontSize.sm, paddingVertical: theme.spacing.xs };
-      case 'md':
-        return { fontSize: theme.fontSize.md, paddingVertical: theme.spacing.sm };
-      case 'lg':
-        return { fontSize: theme.fontSize.lg, paddingVertical: theme.spacing.md };
-      default:
-        return { fontSize: theme.fontSize.md, paddingVertical: theme.spacing.sm };
+      case 'sm': return { fontSize: theme.fontSize.sm, paddingVertical: theme.spacing.xs };
+      case 'md': return { fontSize: theme.fontSize.md, paddingVertical: theme.spacing.sm };
+      case 'lg': return { fontSize: theme.fontSize.lg, paddingVertical: theme.spacing.md };
+      default: return { fontSize: theme.fontSize.md, paddingVertical: theme.spacing.sm };
     }
   };
 
   const sizeStyles = getSizeStyles();
-  const leftPadding = leftIcon ? theme.spacing.xl + theme.spacing.xs : theme.spacing.md;
-  const rightPadding = theme.spacing.xl + theme.spacing.sm;
 
   const handleToggle = () => {
     if (!disabled) {
-      setIsOpen(!isOpen);
+      if (!isOpen) {
+        selectRef.current?.measureInWindow((x, y, width, height) => {
+          setDropdownPos({
+            top: y + height + 8, 
+            left: x + width / 2,
+            width,
+          });
+          setIsOpen(true);
+        });
+      } else {
+        setIsOpen(false);
+      }
     }
   };
 
   const handleOptionSelect = (option: SelectOption<T>, index: number) => {
     onValueChange(option.value, index);
     setIsOpen(false);
+  };
+
+  const handleItemLayout = (index: number, height: number) => {
+    setItemHeights(prev => {
+      const newHeights = [...prev];
+      newHeights[index] = height;
+      return newHeights;
+    });
   };
 
   const rotation = animatedRotation.interpolate({
@@ -171,14 +175,15 @@ export const Select = <T,>({
 
       <View style={styles.dropdownContainer}>
         <TouchableOpacity
+          ref={selectRef}
           style={containerStyle}
           onPress={handleToggle}
           disabled={disabled}
           activeOpacity={0.8}
         >
           {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
-          
-          <View style={[styles.inputContainer, { paddingLeft: leftPadding, paddingRight: rightPadding }]}>
+
+          <View style={styles.inputContainer}>
             {selectedOption ? (
               renderItem(selectedOption, options.findIndex(opt => opt.value === value), true)
             ) : (
@@ -206,7 +211,17 @@ export const Select = <T,>({
             <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
               <View style={styles.modalOverlay}>
                 <TouchableWithoutFeedback>
-                  <View style={styles.dropdownWrapper}>
+                  <View
+                    style={[
+                      styles.dropdownWrapper,
+                      {
+                        position: 'absolute',
+                        top: dropdownPos.top,
+                        left: dropdownPos.left - dropdownPos.width / 2,
+                        width: dropdownPos.width,
+                      },
+                    ]}
+                  >
                     <Animated.View
                       style={[
                         styles.dropdown,
@@ -217,10 +232,7 @@ export const Select = <T,>({
                       ]}
                     >
                       <ScrollView
-                        style={[
-                          styles.scrollView,
-                          { maxHeight: MAX_VISIBLE_ITEMS * ITEM_HEIGHT }
-                        ]}
+                        style={{ maxHeight: MAX_MODAL_HEIGHT }}
                         showsVerticalScrollIndicator={false}
                         bounces={false}
                       >
@@ -229,6 +241,7 @@ export const Select = <T,>({
                           return (
                             <TouchableOpacity
                               key={index}
+                              onLayout={e => handleItemLayout(index, e.nativeEvent.layout.height)}
                               style={[
                                 styles.option,
                                 option.disabled && styles.optionDisabled,
@@ -261,8 +274,7 @@ export const Select = <T,>({
 };
 
 const styles = StyleSheet.create({
-  container: {
-  },
+  container: {},
   label: {
     fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.medium,
@@ -277,14 +289,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     borderWidth: 1,
+    paddingVertical: theme.spacing.sm,
     borderRadius: theme.borderRadius.md,
     backgroundColor: theme.colors.surface,
     position: 'relative',
   },
-  // Variants
-  default: {
-    borderColor: theme.colors.border.light,
-  },
+  default: { borderColor: theme.colors.border.light },
   outline: {
     borderColor: theme.colors.primary,
     borderWidth: 2,
@@ -294,43 +304,16 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.background,
     borderColor: theme.colors.border.light,
   },
-  // States
-  focused: {
-    borderColor: theme.colors.primary,
-    borderWidth: 2,
-  },
-  error: {
-    borderColor: theme.colors.error,
-  },
-  disabled: {
-    opacity: 0.5,
-    backgroundColor: theme.colors.border.light,
-  },
-  // Sizes
-  smContainer: {
-    minHeight: 36,
-  },
-  mdContainer: {
-    minHeight: 48,
-  },
-  lgContainer: {
-    minHeight: 56,
-  },
-  inputContainer: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  inputText: {
-    color: theme.colors.text.primary,
-    fontSize: theme.fontSize.md,
-  },
-  placeholderText: {
-    color: theme.colors.text.secondary,
-  },
-  leftIcon: {
-    paddingLeft: theme.spacing.md,
-    paddingRight: theme.spacing.xs,
-  },
+  focused: { borderColor: theme.colors.primary, borderWidth: 2 },
+  error: { borderColor: theme.colors.error },
+  disabled: { opacity: 0.5, backgroundColor: theme.colors.border.light },
+  smContainer: { minHeight: 36 },
+  mdContainer: { minHeight: 48 },
+  lgContainer: { minHeight: 56 },
+  inputContainer: { flex: 1, justifyContent: 'center', paddingLeft: theme.spacing.md, paddingRight: theme.spacing.xs },
+  inputText: { color: theme.colors.text.primary, fontSize: theme.fontSize.md },
+  placeholderText: { color: theme.colors.text.secondary },
+  leftIcon: { paddingLeft: theme.spacing.md, paddingRight: theme.spacing.xs },
   iconContainer: {
     position: 'absolute',
     right: theme.spacing.md,
@@ -340,11 +323,8 @@ const styles = StyleSheet.create({
   modalOverlay: {
     flex: 1,
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
-    justifyContent: 'center',
-    alignItems: 'center',
   },
   dropdownWrapper: {
-    width: '90%',
     maxWidth: 400,
   },
   dropdown: {
@@ -353,17 +333,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border.light,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 3.84,
     elevation: 5,
     overflow: 'hidden',
-  },
-  scrollView: {
-    flex: 1,
   },
   option: {
     flexDirection: 'row',
@@ -371,34 +345,15 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.sm,
-    minHeight: 48,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border.light,
   },
-  selectedOption: {
-    backgroundColor: theme.colors.primary + '10',
-  },
-  optionDisabled: {
-    opacity: 0.5,
-  },
-  optionText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
-    flex: 1,
-  },
-  selectedOptionText: {
-    color: theme.colors.primary,
-    fontWeight: theme.fontWeight.medium,
-  },
-  optionTextDisabled: {
-    color: theme.colors.text.secondary,
-  },
+  selectedOption: { backgroundColor: theme.colors.primary + '10' },
+  optionDisabled: { opacity: 0.5 },
   helperText: {
     fontSize: theme.fontSize.xs,
     color: theme.colors.text.secondary,
     marginTop: theme.spacing.xs,
   },
-  errorText: {
-    color: theme.colors.error,
-  },
+  errorText: { color: theme.colors.error },
 });
