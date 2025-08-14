@@ -18,7 +18,7 @@ const AjustesTab = () => {
   const [loginFaceId, setLoginFaceId] = useState(false);
 
   return (
-    <SafeAreaView>
+    <View>
       <Text style={styles.tabTitle}>Ajustes</Text>
       <Text style={styles.subTitle}>Sesión</Text>
       <Text style={styles.centerText}>Administrar dispositivos activos</Text>
@@ -42,7 +42,7 @@ const AjustesTab = () => {
         Disponibilidad: Este dispositivo{" "}
         {faceId || loginFaceId ? "soporta" : "no soporta"} estas tecnologías.
       </Text>
-    </SafeAreaView>
+    </View>
   );
 };
 
