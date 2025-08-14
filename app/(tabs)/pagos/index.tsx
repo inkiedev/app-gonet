@@ -7,11 +7,11 @@ import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-ico
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-    ScrollView,
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -182,6 +182,7 @@ export default function Payments() {
       >
         <ExpandableCard
           title="Métodos de Pago"
+          style={styles.expandableCard}
           icon={
             <MaterialIcons 
               name="payment" 
@@ -215,6 +216,7 @@ export default function Payments() {
 
         <ExpandableCard
           title="Historial de Pagos"
+          style={styles.expandableCard}
           icon={
             <Ionicons 
               name="time-outline" 
@@ -279,6 +281,10 @@ export default function Payments() {
 }
 
 const styles = StyleSheet.create({
+  expandableCard: {
+    padding: theme.spacing.md,
+    paddingBottom: 0
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

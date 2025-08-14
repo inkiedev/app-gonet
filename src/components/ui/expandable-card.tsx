@@ -12,11 +12,13 @@ import {
 } from 'react-native';
 
 interface ExpandableCardProps extends BaseComponentProps {
-  title: string;
+  title?: string;
   icon?: React.ReactNode;
   children: React.ReactNode;
   initialExpanded?: boolean;
   onToggle?: (expanded: boolean) => void;
+  renderHeader?: (isExpanded: boolean, onToggle: () => void, rotation: any) => React.ReactNode;
+  headerStyle?: ViewStyle;
 }
 
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({
@@ -25,6 +27,8 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   children,
   initialExpanded = false,
   onToggle,
+  renderHeader,
+  headerStyle,
   style,
   testID,
 }) => {
@@ -87,26 +91,30 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   const cardStyle: ViewStyle[] = [styles.card];
   if (style) cardStyle.push(style);
 
-  return (
-    <TouchableOpacity
-      style={cardStyle}
-      onPress={handleToggle}
-      activeOpacity={0.8}
-      testID={testID}
-    >
-      <View style={styles.cardHeader}>
-        <View style={styles.cardTitleContainer}>
-          {icon}
-          <Text style={styles.cardTitle}>{title}</Text>
-        </View>
-        <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-          <Ionicons
-            name="chevron-down"
-            size={20}
-            color={theme.colors.text.secondary}
-          />
-        </Animated.View>
+  const renderDefaultHeader = () => (
+    <View style={[styles.cardHeader, headerStyle]}>
+      <View style={styles.cardTitleContainer}>
+        {icon}
+        <Text style={styles.cardTitle}>{title}</Text>
       </View>
+      <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+        <Ionicons
+          name="chevron-down"
+          size={20}
+          color={theme.colors.text.secondary}
+        />
+      </Animated.View>
+    </View>
+  );
+
+  return (
+    <View style={cardStyle} testID={testID}>
+      <TouchableOpacity
+        onPress={handleToggle}
+        activeOpacity={0.8}
+      >
+        {renderHeader ? renderHeader(isExpanded, handleToggle, rotation) : renderDefaultHeader()}
+      </TouchableOpacity>
       
       <Animated.View
         style={[
@@ -123,7 +131,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       >
         {children}
       </Animated.View>
-    </TouchableOpacity>
+    </View>
   );
 };
 
@@ -131,7 +139,6 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
     ...theme.shadows.sm,
   },
   cardHeader: {
@@ -151,6 +158,7 @@ const styles = StyleSheet.create({
   },
   cardContent: {
     marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.md,
     gap: theme.spacing.sm,
   },
 });
