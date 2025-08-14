@@ -1,7 +1,7 @@
-import React from 'react';
-import { Image, View, StyleSheet, ImageStyle, ViewStyle } from 'react-native';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import React from 'react';
+import { Image, ImageStyle, StyleSheet, View, ViewStyle } from 'react-native';
 
 interface AppLogoProps extends BaseComponentProps {
   size?: number;
@@ -35,7 +35,7 @@ export const AppLogo: React.FC<AppLogoProps> = ({
   return (
     <View style={containerStyle} testID={testID}>
       <Image
-        source={require('../../../assets/images/icono-gonet.png')}
+        source={require('@/assets/images/icono-gonet.png')}
         style={[styles.image, imageStyle]}
         resizeMode="contain"
       />

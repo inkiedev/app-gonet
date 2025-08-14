@@ -54,7 +54,7 @@ export default function LoginScreen() {
 
   return (
     <ImageBackground
-      source={require('../../assets/images/fondo_login.jpg')}
+      source={require('@/assets/images/fondo_login.jpg')}
       style={styles.background}
     >
       <SafeAreaView style={styles.container}>
