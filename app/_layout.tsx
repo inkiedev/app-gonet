@@ -1,10 +1,10 @@
+import { StoreProvider } from '@/providers/store-provider';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
-import { StoreProvider } from '@/providers/store-provider';
 
 SplashScreen.preventAutoHideAsync().then();
 
@@ -31,6 +31,7 @@ export default function RootLayout() {
           <Stack.Screen name="index" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          
         </Stack>
         <StatusBar style="auto" />
       </View>
