@@ -1,5 +1,6 @@
 import Tabs from '@/components/app/tabs';
 import { Input } from '@/components/ui/custom-input';
+import { theme } from '@/styles/theme'; // Asegúrate de importar tu tema
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -70,9 +71,10 @@ const CambiarContrasenaTab = () => (
 export default function PerfilScreen() {
   const nombre = "Juan Gonzales";
   const campos = [
-    { campo: "Edad", valor: "32" },
-    { campo: "Ciudad", valor: "Quito" },
-    { campo: "Ocupación", valor: "Ingeniero" },
+    { campo: "CEDULA", valor: "0123456789" },
+    { campo: "CORREO", valor: "correo@correo.com" },
+    { campo: "TELF1", valor: "0124910258" },
+    { campo: "TELF2", valor: "1234567890" },
   ];
 
   return (
@@ -80,19 +82,19 @@ export default function PerfilScreen() {
       <ScrollView>
         {/* Información inicial */}
         <Text style={styles.title}>Información</Text>
+        <Text style={styles.nombre}>{nombre}</Text>
+
         <View style={styles.infoContainer}>
-          <View style={styles.row}>
-            <Text style={styles.field}>Nombre:</Text>
-            <Text style={styles.value}>{nombre}</Text>
-          </View>
           {campos.map((item, idx) => (
-            <View style={styles.row} key={idx}>
-              <Text style={styles.field}>{item.campo}:</Text>
+            <View
+              style={idx === campos.length - 1 ? styles.lastInfoRow : styles.infoRow}
+              key={idx}
+            >
+              <Text style={styles.field}>{item.campo}</Text>
               <Text style={styles.value}>{item.valor}</Text>
             </View>
           ))}
         </View>
-
 
         <Tabs
           tabNames={["Ajustes", "Actualizar datos", "Cambiar contraseña"]}
@@ -109,39 +111,99 @@ export default function PerfilScreen() {
 
 /* --- Estilos --- */
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 16, backgroundColor: "#fff" },
-  title: { fontSize: 22, fontWeight: "bold", marginBottom: 12 },
-  infoContainer: {
-    marginBottom: 20, backgroundColor: "#f2f2f2",
-    padding: 10, borderRadius: 8,
+  container: { 
+    flex: 1, 
+    padding: theme.spacing.md, 
+    backgroundColor: theme.colors.surface 
   },
-  row: { flexDirection: "row", marginBottom: 8 },
-  field: { fontWeight: "bold", marginRight: 5 },
-  value: { color: "#333" },
+
+  title: { 
+    fontSize: theme.fontSize.xxl, 
+    fontWeight: theme.fontWeight.bold, 
+    marginBottom: theme.spacing.xs, 
+    alignSelf: "center",
+    color: theme.colors.text.primary
+  },
+  nombre: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text.secondary,
+    textAlign: "center",
+    marginBottom: theme.spacing.md
+  },
+
+  infoContainer: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.sm,
+    marginBottom: theme.spacing.lg,
+  },
+  infoRow: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    paddingVertical: theme.spacing.xs,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light
+  },
+  lastInfoRow: {
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    paddingVertical: theme.spacing.xs,
+    borderBottomWidth: 0
+  },
+  field: { 
+    fontWeight: theme.fontWeight.bold, 
+    textTransform: "uppercase", 
+    fontSize: theme.fontSize.sm, 
+    width: "20%",
+    color: theme.colors.text.primary
+  },
+  value: { 
+    color: theme.colors.text.secondary, 
+    fontSize: theme.fontSize.sm,
+    maxWidth: "60%",
+    textAlign: "right"
+  },
 
   /* Tabs */
-  tabsContainer: { flexDirection: "row", marginBottom: 10 },
-  tab: {
-    flex: 1, paddingVertical: 8, backgroundColor: "#ddd",
-    alignItems: "center", borderRadius: 6, marginHorizontal: 3,
+  tabTitle: { 
+    fontSize: theme.fontSize.xl, 
+    fontWeight: theme.fontWeight.bold, 
+    marginBottom: theme.spacing.md,
+    color: theme.colors.text.primary
   },
-  tabActiva: { backgroundColor: "#6200ee" },
-  tabText: { color: "#000", fontSize: 12 },
-  tabTextActiva: { color: "#fff", fontWeight: "bold" },
-  tabContent: {
-    backgroundColor: "#f2f2f2", padding: 12, borderRadius: 8,
+  subTitle: { 
+    fontSize: theme.fontSize.md, 
+    fontWeight: theme.fontWeight.bold, 
+    marginTop: theme.spacing.sm, 
+    marginBottom: theme.spacing.xs,
+    color: theme.colors.text.primary
   },
-
-  /* Tab contenido */
-  tabTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 15 },
-  subTitle: { fontSize: 16, fontWeight: "bold", marginTop: 10, marginBottom: 5 },
-  centerText: { textAlign: "center", marginBottom: 15, color: "#333" },
+  centerText: { 
+    textAlign: "center", 
+    marginBottom: theme.spacing.md, 
+    color: theme.colors.text.secondary 
+  },
 
   /* Switch */
   switchRow: {
-    flexDirection: "row", alignItems: "center",
-    backgroundColor: "#fff", padding: 8, borderRadius: 8, marginBottom: 10,
+    flexDirection: "row", 
+    alignItems: "center", 
+    justifyContent: "flex-start",
+    backgroundColor: theme.colors.surface, 
+    padding: theme.spacing.sm, 
+    borderRadius: theme.borderRadius.sm, 
+    marginBottom: theme.spacing.sm,
+    ...theme.shadows.sm
   },
-  switchLabel: { flex: 1, fontSize: 14, marginLeft: 10, color: "#333" },
-  availableText: { marginTop: 10, fontSize: 13, color: "#777" },
+  switchLabel: { 
+    flex: 1, 
+    fontSize: theme.fontSize.sm, 
+    marginLeft: theme.spacing.sm, 
+    color: theme.colors.text.primary 
+  },
+  availableText: { 
+    marginTop: theme.spacing.sm, 
+    fontSize: theme.fontSize.xs, 
+    color: theme.colors.text.secondary 
+  },
 });

@@ -5,16 +5,16 @@ import { theme } from "@/styles/theme";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import {
-    Alert,
+  Alert,
 
-    StyleSheet,
-    Text,
-    TouchableOpacity,
-    View,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 import { SafeAreaView } from "react-native-safe-area-context";
-
+    
 interface StarRatingProps {
   rating: number;
   onChange: (valor: number) => void;
@@ -32,7 +32,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
             <Ionicons
               name={starNumber <= rating ? "star" : "star-outline"}
               size={32}
-              color={theme.colors.success}
+              color={theme.colors.text.contrast}
               style={styles.starIcon}
             />
           </TouchableOpacity>
@@ -66,13 +66,13 @@ const Sugerencias: React.FC = () => {
 
   return (
     <View style={styles.card}>
-      <Text style={styles.sectionTitle}>Escribe tu sugerencia:</Text>
+      <Text style={styles.cardTitle}>Sugerencias</Text>
       <Input
         value={texto}
         onChangeText={setTexto}
         placeholder="Tu sugerencia aquí..."
         multiline
-        numberOfLines={4}
+          numberOfLines={4}
         style={styles.inputWrapper}
         inputStyle={styles.inputArea}
       />
@@ -84,19 +84,19 @@ const Sugerencias: React.FC = () => {
 const Siguenos: React.FC = () => {
   return (
     <View style={[styles.card, { alignItems: "center" }]}>
-      <Text style={styles.sectionTitle}>Síguenos en redes</Text>
+      <Text style={styles.cardTitle}>Contáctanos</Text>
       <View style={styles.socialContainer}>
         <TouchableOpacity>
-          <FontAwesome5 name="whatsapp" size={40} color="#2b693e" />
+          <FontAwesome5 name="whatsapp" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <TouchableOpacity>
-          <FontAwesome5 name="facebook-messenger" size={40} color="#595867" />
+          <FontAwesome5 name="facebook-messenger" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <TouchableOpacity>
-          <FontAwesome5 name="envelope" size={40} color="#53646e" />
+          <FontAwesome5 name="envelope" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
         </TouchableOpacity>
         <TouchableOpacity>
-          <FontAwesome5 name="phone-alt" size={40} color="#345e24" />
+          <FontAwesome5 name="phone-alt" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
         </TouchableOpacity>
       </View>
     </View>
@@ -131,7 +131,7 @@ export default function CalificanosScreen(): React.ReactElement {
         />
       </View>
 
-      <Text style={styles.footer}>Calificanos</Text>
+      
     </SafeAreaView>
   );
 }
@@ -139,6 +139,9 @@ export default function CalificanosScreen(): React.ReactElement {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    
+    marginTop: theme.spacing.xxl,
+    padding: theme.spacing.md,
     alignItems: "center",
     paddingTop: theme.spacing.lg,
     backgroundColor: theme.colors.background,
@@ -162,14 +165,11 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flex: 1,
-    marginTop: theme.spacing.lg,
+    //  marginTop: theme.spacing.lg,
     width: "100%",
   },
   card: {
     padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    borderColor: theme.colors.border.medium,
-    borderWidth: 1,
     backgroundColor: theme.colors.surface,
     paddingBottom: theme.spacing.xl,
   },
@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xxl,
     textAlign: "center",
     paddingBottom: theme.spacing.sm,
-    color: theme.colors.text.primary,
+    color: theme.colors.text.contrast,
     fontWeight: theme.fontWeight.semibold,
   },
   cardText: {
@@ -188,7 +188,8 @@ const styles = StyleSheet.create({
   sectionTitle: {
     fontSize: theme.fontSize.lg,
     marginBottom: theme.spacing.sm,
-    color: theme.colors.text.primary,
+    textAlign: "center",
+    color: theme.colors.text.contrast,
     fontWeight: theme.fontWeight.medium,
   },
   inputWrapper: {
@@ -204,11 +205,9 @@ const styles = StyleSheet.create({
   },
   socialContainer: {
     flexDirection: "row",
+    marginTop: theme.spacing.lg,
     justifyContent: "space-between",
     width: "80%",
   },
-  footer: {
-    marginTop: theme.spacing.lg,
-    color: theme.colors.text.secondary,
-  },
+
 });

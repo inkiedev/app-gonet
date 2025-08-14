@@ -10,6 +10,7 @@ export const theme = {
     warning: '#ffaa00',
     text: {
       primary: '#333333',
+      contrast : '#952CAB',
       secondary: '#666666',
       inverse: '#ffffff',
       disabled: '#999999',

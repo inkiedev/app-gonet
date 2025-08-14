@@ -1,14 +1,14 @@
 import { theme } from "@/styles/theme";
 import React, { ReactNode, useMemo, useState } from "react";
 import {
-    LayoutChangeEvent,
-    Pressable,
-    ScrollView,
-    StyleSheet,
-    Text,
-    TextStyle,
-    View,
-    ViewStyle,
+  LayoutChangeEvent,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextStyle,
+  View,
+  ViewStyle,
 } from "react-native";
 
 export interface TabsProps {
@@ -168,7 +168,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
   },
   tabTextActive: {
-    color: theme.colors.text.inverse,
+    color: theme.colors.text.contrast,
   },
   contentContainer: {
     marginTop: theme.spacing.sm,
