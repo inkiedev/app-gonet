@@ -16,10 +16,10 @@ const gridItems: ItemProps[] = [
   { id: "3", title: "Login", route: "/login" },
   { id: "4", title: "Configuración" },
   { id: "5", title: "Servicios" },
-  { id: "6", title: "Soporte" },
+  { id: "6", title: "Soporte", route: "/soporte" },
   { id: "7", title: "Perfil" , route: "/home/perfil" },
-  { id: "8", title: "Historial" },
   { id: "9", title: "Calificanos", route: "/home/calificanos" },
+  { id: "8", title: "Mi Plan", route: "/planes" },
 ];
 
 export default function IndexScreens() {

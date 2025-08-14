@@ -42,7 +42,7 @@ const styles = StyleSheet.create({
     ...theme.shadows.lg,
   },
   circle: {
-    borderWidth: 10,
+    borderWidth: 9,
     borderColor: theme.colors.primary,
     backgroundColor: 'transparent',
     justifyContent: 'center',

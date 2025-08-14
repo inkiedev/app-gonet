@@ -101,7 +101,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
         <Text style={styles.planTitle}>{plan}</Text>
 
         <View style={styles.speedContainer}>
-          <SpeedCircle speed={speed} />
+          <SpeedCircle speed={speed} size={180}/>
           <View style={styles.speedShadow}></View>
         </View>
 
