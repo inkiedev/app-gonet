@@ -1,0 +1,311 @@
+import { Header } from "@/components/layout/header";
+import { Input } from "@/components/ui/custom-input";
+import { theme } from "@/styles/theme";
+import { BaseComponentProps } from "@/types/common";
+import { Ionicons } from "@expo/vector-icons";
+import { useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
+import {
+  FlatList,
+  KeyboardAvoidingView,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View
+} from "react-native";
+import { SafeAreaView } from "react-native-safe-area-context";
+
+interface Message {
+  id: string;
+  text: string;
+  isUser: boolean;
+  timestamp: Date;
+}
+
+interface SoporteProps extends BaseComponentProps {
+  onSendMessage?: (message: string) => Promise<string>;
+}
+
+export default function Soporte({ onSendMessage, style, testID }: SoporteProps) {
+  const router = useRouter();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [inputText, setInputText] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
+
+  const handleGoBack = () => {
+    router.back();
+  };
+
+  const handleSendMessage = async () => {
+    if (!inputText.trim()) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      text: inputText.trim(),
+      isUser: true,
+      timestamp: new Date(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInputText('');
+    setIsLoading(true);
+
+    try {
+      let botResponse = 'Gracias por tu mensaje. Nuestro equipo te responderá pronto.';
+      
+      if (onSendMessage) {
+        botResponse = await onSendMessage(userMessage.text);
+      }
+
+      const botMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: botResponse,
+        isUser: false,
+        timestamp: new Date(),
+      };
+
+      setMessages(prev => [...prev, botMessage]);
+    } catch (error) {
+      const errorMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        text: 'Lo siento, ocurrió un error. Por favor intenta nuevamente.',
+        isUser: false,
+        timestamp: new Date(),
+      };
+      setMessages(prev => [...prev, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderMessage = ({ item }: { item: Message }) => (
+    <View style={[
+      styles.messageBubble,
+      item.isUser ? styles.userMessage : styles.botMessage
+    ]}>
+      <Text style={[
+        styles.messageText,
+        item.isUser ? styles.userMessageText : styles.botMessageText
+      ]}>
+        {item.text}
+      </Text>
+      <Text style={[
+        styles.messageTime,
+        item.isUser ? styles.userMessageTime : styles.botMessageTime
+      ]}>
+        {item.timestamp.toLocaleTimeString('es-ES', {
+          hour: '2-digit',
+          minute: '2-digit'
+        })}
+      </Text>
+    </View>
+  );
+
+  useEffect(() => {
+    if (messages.length > 0) {
+      setTimeout(() => {
+        flatListRef.current?.scrollToEnd({ animated: true });
+      }, 100);
+    }
+  }, [messages]);
+
+  return (
+    <SafeAreaView style={[styles.container, style]} edges={['top']} testID={testID}>
+      <Header
+        title="Soporte"
+        leftAction={{
+          icon: "arrow-back",
+          onPress: handleGoBack,
+        }}
+        variant="default"
+      />
+      
+      <KeyboardAvoidingView 
+        style={styles.content}
+        behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+        keyboardVerticalOffset={0}
+      >
+        <View style={styles.chatContainer}>
+          {messages.length === 0 ? (
+            <View style={styles.welcomeMessage}>
+              <Ionicons
+                name="chatbubble-ellipses"
+                size={48}
+                color={theme.colors.primary}
+              />
+              <Text style={styles.welcomeTitle}>¡Bienvenido al Soporte!</Text>
+              <Text style={styles.welcomeText}>
+                Estamos aquí para ayudarte. Escribe tu mensaje para comenzar.
+              </Text>
+            </View>
+          ) : (
+            <FlatList
+              ref={flatListRef}
+              data={messages}
+              renderItem={renderMessage}
+              keyExtractor={(item) => item.id}
+              showsVerticalScrollIndicator={false}
+              contentContainerStyle={styles.messagesList}
+            />
+          )}
+          
+          {isLoading && (
+            <View style={styles.loadingContainer}>
+              <Text style={styles.loadingText}>Escribiendo...</Text>
+            </View>
+          )}
+        </View>
+        
+        <View style={styles.inputContainer}>
+          <Input
+            style={styles.textInput}
+            value={inputText}
+            onChangeText={setInputText}
+            placeholder="Escribe tu mensaje..."
+            placeholderTextColor={theme.colors.text.secondary}
+            multiline
+            maxLength={500}
+            editable={!isLoading}
+          />
+          <TouchableOpacity
+            style={[
+              styles.sendButton,
+              (!inputText.trim() || isLoading) && styles.sendButtonDisabled
+            ]}
+            onPress={handleSendMessage}
+            disabled={!inputText.trim() || isLoading}
+            activeOpacity={0.7}
+          >
+            <Ionicons
+              name="send"
+              size={20}
+              color={(!inputText.trim() || isLoading) ? theme.colors.text.secondary : theme.colors.surface}
+            />
+          </TouchableOpacity>
+        </View>
+      </KeyboardAvoidingView>
+      
+    </SafeAreaView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: theme.colors.background,
+  },
+  content: {
+    flex: 1,
+  },
+  chatContainer: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.md,
+  },
+  welcomeMessage: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.lg,
+  },
+  welcomeTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.primary,
+    marginTop: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center',
+  },
+  welcomeText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+    lineHeight: 22,
+  },
+  messagesList: {
+    paddingVertical: theme.spacing.md,
+    flexGrow: 1,
+  },
+  messageBubble: {
+    maxWidth: '80%',
+    marginVertical: theme.spacing.xs,
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+  },
+  userMessage: {
+    alignSelf: 'flex-end',
+    backgroundColor: theme.colors.primary,
+    marginLeft: '20%',
+  },
+  botMessage: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.surface,
+    marginRight: '20%',
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+  },
+  messageText: {
+    fontSize: theme.fontSize.md,
+    lineHeight: 20,
+  },
+  userMessageText: {
+    color: theme.colors.surface,
+  },
+  botMessageText: {
+    color: theme.colors.text.primary,
+  },
+  messageTime: {
+    fontSize: theme.fontSize.xs,
+    marginTop: theme.spacing.xs,
+    opacity: 0.7,
+  },
+  userMessageTime: {
+    color: theme.colors.surface,
+    textAlign: 'right',
+  },
+  botMessageTime: {
+    color: theme.colors.text.secondary,
+    textAlign: 'left',
+  },
+  loadingContainer: {
+    alignSelf: 'flex-start',
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    marginVertical: theme.spacing.xs,
+    marginHorizontal: theme.spacing.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+  },
+  loadingText: {
+    color: theme.colors.text.secondary,
+    fontSize: theme.fontSize.sm,
+    fontStyle: 'italic',
+  },
+  inputContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: theme.colors.surface,
+    borderTopWidth: 1,
+    borderTopColor: theme.colors.border.light,
+  },
+  textInput: {
+    flex: 1,
+    marginBottom: 0,
+  },
+  sendButton: {
+    marginLeft: theme.spacing.sm,
+    backgroundColor: theme.colors.primary,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sendButtonDisabled: {
+    backgroundColor: theme.colors.border.light,
+  },
+});

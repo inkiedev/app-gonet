@@ -2,7 +2,6 @@ import { Header } from "@/components/layout/header";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet } from "react-native";
-import MapView, { Marker } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function App() {
@@ -15,24 +14,12 @@ export default function App() {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['top']}>
       <Header leftAction={{
         icon: "arrow-back",
         onPress: () => router.back()
       }} title="Agencias" />
-      <MapView
-        style={styles.map}
-        initialRegion={initialRegion}
-        showsUserLocation={false}
-        showsMyLocationButton={false}
-        // provider={PROVIDER_GOOGLE} // descomenta si quieres Google en Android y lo configuraste
-      >
-        <Marker
-          coordinate={{ latitude: initialRegion.latitude, longitude: initialRegion.longitude }}
-          title="Aquí"
-          description="Marcador de ejemplo"
-        />
-      </MapView>
+    
     </SafeAreaView>
   );
 }
