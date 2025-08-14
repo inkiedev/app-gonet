@@ -1,17 +1,17 @@
-import React, { useState, forwardRef } from 'react';
-import {
-  TextInput,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  TextInputProps,
-  ViewStyle,
-  TextStyle,
-} from 'react-native';
-import { FontAwesome } from '@expo/vector-icons';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import { FontAwesome } from '@expo/vector-icons';
+import React, { forwardRef, useState } from 'react';
+import {
+  StyleSheet,
+  Text,
+  TextInput,
+  TextInputProps,
+  TextStyle,
+  TouchableOpacity,
+  View,
+  ViewStyle,
+} from 'react-native';
 
 interface InputProps extends BaseComponentProps, Omit<TextInputProps, 'style'> {
   label?: string;
@@ -20,6 +20,7 @@ interface InputProps extends BaseComponentProps, Omit<TextInputProps, 'style'> {
   leftIcon?: React.ReactNode;
   rightIcon?: React.ReactNode;
   showPasswordToggle?: boolean;
+  inputStyle?: TextStyle | TextStyle[]; // Cambiado aquí
 }
 
 export const Input = forwardRef<TextInput, InputProps>(({
@@ -31,6 +32,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
                                                           showPasswordToggle = false,
                                                           secureTextEntry = false,
                                                           style,
+                                                          inputStyle, // <- prop
                                                           testID,
                                                           ...textInputProps
                                                         }, ref) => {
@@ -50,14 +52,24 @@ export const Input = forwardRef<TextInput, InputProps>(({
     containerStyle.push(styles.error);
   }
 
-  const inputStyle: TextStyle[] = [styles.input];
+  // Renombrar variable local para evitar conflicto
+  const combinedInputStyle: TextStyle[] = [styles.input];
+
+  if (inputStyle) {
+    // Permitir array o objeto
+    if (Array.isArray(inputStyle)) {
+      combinedInputStyle.push(...inputStyle);
+    } else {
+      combinedInputStyle.push(inputStyle);
+    }
+  }
 
   if (leftIcon) {
-    inputStyle.push(styles.inputWithLeftIcon);
+    combinedInputStyle.push(styles.inputWithLeftIcon);
   }
 
   if (rightIcon || showPasswordToggle) {
-    inputStyle.push(styles.inputWithRightIcon);
+    combinedInputStyle.push(styles.inputWithRightIcon);
   }
 
   const mainContainerStyle: ViewStyle[] = [styles.container];
@@ -74,7 +86,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
 
         <TextInput
           ref={ref}
-          style={inputStyle}
+          style={combinedInputStyle}
           placeholderTextColor={theme.colors.text.secondary}
           onFocus={() => setIsFocused(true)}
           onBlur={() => setIsFocused(false)}
