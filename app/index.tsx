@@ -20,6 +20,7 @@ const gridItems: ItemProps[] = [
   { id: "7", title: "Perfil" , route: "/home/perfil" },
   { id: "9", title: "Calificanos", route: "/home/calificanos" },
   { id: "8", title: "Mi Plan", route: "/planes" },
+  { id: "10", title: "Promociones", route: "/home/promociones" },
 ];
 
 export default function IndexScreens() {
