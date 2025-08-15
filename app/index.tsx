@@ -14,13 +14,14 @@ const gridItems: ItemProps[] = [
   { id: "1", title: "Agencias", route: "/home/agencias" },
   { id: "2", title: "Home", route: "/home" },
   { id: "3", title: "Login", route: "/login" },
-  { id: "4", title: "Configuración" },
+  { id: "4", title: "Pago", route: "/pagos" },
   { id: "5", title: "Go Club", route:"/home/goclub" },
   { id: "6", title: "Soporte", route: "/soporte" },
   { id: "7", title: "Perfil" , route: "/home/perfil" },
   { id: "9", title: "Calificanos", route: "/home/calificanos" },
   { id: "8", title: "Mi Plan", route: "/planes" },
   { id: "10", title: "Promociones", route: "/home/promociones" },
+  { id: "11", title: "Servicios", route: "/servicios" },
 ];
 
 export default function IndexScreens() {
@@ -28,7 +29,7 @@ export default function IndexScreens() {
 
   const handleItemPress = (item: ItemProps) => {
     if (item.route) {
-      router.push(item.route );
+      router.push(item.route);
     }
   };
 

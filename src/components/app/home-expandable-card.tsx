@@ -1,16 +1,11 @@
 import { SpeedCircle } from '@/components/app/speed-circle';
 import { Card } from '@/components/ui/card';
+import { ExpandableCard } from '@/components/ui/expandable-card';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
-import Animated, {
-  interpolate,
-  useAnimatedStyle,
-  useSharedValue,
-  withTiming,
-} from 'react-native-reanimated';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import Badge from './badge';
 
 const features = [
@@ -37,64 +32,17 @@ const features = [
   },
 ];
 
-interface ExpandableCardProps extends BaseComponentProps {
+interface HomeExpandableCardProps extends BaseComponentProps {
   plan: string;
   speed: number;
-  isExpanded: boolean;
-  onToggle: () => void;
 }
 
-export const ExpandableCard: React.FC<ExpandableCardProps> = ({
-                                                                plan,
-                                                                speed,
-                                                                isExpanded,
-                                                                onToggle,
-                                                                style,
-                                                                testID,
-                                                              }) => {
-  const expandAnimation = useSharedValue(0);
-
-  React.useEffect(() => {
-    expandAnimation.value = withTiming(isExpanded ? 1 : 0, {
-      duration: 400,
-    });
-  }, [isExpanded]);
-
-  const animatedDetailsStyle = useAnimatedStyle(() => {
-    const opacity = interpolate(
-      expandAnimation.value,
-      [0, 0.3, 1],
-      [0, 0, 1],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    );
-
-    const maxHeight = interpolate(
-      expandAnimation.value,
-      [0, 1],
-      [0, 200],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    );
-
-    return {
-      opacity,
-      maxHeight,
-      overflow: 'hidden',
-    };
-  });
-
-  const animatedArrowStyle = useAnimatedStyle(() => {
-    const rotate = interpolate(
-      expandAnimation.value,
-      [0, 1],
-      [0, 180],
-      { extrapolateLeft: 'clamp', extrapolateRight: 'clamp' }
-    );
-
-    return {
-      transform: [{ rotate: `${rotate}deg` }],
-    };
-  });
-
+export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
+  plan,
+  speed,
+  style,
+  testID,
+}) => {
   return (
     <View style={[styles.container, style]} testID={testID}>
       <Card style={styles.card} variant="elevated">
@@ -113,16 +61,19 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
           </Text>
         </View>
 
-        <TouchableOpacity onPress={onToggle} style={styles.detailsButton}>
-          <Text style={styles.detailsLink}>
-            {isExpanded ? 'Ocultar Detalles' : 'Ver Detalles'}
-          </Text>
-          <Animated.View style={animatedArrowStyle}>
-            <AntDesign name="down" size={16} color={theme.colors.primaryDark} />
-          </Animated.View>
-        </TouchableOpacity>
-
-        <Animated.View style={animatedDetailsStyle}>
+        <ExpandableCard
+          style={styles.expandableCardContainer}
+          renderHeader={(isExpanded, onToggle, rotation) => (
+            <View style={styles.centeredHeader}>
+              <Text style={styles.detailsLink}>
+                {isExpanded ? 'Ocultar Detalles' : 'Ver Detalles'}
+              </Text>
+              <Animated.View style={{ transform: [{ rotate: rotation }] }}>
+                <AntDesign name="down" size={16} color={theme.colors.primaryDark} />
+              </Animated.View>
+            </View>
+          )}
+        >
           <View style={styles.detailsContainer}>
             {features.map((feature, index) => (
               <DetailRow
@@ -139,7 +90,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
               <Text style={styles.addServiceText}>Agrega mas servicios</Text>
             </View>
           </View>
-        </Animated.View>
+        </ExpandableCard>
       </Card>
     </View>
   );
@@ -192,10 +143,18 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     textAlign: 'center',
   },
-  detailsButton: {
+  expandableCardContainer: {
+    backgroundColor: 'transparent',
+    shadowColor: 'transparent',
+    elevation: 0,
+    borderWidth: 0,
+    paddingHorizontal: 0,
+    marginTop: theme.spacing.md,
+  },
+  centeredHeader: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginTop: theme.spacing.md,
+    justifyContent: 'center',
     paddingVertical: theme.spacing.sm,
     gap: theme.spacing.xs,
   },
