@@ -15,11 +15,12 @@ const gridItems: ItemProps[] = [
   { id: "2", title: "Home", route: "/home" },
   { id: "3", title: "Login", route: "/login" },
   { id: "4", title: "Configuración" },
-  { id: "5", title: "Servicios" },
+  { id: "5", title: "Go Club", route:"/home/goclub" },
   { id: "6", title: "Soporte", route: "/soporte" },
   { id: "7", title: "Perfil" , route: "/home/perfil" },
   { id: "9", title: "Calificanos", route: "/home/calificanos" },
   { id: "8", title: "Mi Plan", route: "/planes" },
+  { id: "10", title: "Promociones", route: "/home/promociones" },
 ];
 
 export default function IndexScreens() {
