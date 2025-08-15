@@ -171,6 +171,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.contrast,
   },
   contentContainer: {
+    flex: 1,
     marginTop: theme.spacing.sm,
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.md,

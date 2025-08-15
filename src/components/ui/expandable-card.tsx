@@ -118,7 +118,6 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       
       <Animated.View
         style={[
-          styles.cardContent,
           {
             maxHeight: animatedHeight.interpolate({
               inputRange: [0, 1],
@@ -126,10 +125,20 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
             }),
             opacity: animatedOpacity,
             overflow: 'hidden',
+            marginTop: animatedHeight.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, theme.spacing.md],
+            }),
+            marginBottom: animatedHeight.interpolate({
+              inputRange: [0, 1],
+              outputRange: [0, theme.spacing.md],
+            }),
           },
         ]}
       >
-        {children}
+        <View style={styles.cardContent}>
+          {children}
+        </View>
       </Animated.View>
     </View>
   );
@@ -157,8 +166,6 @@ const styles = StyleSheet.create({
     color: theme.colors.text.primary,
   },
   cardContent: {
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.md,
     gap: theme.spacing.sm,
   },
 });

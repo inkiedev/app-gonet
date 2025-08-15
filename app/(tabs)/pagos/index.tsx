@@ -1,4 +1,5 @@
 import { Header } from "@/components/layout/header";
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { ExpandableCard } from "@/components/ui/expandable-card";
@@ -67,7 +68,7 @@ const accounts: SelectOption<Account>[] = [
 const paymentMethods: PaymentMethod[] = [
   {
     id: "1",
-    type: "Tarjeta de Cr�dito",
+    type: "Tarjeta de Credito",
     details: "**** **** **** 1234",
     isDefault: true
   },
@@ -91,7 +92,7 @@ const paymentHistory: PaymentHistory[] = [
     date: "2024-01-15",
     amount: 29.90,
     status: 'completed',
-    method: "Tarjeta de Cr�dito"
+    method: "Tarjeta de Credito"
   },
   {
     id: "2", 
@@ -109,7 +110,7 @@ const paymentHistory: PaymentHistory[] = [
   }
 ];
 
-export default function Payments() {
+export default function PaymentsScreen() {
   const [selectedAccount, setSelectedAccount] = useState<Account>();
   const router = useRouter();
 
@@ -208,7 +209,6 @@ export default function Payments() {
             <Button
               title="Agregar Método"
               onPress={() => console.log('Agregar método')}
-              variant="outline"
               size="sm"
             />
           </View>
@@ -245,35 +245,35 @@ export default function Payments() {
             <Button
               title="Ver Todo el Historial"
               onPress={() => console.log('Ver historial completo')}
-              variant="outline"
               size="sm"
             />
           </View>
         </ExpandableCard>
 
         <TouchableOpacity
-          style={styles.invoiceCard}
           onPress={handleInvoiceConsultation}
           activeOpacity={0.8}
         >
-          <View style={styles.cardHeader}>
-            <View style={styles.cardTitleContainer}>
-              <AntDesign 
-                name="filetext1" 
-                size={24} 
-                color={theme.colors.primary} 
+          <Card>
+            <View style={styles.cardHeader}>
+              <View style={styles.cardTitleContainer}>
+                <AntDesign 
+                  name="filetext1" 
+                  size={24} 
+                  color={theme.colors.primary} 
+                />
+                <Text style={styles.cardTitle}>Consulta de Facturas</Text>
+              </View>
+              <Ionicons
+                name="chevron-forward"
+                size={20}
+                color={theme.colors.text.secondary}
               />
-              <Text style={styles.cardTitle}>Consulta de Facturas</Text>
             </View>
-            <Ionicons
-              name="chevron-forward"
-              size={20}
-              color={theme.colors.text.secondary}
-            />
-          </View>
-          <Text style={styles.invoiceDescription}>
-            Consulta y descarga tus facturas pendientes y pagadas
-          </Text>
+            <Text style={styles.invoiceDescription}>
+              Consulta y descarga tus facturas pendientes y pagadas
+            </Text>
+          </Card>
         </TouchableOpacity>
       </ScrollView>
     </SafeAreaView>
@@ -283,7 +283,6 @@ export default function Payments() {
 const styles = StyleSheet.create({
   expandableCard: {
     padding: theme.spacing.md,
-    paddingBottom: 0
   },
   container: {
     flex: 1,
@@ -411,14 +410,6 @@ const styles = StyleSheet.create({
   statusText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.medium,
-  },
-  invoiceCard: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    padding: theme.spacing.md,
-    borderWidth: 2,
-    borderColor: theme.colors.primary + '30',
-    ...theme.shadows.sm,
   },
   invoiceDescription: {
     fontSize: theme.fontSize.sm,
