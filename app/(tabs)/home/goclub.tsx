@@ -102,6 +102,8 @@ const styles = StyleSheet.create({
     textShadowColor: "rgba(0,0,0,0.8)",
     textShadowOffset: { width: 1, height: 1 },
     textShadowRadius: 4,
+    bottom: 90,
+    left: 10,
   },
   infoCard: {
     alignItems: "center",
