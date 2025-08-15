@@ -1,4 +1,4 @@
-import Tabs from "@/components/app/tabs";
+import Tabs from "@/components/ui/tabs";
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import { theme } from "@/styles/theme";
@@ -42,17 +42,14 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
   );
 };
 
-// Contenido de Tabs
-const Encuestas: React.FC = () => {
-  return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>Encuestas</Text>
-      <Text style={styles.cardText}>No hay encuestas en este momento</Text>
-    </View>
-  );
-};
+const EncuestasContent = () => (
+  <View style={styles.card}>
+    <Text style={styles.cardTitle}>Encuestas</Text>
+    <Text style={styles.cardText}>No hay encuestas en este momento</Text>
+  </View>
+);
 
-const Sugerencias: React.FC = () => {
+const SugerenciasContent = () => {
   const [texto, setTexto] = useState<string>("");
 
   const enviarSugerencia = () => {
@@ -72,7 +69,7 @@ const Sugerencias: React.FC = () => {
         onChangeText={setTexto}
         placeholder="Tu sugerencia aquí..."
         multiline
-          numberOfLines={4}
+        numberOfLines={4}
         style={styles.inputWrapper}
         inputStyle={styles.inputArea}
       />
@@ -81,27 +78,25 @@ const Sugerencias: React.FC = () => {
   );
 };
 
-const Siguenos: React.FC = () => {
-  return (
-    <View style={[styles.card, { alignItems: "center" }]}>
-      <Text style={styles.cardTitle}>Contáctanos</Text>
-      <View style={styles.socialContainer}>
-        <TouchableOpacity>
-          <FontAwesome5 name="whatsapp" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <FontAwesome5 name="facebook-messenger" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <FontAwesome5 name="envelope" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
-        </TouchableOpacity>
-        <TouchableOpacity>
-          <FontAwesome5 name="phone-alt" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
-        </TouchableOpacity>
-      </View>
+const SiguenosContent = () => (
+  <View style={[styles.card, { alignItems: "center" }]}>
+    <Text style={styles.cardTitle}>Contáctanos</Text>
+    <View style={styles.socialContainer}>
+      <TouchableOpacity>
+        <FontAwesome5 name="whatsapp" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <FontAwesome5 name="facebook-messenger" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <FontAwesome5 name="envelope" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
+      </TouchableOpacity>
+      <TouchableOpacity>
+        <FontAwesome5 name="phone-alt" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
+      </TouchableOpacity>
     </View>
-  );
-};
+  </View>
+);
 
 export default function CalificanosScreen(): React.ReactElement {
   const [puntuacion, setPuntuacion] = useState<number>(0);
@@ -122,12 +117,27 @@ export default function CalificanosScreen(): React.ReactElement {
 
       <View style={styles.tabsContainer}>
         <Tabs
-          tabNames={["Encuesta", "Sugerencias", "Siguenos"]}
-          tabContents={[
-            <Encuestas key="Encuestas" />,
-            <Sugerencias key="Sugerencias" />,
-            <Siguenos key="Siguenos" />,
+          tabs={[
+            {
+              id: 'encuestas',
+              label: 'Encuesta',
+              content: <EncuestasContent />,
+            },
+            {
+              id: 'sugerencias',
+              label: 'Sugerencias',
+              content: <SugerenciasContent />,
+            },
+            {
+              id: 'siguenos',
+              label: 'Síguenos',
+              content: <SiguenosContent />,
+            },
           ]}
+          variant="default"
+          contentScrollable={false}
+          tabsScrollable={false}
+          testID="calificanos-tabs"
         />
       </View>
 
@@ -165,13 +175,11 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flex: 1,
-    //  marginTop: theme.spacing.lg,
+    marginTop: theme.spacing.lg,
     width: "100%",
   },
   card: {
     padding: theme.spacing.md,
-    backgroundColor: theme.colors.surface,
-    paddingBottom: theme.spacing.xl,
   },
   cardTitle: {
     fontSize: theme.fontSize.xxl,

@@ -1,4 +1,4 @@
-import Tabs from '@/components/app/tabs';
+import Tabs from '@/components/ui/tabs';
 import { Input } from '@/components/ui/custom-input';
 import { theme } from '@/styles/theme'; // Asegúrate de importar tu tema
 import React, { useState } from "react";
@@ -12,13 +12,12 @@ import {
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-/* --- Tab Ajustes --- */
-const AjustesTab = () => {
+const AjustesContent = () => {
   const [faceId, setFaceId] = useState(false);
   const [loginFaceId, setLoginFaceId] = useState(false);
 
   return (
-    <View>
+    <>
       <Text style={styles.tabTitle}>Ajustes</Text>
       <Text style={styles.subTitle}>Sesión</Text>
       <Text style={styles.centerText}>Administrar dispositivos activos</Text>
@@ -42,29 +41,27 @@ const AjustesTab = () => {
         Disponibilidad: Este dispositivo{" "}
         {faceId || loginFaceId ? "soporta" : "no soporta"} estas tecnologías.
       </Text>
-    </View>
+    </>
   );
 };
 
-/* --- Tab Actualizar Datos --- */
-const ActualizarDatosTab = () => (
-  <View>
+const ActualizarDatosContent = () => (
+  <>
     <Text style={styles.tabTitle}>Actualizar datos</Text>
     <Input placeholder="Contraseña actual" secureTextEntry />
     <Input placeholder="Correo" />
     <Input placeholder="Teléfono" />
     <Input placeholder="Teléfono opcional" />
-  </View>
+  </>
 );
 
-/* --- Tab Cambiar Contraseña --- */
-const CambiarContrasenaTab = () => (
-  <View>
+const CambiarContrasenaContent = () => (
+  <>
     <Text style={styles.tabTitle}>Actualizar contraseña</Text>
     <Input placeholder="Contraseña actual" secureTextEntry />
     <Input placeholder="Contraseña nueva" secureTextEntry />
     <Input placeholder="Confirmar nueva contraseña" secureTextEntry />
-  </View>
+  </>
 );
 
 /* --- Pantalla principal --- */
@@ -96,14 +93,31 @@ export default function PerfilScreen() {
           ))}
         </View>
 
-        <Tabs
-          tabNames={["Ajustes", "Actualizar datos", "Cambiar contraseña"]}
-          tabContents={[
-            <AjustesTab key="ajustes" />,
-            <ActualizarDatosTab key="actualizar" />,
-            <CambiarContrasenaTab key="cambiar" />
-          ]}
-        />
+        <View style={styles.tabsContainer}>
+          <Tabs
+            tabs={[
+              {
+                id: 'ajustes',
+                label: 'Ajustes',
+                content: <AjustesContent />,
+              },
+              {
+                id: 'actualizar-datos',
+                label: 'Actualizar datos',
+                content: <ActualizarDatosContent />,
+              },
+              {
+                id: 'cambiar-contraseña',
+                label: 'Cambiar contraseña',
+                content: <CambiarContrasenaContent />,
+              },
+            ]}
+            variant="default"
+            contentScrollable={true}
+            tabsScrollable={true}
+            testID="perfil-tabs"
+          />
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -205,5 +219,11 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.sm, 
     fontSize: theme.fontSize.xs, 
     color: theme.colors.text.secondary 
+  },
+
+  /* Tabs Container */
+  tabsContainer: {
+    flex: 1,
+    marginTop: theme.spacing.md,
   },
 });

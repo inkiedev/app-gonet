@@ -24,6 +24,9 @@ export interface TabsProps {
   tabTextStyle?: TextStyle;
   activeTabTextStyle?: TextStyle;
   contentContainerStyle?: ViewStyle;
+  contentHeight?: number | 'auto';
+  flexContent?: boolean;
+  testID?: string;
 }
 
 const Tabs: React.FC<TabsProps> = ({
@@ -39,6 +42,9 @@ const Tabs: React.FC<TabsProps> = ({
   tabTextStyle,
   activeTabTextStyle,
   contentContainerStyle,
+  contentHeight = 'auto',
+  flexContent = true,
+  testID,
 }) => {
   if (tabNames.length !== tabContents.length) {
     console.warn("[Tabs] 'tabNames' y 'tabContents' deben tener la misma longitud.");
@@ -53,6 +59,7 @@ const Tabs: React.FC<TabsProps> = ({
   const [maxTabHeight, setMaxTabHeight] = useState<number>(0);
 
   const handleSelect = (idx: number) => {
+    if (idx === selectedIndex) return;
     setSelectedIndex(idx);
     onChange?.(idx, tabNames[idx]);
   };
@@ -64,61 +71,97 @@ const Tabs: React.FC<TabsProps> = ({
     }
   };
 
+  const getContentStyle = (): ViewStyle => {
+    const baseStyle: ViewStyle = {
+      marginTop: theme.spacing.sm,
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.light,
+      overflow: 'hidden',
+    };
+
+    if (contentHeight === 'auto') {
+      return baseStyle;
+    }
+
+    if (typeof contentHeight === 'number') {
+      return { ...baseStyle, height: contentHeight };
+    }
+
+    if (flexContent) {
+      return { ...baseStyle, flex: 1 };
+    }
+
+    return baseStyle;
+  };
+
+  const renderTab = (name: string, idx: number) => {
+    const selected = selectedIndex === idx;
+    
+    return (
+      <Pressable
+        key={`${name}-${idx}`}
+        accessibilityRole="tab"
+        accessibilityState={{ selected }}
+        accessibilityLabel={`Tab ${idx + 1} of ${tabNames.length}: ${name}`}
+        onPress={() => handleSelect(idx)}
+        android_ripple={{ foreground: true }}
+        onLayout={!scrollable ? handleLayout : undefined}
+        style={({ pressed }) => [
+          styles.tabBase,
+          scrollable 
+            ? { flexShrink: 0, minWidth: 80, maxWidth: 200 } 
+            : { flex: 1 },
+          selected ? styles.tabActive : styles.tabInactive,
+          pressed && { transform: [{ scale: 0.98 }] },
+          tabStyle,
+          selected && activeTabStyle,
+          !scrollable && maxTabHeight ? { height: maxTabHeight } : {},
+        ]}
+        hitSlop={10}
+        testID={`tab-${idx}`}
+      >
+        <Text
+          style={[
+            styles.tabTextBase,
+            selected ? styles.tabTextActive : styles.tabTextInactive,
+            tabTextStyle,
+            selected && activeTabTextStyle,
+          ]}
+          numberOfLines={2}
+          ellipsizeMode="tail"
+        >
+          {name}
+        </Text>
+      </Pressable>
+    );
+  };
+
   const Header = (
     <View style={[styles.headerContainer, tabsWrapperStyle]}>
-      {tabNames.map((name, idx) => {
-        const selected = selectedIndex === idx;
-        return (
-          <Pressable
-            key={`${name}-${idx}`}
-            accessibilityRole="tab"
-            accessibilityState={{ selected }}
-            onPress={() => handleSelect(idx)}
-            android_ripple={{ foreground: true }}
-            onLayout={!scrollable ? handleLayout : undefined}
-            style={({ pressed }) => [
-              styles.tabBase,
-              scrollable ? { flexShrink: 0, minWidth: 80, maxWidth: 200 } : { flex: 1 },
-              selected ? styles.tabActive : styles.tabInactive,
-              pressed && { transform: [{ scale: 0.98 }] },
-              tabStyle,
-              selected && activeTabStyle,
-              !scrollable && maxTabHeight ? { height: maxTabHeight } : {},
-            ]}
-            hitSlop={10}
-          >
-            <Text
-              style={[
-                styles.tabTextBase,
-                selected ? styles.tabTextActive : styles.tabTextInactive,
-                tabTextStyle,
-                selected && activeTabTextStyle,
-              ]}
-              numberOfLines={2}
-              ellipsizeMode="tail"
-            >
-              {name}
-            </Text>
-          </Pressable>
-        );
-      })}
+      {tabNames.map(renderTab)}
     </View>
   );
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[styles.container, containerStyle]} testID={testID}>
       {scrollable ? (
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
           contentContainerStyle={styles.scrollHeaderContent}
+          testID={`${testID}-scroll-header`}
         >
           {Header}
         </ScrollView>
       ) : (
         Header
       )}
-      <View style={[styles.contentContainer, contentContainerStyle]}>
+      <View 
+        style={[getContentStyle(), contentContainerStyle]}
+        testID={`${testID}-content`}
+      >
         {tabContents[selectedIndex]}
       </View>
     </View>
@@ -169,14 +212,5 @@ const styles = StyleSheet.create({
   },
   tabTextActive: {
     color: theme.colors.text.contrast,
-  },
-  contentContainer: {
-    flex: 1,
-    marginTop: theme.spacing.sm,
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border.light,
   },
 });

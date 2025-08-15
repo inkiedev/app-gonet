@@ -1,4 +1,4 @@
-import Tabs from "@/components/app/tabs";
+import Tabs from "@/components/ui/tabs";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
@@ -8,18 +8,12 @@ import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ScrollView,
   StyleSheet,
   Text,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
  
-interface Account {
-  id: string;
-  name: string;
-}
-
 interface Account {
   id: string;
   name: string;
@@ -50,31 +44,42 @@ const currentPlan = {
   speedMbps: 250,
 };
 
-const ScrollPlanes = () => {
-  return (
-    <ScrollView
-      contentContainerStyle={styles.scrollContent}
-    >
-      <Text style={styles.contentTitle}>Actualizar Plan</Text>
-      {availablePlans.map((plan) => (
-        <PlanCard title={plan.name} key={plan.id}>
-          <View style={styles.planContainer}>
-            <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
-            <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
-            <View style={styles.planDetails}>
-              {plan.details.map((detail, index) => (
-                <Text key={index} style={styles.planDetail}>
-                  {`\u2022 ${detail}`}
-                </Text>
-              ))}
-            </View>
-            <Button title="Actualizar" onPress={() => {}} />
+const PlanesContent = () => (
+  <>
+    <Text style={styles.contentTitle}>Actualizar Plan</Text>
+    {availablePlans.map((plan) => (
+      <PlanCard title={plan.name} key={plan.id}>
+        <View style={styles.planContainer}>
+          <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
+          <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
+          <View style={styles.planDetails}>
+            {plan.details.map((detail, index) => (
+              <Text key={index} style={styles.planDetail}>
+                {`\u2022 ${detail}`}
+              </Text>
+            ))}
           </View>
-        </PlanCard>
-      ))}
-    </ScrollView>
-  );
-};
+          <Button title="Actualizar" onPress={() => {}} />
+        </View>
+      </PlanCard>
+    ))}
+  </>
+);
+
+const ServiciosContent = () => (
+  <>
+    <Text style={styles.contentTitle}>Servicios Adicionales</Text>
+    <View style={styles.serviceContainer}>
+      <Text style={styles.serviceText}>Próximamente dispondremos de servicios adicionales:</Text>
+      <View style={styles.serviceList}>
+        <Text style={styles.serviceItem}>• Telefonía fija</Text>
+        <Text style={styles.serviceItem}>• TV por cable</Text>
+        <Text style={styles.serviceItem}>• Soporte técnico premium</Text>
+        <Text style={styles.serviceItem}>• Instalaciones especiales</Text>
+      </View>
+    </View>
+  </>
+);
 
 
 const availablePlans: Plan[] = [
@@ -168,11 +173,29 @@ export default function ServicesScreen() {
         />
       </View>
 
-      <Tabs
-        tabStyle={styles.tabStyle}
-        tabNames={["Planes", "Servicios"]}
-        tabContents={[<ScrollPlanes key={"Planes"} />, <Text key={"Servicios"}>Servicios</Text>]}
-      />
+      <View style={styles.tabsContainer}>
+        <Tabs
+          tabs={[
+            {
+              id: 'planes',
+              label: 'Planes',
+              content: <PlanesContent />,
+            },
+            {
+              id: 'servicios',
+              label: 'Servicios',
+              content: <ServiciosContent />,
+            },
+          ]}
+          variant="default"
+          contentScrollable={true}
+          tabsScrollable={false}
+          testID="services-tabs"
+          onTabChange={(tabId, index) => {
+            console.log(`Tab cambiado a: ${tabId} (índice: ${index})`);
+          }}
+        />
+      </View>
       
     </SafeAreaView>
   );
@@ -253,20 +276,34 @@ const styles = StyleSheet.create({
   accountButtonTextActive: {
     color: theme.colors.text.inverse,
   },
-  scrollView: {
-  },
-  scrollContent: {
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
+  tabsContainer: {
+    flex: 1,
+    marginHorizontal: theme.spacing.md,
+    marginBottom: theme.spacing.md,
   },
   selectText: {
     fontSize: theme.fontSize.sm,
     textTransform: 'uppercase'
   },
-  updateButton: {
-
+  serviceContainer: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
   },
-  tabStyle: {
-    
+  serviceText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  serviceList: {
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  serviceItem: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.secondary,
   }
 });
