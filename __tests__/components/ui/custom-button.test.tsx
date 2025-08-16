@@ -1,6 +1,7 @@
-import React from 'react';
-import { render, fireEvent } from '@testing-library/react-native';
 import { Button } from '@/components/ui/custom-button';
+import { fireEvent, render } from '@testing-library/react-native';
+import React from 'react';
+import { View } from 'react-native';
 
 describe('Button Component', () => {
   const mockOnPress = jest.fn();
@@ -66,7 +67,7 @@ describe('Button Component', () => {
       <Button 
         title="With Icon" 
         onPress={mockOnPress} 
-        icon={<div data-testid="icon">Icon</div>} 
+        icon={<View testID="icon">Icon</View>} 
       />
     );
     expect(getByText('With Icon')).toBeTruthy();

@@ -1,6 +1,6 @@
 module.exports = {
   preset: 'jest-expo',
-  testEnvironment: 'node', // puedes cambiar a 'jsdom' si tus tests usan DOM
+  testEnvironment: 'node', 
   testMatch: ['**/__tests__/**/*.(test|spec).(js|jsx|ts|tsx)'],
   collectCoverageFrom: [
     'src/**/*.{js,jsx,ts,tsx}',
@@ -8,12 +8,15 @@ module.exports = {
     '!src/scripts/**',
     '!src/assets/**'
   ],
-  setupFilesAfterEnv: ['<rootDir>/setup.js'], // <-- apunta a __tests__/setup.js
+  setupFilesAfterEnv: ['<rootDir>/setup.js'],
   moduleNameMapper: {
-    '^@/(.*)$': '<rootDir>/../src/$1', // <-- correcto, apunta a src/
+    '^@/(.*)$': '<rootDir>/../src/$1', 
     '^@expo/vector-icons$': '@expo/vector-icons'
   },
   transformIgnorePatterns: [
     'node_modules/(?!(jest-)?react-native|@react-native|@expo|expo|@react-navigation|react-redux|@reduxjs/toolkit)'
-  ]
+  ],
+  clearMocks: false,      // evita limpiar los mocks automáticamente
+  resetMocks: false,      // evita resetear los mocks entre tests
+  restoreMocks: false,  
 };

@@ -21,5 +21,3 @@ jest.mock('react-redux', () => ({
   useSelector: jest.fn(),
   useDispatch: () => jest.fn(),
 }));
-
-global.fetch = jest.fn();
