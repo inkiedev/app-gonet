@@ -1,6 +1,6 @@
-import Tabs from "@/components/ui/tabs";
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
+import Tabs from "@/components/ui/tabs";
 import { theme } from "@/styles/theme";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
@@ -30,6 +30,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
         return (
           <TouchableOpacity key={index} onPress={() => onChange(starNumber)}>
             <Ionicons
+            testID="star-icon"
               name={starNumber <= rating ? "star" : "star-outline"}
               size={32}
               color={theme.colors.text.contrast}
@@ -62,8 +63,8 @@ const SugerenciasContent = () => {
   };
 
   return (
-    <View style={styles.card}>
-      <Text style={styles.cardTitle}>Sugerencias</Text>
+    <View style={styles.card} testID="card_sugerencias">
+      <Text style={styles.cardTitle} >Sugerencias</Text>
       <Input
         value={texto}
         onChangeText={setTexto}
@@ -82,16 +83,16 @@ const SiguenosContent = () => (
   <View style={[styles.card, { alignItems: "center" }]}>
     <Text style={styles.cardTitle}>Contáctanos</Text>
     <View style={styles.socialContainer}>
-      <TouchableOpacity>
+      <TouchableOpacity testID="social-icon">
         <FontAwesome5 name="whatsapp" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
-      </TouchableOpacity>
-      <TouchableOpacity>
+      </TouchableOpacity  >
+      <TouchableOpacity testID="social-icon">
         <FontAwesome5 name="facebook-messenger" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
       </TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity testID="social-icon">
         <FontAwesome5 name="envelope" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
       </TouchableOpacity>
-      <TouchableOpacity>
+      <TouchableOpacity testID="social-icon">
         <FontAwesome5 name="phone-alt" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
       </TouchableOpacity>
     </View>

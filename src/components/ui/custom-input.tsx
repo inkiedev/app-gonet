@@ -96,6 +96,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
 
         {showPasswordToggle && (
           <TouchableOpacity
+            testID="password-toggle"
             style={styles.rightIcon}
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
           >

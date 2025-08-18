@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/custom-button";
-import { theme } from "@/styles/theme"; // 👈 Importamos el theme
+import { theme } from "@/styles/theme";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useState } from "react";
@@ -43,7 +43,7 @@ export default function CedulaScreen() {
       />
 
       <View style={styles.container}>
-        <TouchableOpacity onPress={handleFlip} activeOpacity={0.8}>
+        <TouchableOpacity onPress={handleFlip} activeOpacity={0.8} testID={"flip-touchable"}>
           <Animated.View style={[styles.cardContainer, animatedStyle]}>
             {showQR ? (
               <QRCode value={userData.cedula} />

@@ -13,6 +13,7 @@ interface HeaderProps extends BaseComponentProps {
   rightAction?: {
     icon: string;
     onPress: () => void;
+    testID? : string;
   };
   centerContent?: React.ReactNode;
   variant?: 'default' | 'transparent';
