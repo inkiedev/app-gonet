@@ -1,5 +1,6 @@
 import { Header } from "@/components/layout/header";
 import { Input } from "@/components/ui/custom-input";
+import { supportService } from "@/services/support";
 import { theme } from "@/styles/theme";
 import { BaseComponentProps } from "@/types/common";
 import { Ionicons } from "@expo/vector-icons";
@@ -25,9 +26,15 @@ interface Message {
 
 interface SoporteProps extends BaseComponentProps {
   onSendMessage?: (message: string) => Promise<string>;
+  userContext?: {
+    phone?: string;
+    cedula?: string;
+    sessionId?: string;
+    userId?: string;
+  };
 }
 
-export default function Soporte({ onSendMessage, style, testID }: SoporteProps) {
+export default function Soporte({ onSendMessage, userContext, style, testID }: SoporteProps) {
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -53,15 +60,17 @@ export default function Soporte({ onSendMessage, style, testID }: SoporteProps) 
     setIsLoading(true);
 
     try {
-      let botResponse = 'Gracias por tu mensaje. Nuestro equipo te responderá pronto.';
-      
+      let responseText: string;
+
       if (onSendMessage) {
-        botResponse = await onSendMessage(userMessage.text);
+        responseText = await onSendMessage(userMessage.text);
+      } else {
+        responseText = await supportService.sendMessage(userMessage.text, userContext);
       }
 
       const botMessage: Message = {
         id: (Date.now() + 1).toString(),
-        text: botResponse,
+        text: responseText,
         isUser: false,
         timestamp: new Date(),
       };
@@ -104,6 +113,17 @@ export default function Soporte({ onSendMessage, style, testID }: SoporteProps) 
   );
 
   useEffect(() => {
+    const welcomeMessage: Message = {
+      id: 'welcome-' + Date.now(),
+      text: '¡Hola! Bienvenido al soporte de GoNet. Estoy aquí para ayudarte. ¿En qué puedo asistirte hoy?',
+      isUser: false,
+      timestamp: new Date(),
+    };
+    
+    setMessages([welcomeMessage]);
+  }, []);
+
+  useEffect(() => {
     if (messages.length > 0) {
       setTimeout(() => {
         flatListRef.current?.scrollToEnd({ animated: true });
@@ -128,28 +148,24 @@ export default function Soporte({ onSendMessage, style, testID }: SoporteProps) 
         keyboardVerticalOffset={0}
       >
         <View style={styles.chatContainer}>
-          {messages.length === 0 ? (
-            <View style={styles.welcomeMessage}>
-              <Ionicons
-                name="chatbubble-ellipses"
-                size={48}
-                color={theme.colors.primary}
-              />
-              <Text style={styles.welcomeTitle}>¡Bienvenido al Soporte!</Text>
-              <Text style={styles.welcomeText}>
-                Estamos aquí para ayudarte. Escribe tu mensaje para comenzar.
-              </Text>
-            </View>
-          ) : (
-            <FlatList
-              ref={flatListRef}
-              data={messages}
-              renderItem={renderMessage}
-              keyExtractor={(item) => item.id}
-              showsVerticalScrollIndicator={false}
-              contentContainerStyle={styles.messagesList}
-            />
-          )}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            renderItem={renderMessage}
+            keyExtractor={(item) => item.id}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={styles.messagesList}
+            ListEmptyComponent={
+              <View style={styles.loadingMessage}>
+                <Ionicons
+                  name="chatbubble-ellipses"
+                  size={32}
+                  color={theme.colors.primary}
+                />
+                <Text style={styles.loadingMessageText}>Iniciando chat...</Text>
+              </View>
+            }
+          />
           
           {isLoading && (
             <View style={styles.loadingContainer}>
@@ -168,6 +184,7 @@ export default function Soporte({ onSendMessage, style, testID }: SoporteProps) 
             multiline
             maxLength={500}
             editable={!isLoading}
+            testID="support-message-input"
           />
           <TouchableOpacity
             style={[
@@ -177,6 +194,9 @@ export default function Soporte({ onSendMessage, style, testID }: SoporteProps) 
             onPress={handleSendMessage}
             disabled={!inputText.trim() || isLoading}
             activeOpacity={0.7}
+            testID="support-send-button"
+            accessibilityLabel="Enviar mensaje"
+            accessibilityHint="Envía tu mensaje al soporte"
           >
             <Ionicons
               name="send"
@@ -203,25 +223,18 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: theme.spacing.md,
   },
-  welcomeMessage: {
+  loadingMessage: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingHorizontal: theme.spacing.lg,
+    minHeight: 200,
   },
-  welcomeTitle: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
-    marginTop: theme.spacing.md,
-    marginBottom: theme.spacing.sm,
-    textAlign: 'center',
-  },
-  welcomeText: {
+  loadingMessageText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.text.secondary,
+    marginTop: theme.spacing.sm,
     textAlign: 'center',
-    lineHeight: 22,
   },
   messagesList: {
     paddingVertical: theme.spacing.md,
