@@ -6,7 +6,6 @@ import { Alert } from 'react-native';
 import { authService } from '@/services/auth';
 import LoginScreen from '../../../app/(auth)/login';
 
-// Mock dependencies
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
@@ -21,7 +20,6 @@ jest.mock('react-native', () => {
   
   RN.Alert.alert = jest.fn();
   
-  // Mock animated components
   RN.Animated.timing = () => ({
     start: (callback?: () => void) => callback && callback(),
   });
@@ -29,10 +27,8 @@ jest.mock('react-native', () => {
   return RN;
 });
 
-// Mock image require
 jest.mock('@/assets/images/fondo_login.jpg', () => 'fondo_login.jpg');
 
-// Mock components that might cause issues
 jest.mock('@/components/app/app-logo', () => ({
   AppLogo: ({ variant }: { variant: string }) => {
     const MockText = require('react-native').Text;
@@ -120,7 +116,7 @@ describe('LoginScreen', () => {
     
     await act(async () => {
       fireEvent.changeText(usernameInput, 'admin');
-      fireEvent.changeText(passwordInput, '12345'); // Less than 6 characters
+      fireEvent.changeText(passwordInput, '12345');
     });
     
     await act(async () => {
@@ -160,7 +156,6 @@ describe('LoginScreen', () => {
   it('shows mock development info in dev mode', () => {
     const { getByText } = render(<LoginScreen />);
     
-    // Should show mock mode indicators
     expect(getByText('MODO DESARROLLO')).toBeTruthy();
     expect(getByText('Usuarios de prueba:')).toBeTruthy();
     expect(getByText('admin/admin123')).toBeTruthy();
@@ -175,7 +170,6 @@ describe('LoginScreen', () => {
     const passwordInput = getByTestId('password-input');
     const loginButton = getByTestId('login-button');
     
-    // Use invalid credentials that won't match mock users
     await act(async () => {
       fireEvent.changeText(usernameInput, 'wronguser');
       fireEvent.changeText(passwordInput, 'wrongpass');
@@ -228,7 +222,6 @@ describe('LoginScreen', () => {
     const passwordInput = getByTestId('password-input');
     const loginButton = getByTestId('login-button');
     
-    // First attempt with invalid credentials
     await act(async () => {
       fireEvent.changeText(usernameInput, 'wronguser');
       fireEvent.changeText(passwordInput, 'wrongpass');
@@ -242,7 +235,6 @@ describe('LoginScreen', () => {
       expect(getByText('Credenciales incorrectas')).toBeTruthy();
     }, { timeout: 3000 });
     
-    // Second attempt with valid credentials
     await act(async () => {
       fireEvent.changeText(usernameInput, 'testuser');
       fireEvent.changeText(passwordInput, 'test123');
@@ -252,7 +244,6 @@ describe('LoginScreen', () => {
       fireEvent.press(loginButton);
     });
     
-    // Error should be cleared
     await waitFor(() => {
       expect(queryByText('Credenciales incorrectas')).toBeFalsy();
     }, { timeout: 3000 });
@@ -270,16 +261,12 @@ describe('LoginScreen', () => {
       fireEvent.changeText(passwordInput, 'admin123');
     });
     
-    // Start login process
     await act(async () => {
       fireEvent.press(loginButton);
     });
     
-    // Should show loading state immediately after press
-    // The button should be disabled during loading
     expect(loginButton.props.accessibilityState.disabled).toBe(true);
     
-    // Wait for completion
     await waitFor(() => {
       expect(Alert.alert).toHaveBeenCalled();
     }, { timeout: 3000 });

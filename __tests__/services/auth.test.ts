@@ -142,7 +142,7 @@ describe('AuthService', () => {
       };
 
       mockApiService.login.mockResolvedValue(mockAuthResult);
-      mockApiService.getUserData.mockResolvedValue([]); // No user data
+      mockApiService.getUserData.mockResolvedValue([]);
 
       const result = await authService.login({
         username: 'testuser',

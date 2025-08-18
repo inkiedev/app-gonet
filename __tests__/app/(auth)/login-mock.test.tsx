@@ -5,7 +5,6 @@ import { Alert } from 'react-native';
 
 import LoginScreen from '../../../app/(auth)/login';
 
-// Mock dependencies
 jest.mock('expo-router', () => ({
   useRouter: jest.fn(),
 }));
@@ -15,7 +14,6 @@ jest.mock('react-native', () => {
   
   RN.Alert.alert = jest.fn();
   
-  // Mock animated components
   RN.Animated.timing = () => ({
     start: (callback?: () => void) => callback && callback(),
   });
@@ -23,10 +21,8 @@ jest.mock('react-native', () => {
   return RN;
 });
 
-// Mock image require
 jest.mock('@/assets/images/fondo_login.jpg', () => 'fondo_login.jpg');
 
-// Mock components that might cause issues
 jest.mock('@/components/app/app-logo', () => ({
   AppLogo: ({ variant }: { variant: string }) => {
     const MockText = require('react-native').Text;
@@ -41,7 +37,6 @@ jest.mock('@expo/vector-icons', () => ({
   },
 }));
 
-// Don't mock the auth service - we want to test the mock implementation
 jest.mock('@/services/auth', () => ({
   authService: {
     login: jest.fn().mockRejectedValue(new Error('Should not be called in mock mode')),
