@@ -1,6 +1,6 @@
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'expo-router';
-import React from 'react';
+import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
   Alert,
@@ -18,7 +18,9 @@ import * as z from 'zod';
 import { AppLogo } from '@/components/app/app-logo';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
+import { authService } from '@/services/auth';
 import { theme } from '@/styles/theme';
+import { DEV_CONFIG } from '@/utils/dev-config';
 import { FontAwesome } from '@expo/vector-icons';
 
 const loginSchema = z.object({
@@ -30,6 +32,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const [loginError, setLoginError] = useState<string>('');
   const {
     control,
     handleSubmit,
@@ -42,13 +45,63 @@ export default function LoginScreen() {
     },
   });
 
+  // Mock authentication function for development
+  const mockLogin = async (username: string, password: string) => {
+    // Simulate API delay
+    await new Promise(resolve => setTimeout(resolve, DEV_CONFIG.MOCK_API_DELAY));
+    
+    const user = DEV_CONFIG.MOCK_USERS.find(u => u.username === username && u.password === password);
+    
+    if (user) {
+      return {
+        success: true,
+        user: {
+          id: 1,
+          name: user.name,
+          email: user.email,
+          uid: 1,
+          session_id: `mock-session-${Date.now()}`
+        }
+      };
+    } else {
+      return {
+        success: false,
+        error: 'Credenciales incorrectas'
+      };
+    }
+  };
+
   const onSubmit = async (data: LoginFormData) => {
     try {
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate API call
-      Alert.alert('Login exitoso', `Bienvenido ${data.username}`);
-      router.replace('/home');
+      setLoginError('');
+      
+      let result;
+      
+      if (DEV_CONFIG.USE_MOCK_AUTH) {
+        // Use mock authentication for development
+        result = await mockLogin(data.username, data.password);
+      } else {
+        // Use real API service
+        result = await authService.login({
+          username: data.username,
+          password: data.password,
+        });
+      }
+
+      if (result.success && result.user) {
+        const message = DEV_CONFIG.USE_MOCK_AUTH 
+          ? `Bienvenido ${result.user.name} (MOCK)` 
+          : `Bienvenido ${result.user.name}`;
+        Alert.alert('Login exitoso', message);
+        router.replace('/home');
+      } else {
+        setLoginError(result.error || 'Error desconocido');
+        Alert.alert('Error', result.error || 'Credenciales incorrectas');
+      }
     } catch (error) {
-      Alert.alert('Error', 'Credenciales incorrectas');
+      const errorMessage = error instanceof Error ? error.message : 'Error de conexión';
+      setLoginError(errorMessage);
+      Alert.alert('Error', errorMessage);
     }
   };
 
@@ -80,6 +133,18 @@ export default function LoginScreen() {
                 <Text style={styles.registerText}>Regístrate aquí</Text>
               </View>
 
+              {DEV_CONFIG.SHOW_DEV_INFO && DEV_CONFIG.USE_MOCK_AUTH && (
+                <View style={styles.mockInfo}>
+                  <Text style={styles.mockTitle}>MODO DESARROLLO</Text>
+                  <Text style={styles.mockText}>Usuarios de prueba:</Text>
+                  {DEV_CONFIG.MOCK_USERS.map((user, index) => (
+                    <Text key={index} style={styles.mockCredentials}>
+                      {user.username}/{user.password}
+                    </Text>
+                  ))}
+                </View>
+              )}
+
               <View style={styles.divider} />
 
               <View style={styles.form}>
@@ -95,6 +160,7 @@ export default function LoginScreen() {
                       error={errors.username?.message}
                       autoCapitalize="none"
                       autoCorrect={false}
+                      testID="username-input"
                     />
                   )}
                 />
@@ -111,15 +177,23 @@ export default function LoginScreen() {
                       error={errors.password?.message}
                       secureTextEntry
                       showPasswordToggle
+                      testID="password-input"
                     />
                   )}
                 />
+
+                {loginError ? (
+                  <Text style={styles.errorText} testID="login-error">
+                    {loginError}
+                  </Text>
+                ) : null}
 
                 <Button 
                   title="Iniciar Sesión"
                   onPress={handleSubmit(onSubmit)}
                   loading={isSubmitting}
                   fullWidth
+                  testID="login-button"
                 />
               </View>
             </View>
@@ -181,10 +255,41 @@ const styles = StyleSheet.create({
     maxWidth: 300,
   },
   iconFP : {
-
     color: theme.colors.surface,
     fontSize: theme.fontSize.xl*2,
-
   },
-
+  errorText: {
+    color: theme.colors.error,
+    fontSize: theme.fontSize.sm,
+    marginTop: theme.spacing.xs,
+    marginBottom: theme.spacing.sm,
+    textAlign: 'center',
+  },
+  mockInfo: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderRadius: theme.borderRadius.md,
+    padding: theme.spacing.md,
+    marginTop: theme.spacing.md,
+    alignItems: 'center',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.3)',
+  },
+  mockTitle: {
+    fontSize: theme.fontSize.sm,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.warning,
+    marginBottom: theme.spacing.xs,
+    letterSpacing: 1,
+  },
+  mockText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.text.inverse,
+    marginBottom: theme.spacing.xs,
+  },
+  mockCredentials: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.text.inverse,
+    fontFamily: 'monospace',
+    opacity: 0.9,
+  },
 });
