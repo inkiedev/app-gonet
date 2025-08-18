@@ -64,17 +64,10 @@ describe('Button Component', () => {
 
   it('renders with icon', () => {
     const { getByText, getByTestId } = render(
-<<<<<<< HEAD
-      <Button
-        title="With Icon"
-        onPress={mockOnPress}
-        icon={<View testID="icon" />}
-=======
       <Button 
         title="With Icon" 
         onPress={mockOnPress} 
         icon={<View testID="icon">Icon</View>} 
->>>>>>> 44fa443145ce8e214ba540fc1116f42db0689749
       />
     );
 
