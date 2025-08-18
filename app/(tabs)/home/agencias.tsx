@@ -1,8 +1,8 @@
 import { Header } from "@/components/layout/header";
+import { Map } from "@/components/ui/map";
 import { useRouter } from "expo-router";
 import React from "react";
 import { StyleSheet } from "react-native";
-import MapView, { PROVIDER_DEFAULT, UrlTile } from "react-native-maps";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function App() {
@@ -25,18 +25,10 @@ export default function App() {
         title="Agencias"
       />
 
-      <MapView
-        provider={PROVIDER_DEFAULT} // Usa el renderizador por defecto
+      <Map
         initialRegion={initialRegion}
         style={styles.map}
-      >
-        {/* Tile de OpenStreetMap */}
-        <UrlTile
-          urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
-          maximumZ={19}
-          flipY={false}
-        />
-      </MapView>
+      />
     </SafeAreaView>
   );
 }
