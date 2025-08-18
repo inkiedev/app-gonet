@@ -43,12 +43,16 @@ export default function CedulaScreen() {
       />
 
       <View style={styles.container}>
-        <TouchableOpacity onPress={handleFlip} activeOpacity={0.8} testID={"flip-touchable"}>
+        <TouchableOpacity onPress={handleFlip} activeOpacity={0.8} testID={"flip-touchable"}
+         accessibilityLabel={showQR? "codigo QR de la tarjeta goclub": "Tarjeta Goclub, interactuar para mostrar el código QR"}  >
           <Animated.View style={[styles.cardContainer, animatedStyle]}>
             {showQR ? (
-              <QRCode value={userData.cedula} />
+              
+              <QRCode  value={userData.cedula}   />
+            
             ) : (
               <ImageBackground
+              
                 source={require("@/assets/images/tarjetaGoclub.jpg")}
                 style={styles.cardImage}
               >
