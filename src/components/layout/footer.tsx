@@ -1,10 +1,14 @@
-import React from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Linking } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
-import { FontAwesome, Foundation } from '@expo/vector-icons';
+import Facebook from '@/assets/images/iconos gonet app svg_face.svg';
+import Instagram from '@/assets/images/iconos gonet app svg_instagram.svg';
+import Location from '@/assets/images/iconos gonet app svg_ubicacion.svg';
+import Web from '@/assets/images/iconos gonet app svg_web.svg';
+import Whatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
 import { Card } from '@/components/ui/card';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import { LinearGradient } from 'expo-linear-gradient';
+import React from 'react';
+import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface SocialMediaItem {
   icon: React.ReactNode;
@@ -18,29 +22,29 @@ interface FooterProps extends BaseComponentProps {
 
 const socialMediaItems: SocialMediaItem[] = [
   {
-    icon: <FontAwesome name="facebook" size={20} color={theme.colors.text.primary} />,
+    icon: <Facebook width={26} height={26} />,
     url: 'https://www.facebook.com',
     name: 'Facebook',
   },
   {
-    icon: <FontAwesome name="twitter" size={20} color={theme.colors.text.primary} />,
-    url: 'https://www.twitter.com',
-    name: 'Twitter',
-  },
-  {
-    icon: <Foundation name="web" size={20} color={theme.colors.text.primary} />,
-    url: 'https://www.gonet.com',
-    name: 'Website',
-  },
-  {
-    icon: <FontAwesome name="instagram" size={20} color={theme.colors.text.primary} />,
+    icon: <Instagram width={26} height={26} />,
     url: 'https://www.instagram.com',
     name: 'Instagram',
   },
   {
-    icon: <FontAwesome name="linkedin" size={20} color={theme.colors.text.primary} />,
-    url: 'https://www.linkedin.com',
-    name: 'LinkedIn',
+    icon: <Web width={26} height={26} />,
+    url: 'https://www.gonet.com',
+    name: 'Website',
+  },
+  {
+    icon: <Whatsapp width={26} height={26} />,
+    url: 'https://www.whatsapp.com',
+    name: 'WhatsApp',
+  },
+  {
+    icon: <Location width={26} height={26} />,
+    url: 'https://www.google.com',
+    name: 'Location',
   },
 ];
 
@@ -116,7 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     alignItems: 'center',
-    gap: theme.spacing.sm,
+    gap: theme.spacing.md + theme.spacing.xs,
     paddingHorizontal: theme.spacing.lg,
     flexWrap: 'wrap',
   },
@@ -125,6 +129,7 @@ const styles = StyleSheet.create({
     height: 40,
     justifyContent: 'center',
     alignItems: 'center',
+    borderRadius: theme.borderRadius.md,
   },
   versionText: {
     color: theme.colors.text.inverse,

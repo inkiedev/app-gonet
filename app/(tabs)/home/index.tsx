@@ -1,12 +1,15 @@
+import Servicios from '@/assets/images/iconos gonet app svg_gonetBlack.svg';
+import Mensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
+import Pagos from '@/assets/images/iconos gonet app svg_Pagos.svg';
+import Soporte from '@/assets/images/iconos gonet app svg_Soporte.svg';
 import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { Header } from '@/components/layout/header';
 import { theme } from '@/styles/theme';
-import { FontAwesome6, Ionicons, MaterialIcons, SimpleLineIcons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import React, { useRef, useState } from 'react';
+import { Animated, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mockUser = {
@@ -18,31 +21,29 @@ const mockUser = {
 
 const iconOptions = [
   {
-    IconComponent: SimpleLineIcons,
-    name: 'envelope',
+    SvgComponent: Mensaje,
     label: 'Mensajes',
     badgeCount: 2,
   },
   {
-    IconComponent: FontAwesome6,
-    name: 'hand-holding-dollar',
+    SvgComponent: Pagos,
     label: 'Pagos',
   },
   {
-    IconComponent: Ionicons,
-    name: 'logo-apple',
+    SvgComponent: Servicios,
     label: '+Servicios',
     badgeCount: '+',
   },
   {
-    IconComponent: MaterialIcons,
-    name: 'contact-support',
+    SvgComponent: Soporte,
     label: 'Soporte',
   },
 ];
 
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [isCardExpanded, setIsCardExpanded] = useState(false);
+  const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
 
   const toggleMenu = () => {
@@ -55,6 +56,15 @@ export default function HomeScreen() {
 
   const handleProfilePress = () => {
     router.push('/home/ajustes');
+  };
+
+  const handleCardToggle = (expanded: boolean) => {
+    setIsCardExpanded(expanded);
+    Animated.timing(fadeAnim, {
+      toValue: expanded ? 0 : 1,
+      duration: 300,
+      useNativeDriver: true,
+    }).start();
   };
 
 
@@ -83,20 +93,21 @@ export default function HomeScreen() {
           plan={mockUser.plan}
           speed={mockUser.speed}
           style={styles.planCard}
+          onToggle={handleCardToggle}
         />
 
-        <View style={styles.iconsGrid}>
+        <Animated.View style={[styles.iconsGrid, { opacity: fadeAnim }]}>
           {iconOptions.map((option, index) => (
             <IconWithBadge
               key={index}
-              IconComponent={option.IconComponent}
-              name={option.name}
+              size={80}
+              SvgComponent={option.SvgComponent}
               label={option.label}
               badgeCount={option.badgeCount}
               onPress={() => console.log(`press ${option.label}`)}
             />
           ))}
-        </View>
+        </Animated.View>
       </View>
 
       <SideMenu

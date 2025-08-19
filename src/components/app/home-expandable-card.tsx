@@ -35,11 +35,13 @@ const features = [
 interface HomeExpandableCardProps extends BaseComponentProps {
   plan: string;
   speed: number;
+  onToggle?: (expanded: boolean) => void;
 }
 
 export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
   plan,
   speed,
+  onToggle,
   style,
   testID,
 }) => {
@@ -63,6 +65,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
 
         <ExpandableCard
           style={styles.expandableCardContainer}
+          onToggle={onToggle}
           renderHeader={(isExpanded, onToggle, rotation) => (
             <View style={styles.centeredHeader}>
               <Text style={styles.detailsLink}>

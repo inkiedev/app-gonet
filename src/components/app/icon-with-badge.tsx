@@ -1,13 +1,11 @@
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
-import { IconProps } from '@expo/vector-icons/build/createIconSet';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 import Badge from './badge';
 
 interface IconWithBadgeProps extends BaseComponentProps {
-  IconComponent: React.ComponentType<IconProps<any>>;
-  name: string;
+  SvgComponent: React.ComponentType<any>;
   size?: number;
   color?: string;
   badgeCount?: number | string;
@@ -16,8 +14,7 @@ interface IconWithBadgeProps extends BaseComponentProps {
 }
 
 export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
-                                                              IconComponent,
-                                                              name,
+                                                              SvgComponent,
                                                               size = 55,
                                                               color = theme.colors.text.primary,
                                                               badgeCount,
@@ -38,7 +35,7 @@ export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
       testID={testID}
     >
       <View style={styles.iconContainer}>
-        <IconComponent name={name} size={size} color={color} />
+        <SvgComponent width={size} height={size} color={color} />
         {showBadge && <Badge count={badgeCount} style={styles.badge} />}
       </View>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -64,6 +61,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   label: {
+    marginTop: theme.spacing.xs,
     fontSize: theme.fontSize.xs,
     color: theme.colors.primaryDark,
     textAlign: 'center',
