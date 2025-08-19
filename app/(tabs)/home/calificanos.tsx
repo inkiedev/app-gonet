@@ -63,7 +63,7 @@ const SugerenciasContent = () => {
   };
 
   return (
-    <View style={styles.card} testID="card_sugerencias">
+    <View  testID="card_sugerencias">
       <Text style={styles.cardTitle} >Sugerencias</Text>
       <Input
         value={texto}
@@ -202,13 +202,14 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.medium,
   },
   inputWrapper: {
-    padding: theme.spacing.sm,
+    
     marginBottom: theme.spacing.md,
     backgroundColor: theme.colors.surface,
   },
   inputArea: {
     textAlignVertical: "top",
-    minHeight: 120,
+    minHeight: 200,
+    width: '100%',
     fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
   },
