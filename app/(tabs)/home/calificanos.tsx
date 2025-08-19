@@ -122,7 +122,7 @@ export default function CalificanosScreen(): React.ReactElement {
           icon: "arrow-back",
           onPress: () => router.back(),
         }}
-        title="Agencias"
+        title="Calificanos"
       />
       
       
