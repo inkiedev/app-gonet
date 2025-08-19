@@ -1,5 +1,5 @@
 import { theme } from "@/styles/theme";
-import React, { ReactNode, useState, useCallback } from "react";
+import React, { ReactNode, useCallback, useState } from "react";
 import {
   Pressable,
   ScrollView,
@@ -142,7 +142,7 @@ const Tabs: React.FC<TabsProps> = ({
         <ScrollView
           horizontal
           showsHorizontalScrollIndicator={false}
-          contentContainerStyle={styles.scrollableTabBarContent}
+          contentContainerStyle={[styles.scrollableTabBarContent, { flexGrow: 1 }]}
           style={styles.scrollableTabBar}
         >
           {tabBarContent}
@@ -328,10 +328,10 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     paddingVertical: theme.spacing.xs,
     paddingHorizontal: theme.spacing.xs,
+    width: '100%',
   },
   scrollableTabBar: {
-    flexGrow: 0,
-    flexShrink: 0,
+    width: '100%',
   },
   scrollableTabBarContent: {
     paddingHorizontal: theme.spacing.xs,
@@ -351,8 +351,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scrollableTab: {
-    minWidth: 80,
-    maxWidth: 200,
+    flex: 1,
     flexShrink: 0,
   },
   activeTab: {

@@ -1,65 +1,132 @@
+import { Footer } from "@/components/layout/footer";
+import { Button } from "@/components/ui/custom-button";
+import { PlanCard } from "@/components/ui/plan-card";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
-import React from "react";
-import { FlatList, Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface ItemProps {
+const useAuth = () => {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  
+  const login = () => setIsAuthenticated(true);
+  const logout = () => setIsAuthenticated(false);
+  
+  return { isAuthenticated, login, logout };
+};
+
+interface Plan {
   id: string;
-  title: string;
-  route?: string;
+  name: string;
+  price: number;
+  finalPrice: number;
+  details: string[];
 }
 
-const gridItems: ItemProps[] = [
-  { id: "1", title: "Agencias", route: "/home/agencias" },
-  { id: "2", title: "Home", route: "/home" },
-  { id: "3", title: "Login", route: "/login" },
-  { id: "4", title: "Pago", route: "/pagos" },
-  { id: "5", title: "Go Club", route:"/home/goclub" },
-  { id: "6", title: "Soporte", route: "/soporte" },
-  { id: "7", title: "Perfil" , route: "/home/perfil" },
-  { id: "9", title: "Calificanos", route: "/home/calificanos" },
-  { id: "8", title: "Mi Plan", route: "/planes" },
-  { id: "10", title: "Promociones", route: "/home/promociones" },
-  { id: "11", title: "Servicios", route: "/servicios" },
+const availablePlans: Plan[] = [
+  { 
+    id: "p1", 
+    name: "GoEssencial 300 Mbps", 
+    price: 19.90, 
+    finalPrice: 22.89, 
+    details: [
+      'Hasta 300 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p2",
+    name: "GoPlus 450 Mbps",
+    price: 29.90,
+    finalPrice: 34.89,
+    details: [
+      'Hasta 450 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p3",
+    name: "GoPlus 500 Mbps",
+    price: 39.90,
+    finalPrice: 45.89,
+    details: [
+      'Hasta 500 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p4",
+    name: "GoConnect 700 Mbps",
+    price: 59.90,
+    finalPrice: 69.89,
+    details: [
+      'Hasta 700 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  }
 ];
 
-export default function IndexScreens() {
-  const router = useRouter();
+const PlanesContent = () => (
+  <View style={styles.planesSection}>
+    <Text style={styles.sectionTitle}>Nuestros Planes</Text>
+    {availablePlans.map((plan) => (
+      <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
+        <View style={styles.planContainer}>
+          <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
+          <Text style={styles.planFinalPrice}>Precio final: ${plan.finalPrice}</Text>
+          <View style={styles.planDetails}>
+            {plan.details.map((detail, index) => (
+              <Text key={index} style={styles.planDetail}>
+                {`• ${detail}`}
+              </Text>
+            ))}
+          </View>
+          <Button title="Contratar" onPress={() => {}} />
+        </View>
+      </PlanCard>
+    ))}
+  </View>
+);
 
-  const handleItemPress = (item: ItemProps) => {
-    if (item.route) {
-      router.push(item.route);
-    }
+export default function PublicHomeScreen() {
+  const router = useRouter();
+  const { isAuthenticated, login } = useAuth();
+
+  const handleLogin = () => {
+    router.push("/(auth)/login");
   };
 
-  const renderGridItem = ({ item }: { item: ItemProps }) => (
-    <TouchableOpacity 
-      style={styles.gridItem}
-      onPress={() => handleItemPress(item)}
-      activeOpacity={0.7}
-    >
-      <Text style={styles.gridText}>{item.title}</Text>
-    </TouchableOpacity>
-  );
-
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.imageContainer}>
-        <Image
-          source={{ uri: "https://picsum.photos/800/400" }}
-          style={styles.image}
-        />
-      </View>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView style={styles.scrollContainer}>
+        {/* Banner */}
+        <View style={styles.bannerContainer}>
+          <Image
+            source={{ uri: "https://picsum.photos/800/400" }}
+            style={styles.bannerImage}
+          />
+          <View style={styles.bannerOverlay}>
+            <Text style={styles.bannerTitle}>Bienvenido a GoNet</Text>
+            <Text style={styles.bannerSubtitle}>Internet de alta velocidad para tu hogar</Text>
+            <Button 
+              title="Iniciar Sesión" 
+              onPress={handleLogin}
+              style={styles.loginButton}
+            />
+          </View>
+        </View>
 
-      <View style={styles.gridContainer}>
-        <FlatList
-          data={gridItems}
-          renderItem={renderGridItem}
-          keyExtractor={(item) => item.id}
-          numColumns={3}
-        />
-      </View>
+        {/* Planes Content */}
+        <PlanesContent />
+      </ScrollView>
+
+      {/* Footer */}
+      <Footer />
     </SafeAreaView>
   );
 }
@@ -69,37 +136,85 @@ const styles = StyleSheet.create({
     flex: 1, 
     backgroundColor: theme.colors.background,
   },
-  imageContainer: {
+  scrollContainer: {
     flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-    backgroundColor: theme.colors.text.primary,
   },
-  image: {
+  bannerContainer: {
+    height: 300,
+    position: 'relative',
+  },
+  bannerImage: {
     width: "100%",
     height: "100%",
     resizeMode: "cover",
   },
-  gridContainer: {
-    flex: 1, 
-    padding: theme.spacing.md,
+  bannerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.4)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: theme.spacing.lg,
   },
-  gridItem: {
-    flex: 1,
-    margin: theme.spacing.xs,
-    height: 80,
-    backgroundColor: theme.colors.surface,
-    justifyContent: "center",
-    alignItems: "center",
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border.light,
-    ...theme.shadows.md,
+  bannerTitle: {
+    fontSize: theme.fontSize.xxl,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.inverse,
+    textAlign: 'center',
+    marginBottom: theme.spacing.sm,
   },
-  gridText: {
+  bannerSubtitle: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text.inverse,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  loginButton: {
+    backgroundColor: theme.colors.primary,
+    paddingHorizontal: theme.spacing.xl,
+  },
+  planesSection: {
+    padding: theme.spacing.lg,
+  },
+  sectionTitle: {
+    fontSize: theme.fontSize.xxl,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.primaryDark,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  planCard: {
+    marginVertical: theme.spacing.md,
+  },
+  planContainer: {
+    paddingHorizontal: theme.spacing.sm,
+    display: "flex",
+    flexDirection: "column",
+    gap: theme.spacing.sm,
+    alignItems: 'center',
+  },
+  planPrice: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primaryDark,
+  },
+  planFinalPrice: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.secondary,
+  },
+  planDetails: {
+    width: '100%',
+    marginVertical: theme.spacing.xs,
+    display: "flex",
+    justifyContent: "space-between",
+    flexDirection: "column"
+  },
+  planDetail: {
+    fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    textAlign: "center",
+    marginBottom: theme.spacing.xs,
   },
 });

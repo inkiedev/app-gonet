@@ -1,5 +1,5 @@
-import Tabs from '@/components/ui/tabs';
 import { Input } from '@/components/ui/custom-input';
+import Tabs from '@/components/ui/tabs';
 import { theme } from '@/styles/theme'; // Asegúrate de importar tu tema
 import React, { useState } from "react";
 import {
@@ -177,8 +177,6 @@ const styles = StyleSheet.create({
     maxWidth: "60%",
     textAlign: "right"
   },
-
-  /* Tabs */
   tabTitle: { 
     fontSize: theme.fontSize.xl, 
     fontWeight: theme.fontWeight.bold, 

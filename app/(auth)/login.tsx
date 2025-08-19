@@ -93,7 +93,7 @@ export default function LoginScreen() {
           ? `Bienvenido ${result.user.name} (MOCK)` 
           : `Bienvenido ${result.user.name}`;
         Alert.alert('Login exitoso', message);
-        router.replace('/home');
+        router.replace('/(tabs)');
       } else {
         setLoginError(result.error || 'Error desconocido');
         Alert.alert('Error', result.error || 'Credenciales incorrectas');

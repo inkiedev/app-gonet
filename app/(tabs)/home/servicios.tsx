@@ -1,8 +1,8 @@
-import Tabs from "@/components/ui/tabs";
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { PlanCard } from "@/components/ui/plan-card";
+import Tabs from "@/components/ui/tabs";
 import { theme } from "@/styles/theme";
 import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
@@ -48,7 +48,7 @@ const PlanesContent = () => (
   <>
     <Text style={styles.contentTitle}>Actualizar Plan</Text>
     {availablePlans.map((plan) => (
-      <PlanCard title={plan.name} key={plan.id}>
+      <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
         <View style={styles.planContainer}>
           <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
           <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
@@ -202,6 +202,9 @@ export default function ServicesScreen() {
 }
 
 const styles = StyleSheet.create({
+  planCard: {
+    marginVertical: theme.spacing.md,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -230,7 +233,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing.sm,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   planName: {
     fontSize: theme.fontSize.md,
@@ -278,8 +281,7 @@ const styles = StyleSheet.create({
   },
   tabsContainer: {
     flex: 1,
-    marginHorizontal: theme.spacing.md,
-    marginBottom: theme.spacing.md,
+    margin: theme.spacing.md,
   },
   selectText: {
     fontSize: theme.fontSize.sm,
