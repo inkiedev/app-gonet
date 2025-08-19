@@ -1,14 +1,13 @@
-import { FontAwesome6, Ionicons, MaterialIcons, SimpleLineIcons } from '@expo/vector-icons';
-import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-
 import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { Header } from '@/components/layout/header';
 import { theme } from '@/styles/theme';
+import { FontAwesome6, Ionicons, MaterialIcons, SimpleLineIcons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { StyleSheet, Text, View } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const mockUser = {
   firstName: 'Juan',
