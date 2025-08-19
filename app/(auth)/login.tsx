@@ -107,7 +107,7 @@ export default function LoginScreen() {
 
   return (
     <ImageBackground
-      source={require('@/assets/images/fondo_login.jpg')}
+      source={require('@/assets/images/iconos gonet app svg_backing.png')}
       style={styles.background}
     >
       <SafeAreaView style={styles.container}>
