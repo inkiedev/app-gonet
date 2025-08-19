@@ -1,8 +1,10 @@
+import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import Tabs from "@/components/ui/tabs";
 import { theme } from "@/styles/theme";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
+import { router } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -110,7 +112,20 @@ export default function CalificanosScreen(): React.ReactElement {
   }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
+
+   
+
+    <SafeAreaView style={styles.container} edges={['top']}>
+
+<Header style={styles.header} 
+        leftAction={{
+          icon: "arrow-back",
+          onPress: () => router.back(),
+        }}
+        title="Agencias"
+      />
+      
+      
       <Text style={styles.title}>Califica Nuestra App</Text>
       <Text style={styles.subtitle}>Puntuación actual: {puntuacion}</Text>
 
@@ -151,18 +166,24 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     
-    marginTop: theme.spacing.xxl,
+    
     padding: theme.spacing.md,
+    paddingTop: 0,
     alignItems: "center",
-    paddingTop: theme.spacing.lg,
+   
     backgroundColor: theme.colors.background,
   },
   title: {
+    
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing.md,
   },
+  header: {
+    width: '100%',
+  },
+
   subtitle: {
     fontSize: theme.fontSize.sm,
     color: theme.colors.text.secondary,
