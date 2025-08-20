@@ -72,12 +72,33 @@ export default function HomeScreen() {
     }).start();
   };
 
+  const handleMenuNavigation = (item: string) => {
+    const routeMap: { [key: string]: string } = {
+      'Perfil': '/home/perfil',
+      'Ajustes': '/home/ajustes',
+      'Agencias': '/home/agencias',
+      'Pagos': '/home/pagos',
+      'Soporte': '/home/soporte',
+      'Servicios': '/home/servicios',
+      'Promociones': '/home/promociones',
+      'Go Club': '/home/goclub',
+      'Calificanos': '/home/calificanos',
+      'Mi Plan': '/home/planes',
+    };
+
+    const route = routeMap[item];
+    if (route) {
+      router.push(route);
+    }
+  };
+
   const handleLogout = async () => {
     try {
+      await authService.logout();
       dispatch(logout());
       dispatch(clearUser());
-      await authService.logout();
-      router.dismissAll();
+      
+      // Now should redirect properly to main index
       router.replace('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -132,6 +153,7 @@ export default function HomeScreen() {
         onClose={closeMenu}
         onItemPress={(item: string) => {
           console.log(`Menu item pressed: ${item}`);
+          handleMenuNavigation(item);
           closeMenu();
         }}
         onLogout={handleLogout}

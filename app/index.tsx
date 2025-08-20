@@ -148,7 +148,7 @@ export default function PublicHomeScreen() {
 
   useEffect(() => {
     if (isAuthenticated && !isLoading) {
-      router.replace('/(tabs)');
+      router.replace('/(tabs)/home');
     }
   }, [isAuthenticated, isLoading, router]);
 

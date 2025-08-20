@@ -31,11 +31,15 @@ interface SideMenuProps extends BaseComponentProps {
 
 const menuItems: MenuItem[] = [
   { icon: <FontAwesome name="user" size={24} color={theme.colors.text.inverse} />, label: 'Perfil' },
-  { icon: <FontAwesome name="cog" size={24} color={theme.colors.text.inverse} />, label: 'Configuración App' },
+  { icon: <FontAwesome name="cog" size={24} color={theme.colors.text.inverse} />, label: 'Ajustes' },
   { icon: <MaterialIcons name="local-mall" size={24} color={theme.colors.text.inverse} />, label: 'Agencias' },
-  { icon: <Entypo name="wallet" size={24} color={theme.colors.text.inverse} />, label: 'Consulta Pagos' },
-  { icon: <MaterialIcons name="security" size={24} color={theme.colors.text.inverse} />, label: 'Seguridad' },
-  { icon: <Feather name="shopping-cart" size={24} color={theme.colors.text.inverse} />, label: 'Adquiere más' },
+  { icon: <Entypo name="wallet" size={24} color={theme.colors.text.inverse} />, label: 'Pagos' },
+  { icon: <MaterialIcons name="support-agent" size={24} color={theme.colors.text.inverse} />, label: 'Soporte' },
+  { icon: <Feather name="shopping-cart" size={24} color={theme.colors.text.inverse} />, label: 'Servicios' },
+  { icon: <MaterialIcons name="card-giftcard" size={24} color={theme.colors.text.inverse} />, label: 'Promociones' },
+  { icon: <MaterialCommunityIcons name="star" size={24} color={theme.colors.text.inverse} />, label: 'Go Club' },
+  { icon: <MaterialIcons name="rate-review" size={24} color={theme.colors.text.inverse} />, label: 'Calificanos' },
+  { icon: <MaterialIcons name="view-list" size={24} color={theme.colors.text.inverse} />, label: 'Mi Plan' },
   { icon: <MaterialCommunityIcons name="logout-variant" size={24} color={theme.colors.text.inverse} />, label: 'Cerrar Sesión' },
 ];
 

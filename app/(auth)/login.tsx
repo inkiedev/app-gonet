@@ -80,6 +80,7 @@ export default function LoginScreen() {
           }));
 
           if (data.rememberMe) {
+            console.log('Guardando credenciales en el dispositivo')
             await secureStorageService.saveCredentials({
               uid: result.user.uid,
               username: data.username,
