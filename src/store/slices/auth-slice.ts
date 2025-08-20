@@ -2,16 +2,18 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
 interface AuthState {
   isAuthenticated: boolean;
-  token: string | null;
-  refreshToken: string | null;
-  expiresAt: number | null;
+  uid: number | null;
+  password: string | null;
+  username: string | null;
+  rememberMe: boolean;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
-  token: null,
-  refreshToken: null,
-  expiresAt: null,
+  uid: null,
+  password: null,
+  username: null,
+  rememberMe: false,
 };
 
 const authSlice = createSlice({
@@ -19,30 +21,38 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginSuccess: (state, action: PayloadAction<{
-      token: string;
-      refreshToken: string;
-      expiresAt: number;
+      uid: number;
+      password: string;
+      username: string;
+      rememberMe: boolean;
     }>) => {
       state.isAuthenticated = true;
-      state.token = action.payload.token;
-      state.refreshToken = action.payload.refreshToken;
-      state.expiresAt = action.payload.expiresAt;
+      state.uid = action.payload.uid;
+      state.password = action.payload.password;
+      state.username = action.payload.username;
+      state.rememberMe = action.payload.rememberMe;
     },
     logout: (state) => {
       state.isAuthenticated = false;
-      state.token = null;
-      state.refreshToken = null;
-      state.expiresAt = null;
+      state.uid = null;
+      state.password = null;
+      state.username = null;
+      state.rememberMe = false;
     },
-    updateToken: (state, action: PayloadAction<{
-      token: string;
-      expiresAt: number;
-    }>) => {
-      state.token = action.payload.token;
-      state.expiresAt = action.payload.expiresAt;
+    sessionLogout: (state) => {
+      state.isAuthenticated = false;
+      if (!state.rememberMe) {
+        state.uid = null;
+        state.password = null;
+        state.username = null;
+        state.rememberMe = false;
+      }
+    },
+    clearSession: (state) => {
+      state.isAuthenticated = false;
     },
   },
 });
 
-export const { loginSuccess, logout, updateToken } = authSlice.actions;
+export const { loginSuccess, logout, sessionLogout, clearSession } = authSlice.actions;
 export default authSlice.reducer;

@@ -26,6 +26,7 @@ interface SideMenuProps extends BaseComponentProps {
   visible: boolean;
   onClose: () => void;
   onItemPress: (item: string) => void;
+  onLogout?: () => void;
 }
 
 const menuItems: MenuItem[] = [
@@ -38,7 +39,7 @@ const menuItems: MenuItem[] = [
   { icon: <MaterialCommunityIcons name="logout-variant" size={24} color={theme.colors.text.inverse} />, label: 'Cerrar Sesión' },
 ];
 
-export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPress, testID }) => {
+export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPress, onLogout, testID }) => {
   const slideAnim = useSharedValue(-screenWidth * 0.6);
   const opacityAnim = useSharedValue(0);
   const [shouldRender, setShouldRender] = React.useState(visible);
@@ -80,7 +81,11 @@ export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPres
                     key={item.label ?? index}
                     style={styles.menuItem}
                     onPress={() => {
-                      onItemPress(item.label);
+                      if (item.label === 'Cerrar Sesión' && onLogout) {
+                        onLogout();
+                      } else {
+                        onItemPress(item.label);
+                      }
                       onClose();
                     }}
                     activeOpacity={0.7}

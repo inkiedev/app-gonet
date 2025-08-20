@@ -13,7 +13,6 @@ export interface LoginResponse {
     name: string;
     email: string;
     uid: number;
-    session_id: string;
   };
   error?: string;
 }
@@ -23,44 +22,13 @@ export interface AuthUser {
   name: string;
   email: string;
   uid: number;
-  session_id: string;
 }
 
-const MOCK_USERS = [
-  { username: 'admin', password: 'admin123', name: 'Administrator', email: 'admin@gonet.com' },
-  { username: 'testuser', password: 'test123', name: 'Test User', email: 'test@gonet.com' },
-  { username: 'demo', password: 'demo123', name: 'Demo User', email: 'demo@gonet.com' },
-];
 
 export class AuthService {
-  private defaultDatabase = 'gonet_db';
-  private useBypass = true;
+  private defaultDatabase = 'app';
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
-    if (this.useBypass) {
-      const user = MOCK_USERS.find(u => 
-        u.username === credentials.username && u.password === credentials.password
-      );
-      
-      if (user) {
-        return {
-          success: true,
-          user: {
-            id: 1,
-            name: user.name,
-            email: user.email,
-            uid: 1,
-            session_id: `mock-session-${Date.now()}`
-          }
-        };
-      } else {
-        return {
-          success: false,
-          error: 'Credenciales incorrectas'
-        };
-      }
-    }
-
     try {
       const database = credentials.database || this.defaultDatabase;
       
@@ -70,37 +38,33 @@ export class AuthService {
         credentials.password
       );
 
-      if (!authResult.uid || !authResult.session_id) {
+      if (!authResult.uid) {
         return {
           success: false,
           error: 'Credenciales incorrectas'
         };
       }
 
-      const userData: OdooUserData[] = await apiService.getUserData(
+      const userData: OdooUserData = await apiService.getUserData(
         database,
         authResult.uid,
-        credentials.password,
-        authResult.uid
+        credentials.password
       );
 
-      if (!userData || userData.length === 0) {
+      if (!userData) {
         return {
           success: false,
           error: 'No se pudo obtener información del usuario'
         };
       }
-
-      const user = userData[0];
       
       return {
         success: true,
         user: {
-          id: user.id,
-          name: user.name,
-          email: user.email || '',
-          uid: authResult.uid,
-          session_id: authResult.session_id
+          id: userData.id,
+          name: userData.name,
+          email: userData.email || '',
+          uid: authResult.uid
         }
       };
 
@@ -114,9 +78,17 @@ export class AuthService {
   }
 
   async logout(): Promise<void> {
-    // Clear stored session data
-    // In a real implementation, you might want to call an API endpoint
-    // or clear stored tokens/session data
+    try {
+      // Clear stored session data
+      const { secureStorageService } = await import('./secure-storage');
+      await secureStorageService.clearCredentials();
+      
+      // In a real implementation, you might want to call an API endpoint
+      // to invalidate the session on the server side
+    } catch (error) {
+      console.error('Logout error:', error);
+      throw new Error('Error during logout');
+    }
   }
 }
 

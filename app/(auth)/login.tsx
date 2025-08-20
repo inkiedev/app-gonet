@@ -1,4 +1,5 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import Checkbox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
@@ -14,24 +15,30 @@ import {
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 import * as z from 'zod';
 
 import { AppLogo } from '@/components/app/app-logo';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
 import { authService } from '@/services/auth';
+import { secureStorageService } from '@/services/secure-storage';
+import { loginSuccess } from '@/store/slices/auth-slice';
+import { setUser } from '@/store/slices/user-slice';
 import { theme } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
 const loginSchema = z.object({
   username: z.string().min(3, 'Mínimo 3 caracteres'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
+  password: z.string().min(2, 'Mínimo 6 caracteres'),
+  rememberMe: z.boolean().optional(),
 });
 
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginScreen() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const [loginError, setLoginError] = useState<string>('');
   const {
     control,
@@ -42,6 +49,7 @@ export default function LoginScreen() {
     defaultValues: {
       username: '',
       password: '',
+      rememberMe: false,
     },
   });
 
@@ -55,8 +63,37 @@ export default function LoginScreen() {
       });
 
       if (result.success && result.user) {
-        Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
-        router.replace('/(tabs)');
+        try {
+          const loginData = {
+            uid: result.user.uid,
+            password: data.password,
+            username: data.username,
+            rememberMe: data.rememberMe || false
+          };
+
+          dispatch(loginSuccess(loginData));
+          dispatch(setUser({
+            id: result.user.id,
+            name: result.user.name,
+            email: result.user.email,
+            uid: result.user.uid
+          }));
+
+          if (data.rememberMe) {
+            await secureStorageService.saveCredentials({
+              uid: result.user.uid,
+              username: data.username,
+              password: data.password
+            }, true);
+          }
+
+          Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
+          router.replace('/(tabs)');
+        } catch (storageError) {
+          console.error('Storage error:', storageError);
+          Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
+          router.replace('/(tabs)');
+        }
       } else {
         setLoginError(result.error || 'Error desconocido');
         Alert.alert('Error', result.error || 'Credenciales incorrectas');
@@ -129,6 +166,22 @@ export default function LoginScreen() {
                       showPasswordToggle
                       testID="password-input"
                     />
+                  )}
+                />
+
+                <Controller
+                  control={control}
+                  name="rememberMe"
+                  render={({ field: { onChange, value } }) => (
+                    <View style={styles.checkboxContainer}>
+                      <Checkbox
+                        value={value || false}
+                        onValueChange={onChange}
+                        style={styles.checkbox}
+                        color={value ? theme.colors.primary : undefined}
+                      />
+                      <Text style={styles.checkboxLabel}>Recuérdame</Text>
+                    </View>
                   )}
                 />
 
@@ -214,5 +267,17 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
     marginBottom: theme.spacing.sm,
     textAlign: 'center',
+  },
+  checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: theme.spacing.md,
+  },
+  checkbox: {
+    marginRight: theme.spacing.sm,
+  },
+  checkboxLabel: {
+    color: theme.colors.text.inverse,
+    fontSize: theme.fontSize.sm,
   },
 });

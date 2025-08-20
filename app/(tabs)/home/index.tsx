@@ -6,11 +6,15 @@ import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { Header } from '@/components/layout/header';
+import { authService } from '@/services/auth';
+import { logout } from '@/store/slices/auth-slice';
+import { clearUser } from '@/store/slices/user-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useRef, useState } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useDispatch } from 'react-redux';
 
 const mockUser = {
   firstName: 'Juan',
@@ -45,6 +49,7 @@ export default function HomeScreen() {
   const [isCardExpanded, setIsCardExpanded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
+  const dispatch = useDispatch();
 
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
@@ -65,6 +70,18 @@ export default function HomeScreen() {
       duration: 300,
       useNativeDriver: true,
     }).start();
+  };
+
+  const handleLogout = async () => {
+    try {
+      dispatch(logout());
+      dispatch(clearUser());
+      await authService.logout();
+      router.dismissAll();
+      router.replace('/');
+    } catch (error) {
+      console.error('Logout failed:', error);
+    }
   };
 
 
@@ -117,6 +134,7 @@ export default function HomeScreen() {
           console.log(`Menu item pressed: ${item}`);
           closeMenu();
         }}
+        onLogout={handleLogout}
       />
     </SafeAreaView>
   );

@@ -1,13 +1,17 @@
 interface OdooAuthResult {
   uid: number;
-  session_id: string;
 }
 
 interface OdooUserData {
   id: number;
+  login: string;
   name: string;
-  email?: string;
-  [key: string]: any;
+  email: string;
+  active: boolean;
+  partner_id: number;
+  partner_name: string;
+  partner_email: string;
+  partner_vat: string;
 }
 
 interface OdooJsonRpcRequest {
@@ -78,28 +82,31 @@ class ApiService {
       args: [database, username, password, {}]
     });
 
-    if (!result || typeof result !== 'object' || Array.isArray(result)) {
+    if (!result || typeof result !== 'number') {
       throw new Error('Invalid login response');
     }
 
-    return result;
+    return { uid: result };
   }
 
-  async getUserData(database: string, uid: number, password: string, userId: number): Promise<OdooUserData[]> {
+  async getUserData(database: string, uid: number, password: string): Promise<OdooUserData> {
     if (!database || typeof database !== 'string' || database.trim() === '' ||
         !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid) ||
-        !password || typeof password !== 'string' || password.trim() === '' ||
-        !userId || typeof userId !== 'number' || userId <= 0 || !Number.isInteger(userId)) {
-      throw new Error('Database, uid, password and userId are required');
+        !password || typeof password !== 'string' || password.trim() === '') {
+      throw new Error('Database, uid and password are required');
     }
 
     const result = await this.makeJsonRpcRequest('call', {
       service: 'object',
       method: 'execute_kw',
-      args: [database, uid, password, 'res.users', 'read', [userId]]
+      args: [database, uid, password, 'my.app.api', 'get_user_data', [uid]]
     });
 
-    return result || [];
+    if (!result || typeof result !== 'object') {
+      throw new Error('Invalid user data response');
+    }
+
+    return result;
   }
 
   async updateUserProfile(database: string, uid: number, password: string, userId: number, data: any): Promise<boolean> {

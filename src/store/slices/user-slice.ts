@@ -1,48 +1,43 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-interface AuthState {
-  isAuthenticated: boolean;
-  token: string | null;
-  refreshToken: string | null;
-  expiresAt: number | null;
+interface UserState {
+  currentUser: {
+    id: number;
+    name: string;
+    email: string;
+    uid: number;
+  } | null;
 }
 
-const initialState: AuthState = {
-  isAuthenticated: false,
-  token: null,
-  refreshToken: null,
-  expiresAt: null,
+const initialState: UserState = {
+  currentUser: null,
 };
 
-const authSlice = createSlice({
-  name: 'auth',
+const userSlice = createSlice({
+  name: 'user',
   initialState,
   reducers: {
-    loginSuccess: (state, action: PayloadAction<{
-      token: string;
-      refreshToken: string;
-      expiresAt: number;
+    setUser: (state, action: PayloadAction<{
+      id: number;
+      name: string;
+      email: string;
+      uid: number;
     }>) => {
-      state.isAuthenticated = true;
-      state.token = action.payload.token;
-      state.refreshToken = action.payload.refreshToken;
-      state.expiresAt = action.payload.expiresAt;
+      state.currentUser = action.payload;
     },
-    logout: (state) => {
-      state.isAuthenticated = false;
-      state.token = null;
-      state.refreshToken = null;
-      state.expiresAt = null;
+    clearUser: (state) => {
+      state.currentUser = null;
     },
-    updateToken: (state, action: PayloadAction<{
-      token: string;
-      expiresAt: number;
-    }>) => {
-      state.token = action.payload.token;
-      state.expiresAt = action.payload.expiresAt;
+    updateUser: (state, action: PayloadAction<Partial<{
+      name: string;
+      email: string;
+    }>>) => {
+      if (state.currentUser) {
+        state.currentUser = { ...state.currentUser, ...action.payload };
+      }
     },
   },
 });
 
-export const { loginSuccess, logout, updateToken } = authSlice.actions;
-export default authSlice.reducer;
+export const { setUser, clearUser, updateUser } = userSlice.actions;
+export default userSlice.reducer;

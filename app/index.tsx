@@ -1,11 +1,17 @@
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
+import { authService } from "@/services/auth";
+import { secureStorageService } from "@/services/secure-storage";
+import { loginSuccess } from "@/store/slices/auth-slice";
+import { setUser } from "@/store/slices/user-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store";
 
 
 const useAuth = () => {
@@ -96,7 +102,66 @@ const PlanesContent = () => (
 
 export default function PublicHomeScreen() {
   const router = useRouter();
-  const { isAuthenticated, login } = useAuth();
+  const dispatch = useDispatch();
+  const [isLoading, setIsLoading] = useState(true);
+  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+
+  useEffect(() => {
+    const checkStoredCredentials = async () => {
+      try {
+        const storedCredentials = await secureStorageService.getCredentials();
+        
+        if (storedCredentials) {
+          const result = await authService.login({
+            username: storedCredentials.username,
+            password: storedCredentials.password
+          });
+
+          if (result.success && result.user) {
+            dispatch(loginSuccess({
+              uid: result.user.uid,
+              password: storedCredentials.password,
+              username: storedCredentials.username,
+              rememberMe: true
+            }));
+            dispatch(setUser({
+              id: result.user.id,
+              name: result.user.name,
+              email: result.user.email,
+              uid: result.user.uid
+            }));
+          }
+        }
+      } catch (error) {
+        console.error('Auto-login error:', error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    if (!isAuthenticated) {
+      checkStoredCredentials();
+    } else {
+      setIsLoading(false);
+    }
+  }, [dispatch, isAuthenticated]);
+
+  useEffect(() => {
+    if (isAuthenticated && !isLoading) {
+      router.replace('/(tabs)');
+    }
+  }, [isAuthenticated, isLoading, router]);
+
+  if (isLoading) {
+    return (
+      <SafeAreaView style={styles.container}>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Cargando...</Text>
+        </View>
+      </SafeAreaView>
+    );
+  }
+
 
   const handleLogin = () => {
     router.push("/(auth)/login");
@@ -217,5 +282,14 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing.xs,
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text.primary,
   },
 });
