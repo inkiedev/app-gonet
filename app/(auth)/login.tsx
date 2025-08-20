@@ -10,6 +10,7 @@ import {
   ScrollView,
   StyleSheet,
   Text,
+  TouchableOpacity,
   View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -86,12 +87,13 @@ export default function LoginScreen() {
 
               <AppLogo variant="small" />
 
+              <TouchableOpacity onPress={() => router.navigate("./register")}>
               <FontAwesome name = {"user"} style = {styles.iconFP}/>
-
               <View style={styles.userSection}>
                 <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
                 <Text style={styles.registerText}>Regístrate aquí</Text>
               </View>
+              </TouchableOpacity>
 
               <View style={styles.divider} />
 

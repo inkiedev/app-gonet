@@ -49,7 +49,7 @@ const currentPlan = {
   speedMbps: 250,
 };
 
-const availablePlans: Plan[] = [
+export const availablePlans: Plan[] = [
   { 
     id: "p1", 
     name: "GoEssencial 300 Mbps", 

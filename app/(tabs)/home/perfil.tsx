@@ -64,6 +64,18 @@ const CambiarContrasenaContent = () => (
   </>
 );
 
+
+export const defaultUser = {
+  nombre: "Juan Gonzales",
+  campos: [
+    { campo: "CEDULA", valor: "0123456789" },
+    { campo: "CORREO", valor: "correo@correo.com" },
+    { campo: "TELF1", valor: "0124910258" },
+    { campo: "TELF2", valor: "1234567890" },
+  ],
+};
+
+
 /* --- Pantalla principal --- */
 export default function PerfilScreen() {
   const nombre = "Juan Gonzales";
