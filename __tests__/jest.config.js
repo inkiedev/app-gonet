@@ -16,7 +16,4 @@ module.exports = {
   transformIgnorePatterns: [
     'node_modules/(?!(jest-)?react-native|@react-native|@expo|expo|@react-navigation|react-redux|@reduxjs/toolkit)'
   ],
-  clearMocks: false,      // evita limpiar los mocks automáticamente
-  resetMocks: false,      // evita resetear los mocks entre tests
-  restoreMocks: false,  
 };
