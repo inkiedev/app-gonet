@@ -176,7 +176,7 @@ export default function RegisterScreen() {
                 ) : null}
 
                 <Button
-                  title="Register"
+                  title="Registrar Cuenta"
                   onPress={handleSubmit(onSubmit)}
                   loading={isSubmitting}
                   fullWidth
