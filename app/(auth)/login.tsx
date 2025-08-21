@@ -125,7 +125,7 @@ export default function LoginScreen() {
 
               <AppLogo variant="small" />
 
-              <TouchableOpacity onPress={() => router.navigate("./register")}>
+              <TouchableOpacity style={styles.userSection} onPress={() => router.navigate("./register")}>
               <FontAwesome name = {"user"} style = {styles.iconFP}/>
               <View style={styles.userSection}>
                 <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
