@@ -21,6 +21,15 @@ interface OdooJsonRpcRequest {
   id: number;
 }
 
+interface OdooJsonRegisterRpcRequest{
+error? : string;
+success: string;
+message?: string;
+destinatary?: string;
+signup_url?: string;
+}
+
+
 interface OdooJsonRpcResponse {
   jsonrpc: string;
   id: number;
@@ -152,23 +161,23 @@ class ApiService {
     return result || [];
   }
 
-  async createUser(database: string, uid: number, password: string, userData: any): Promise<number> {
+  async createUser(database: string, vat: string): Promise<OdooJsonRegisterRpcRequest> {
     if (!database || typeof database !== 'string' || database.trim() === '' ||
-        !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid) ||
-        !password || typeof password !== 'string' || password.trim() === '' ||
-        userData == null) {
+        !vat || typeof vat !== 'string' || vat.trim() === '' 
+        
+        
+        ) {
       throw new Error('All parameters are required');
     }
 
-    if (typeof userData !== 'object' || Array.isArray(userData)) {
-      throw new Error('User data must be an object');
-    }
+    
 
     const result = await this.makeJsonRpcRequest('call', {
       service: 'object',
-      method: 'execute_kw',
-      args: [database, uid, password, 'res.users', 'create', [userData]]
+      method: 'execute',
+      args: [database, 2, 'admin', 'my.app.api', 'request_registration',vat]
     });
+
 
     return result;
   }
@@ -178,4 +187,5 @@ export const apiService = new ApiService(
   process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8069'
 );
 
-export type { OdooAuthResult, OdooUserData };
+export type { OdooAuthResult, OdooJsonRegisterRpcRequest, OdooJsonRpcResponse, OdooUserData };
+

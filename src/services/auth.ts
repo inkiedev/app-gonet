@@ -1,9 +1,15 @@
-import { apiService, OdooAuthResult, OdooUserData } from './api';
+import { apiService, OdooAuthResult, OdooJsonRegisterRpcRequest, OdooUserData } from './api';
 
 export interface LoginRequest {
   username: string;
   password: string;
   database?: string;
+}
+
+
+export interface RegisterRequest {
+    vat: string;
+
 }
 
 export interface LoginResponse {
@@ -16,6 +22,13 @@ export interface LoginResponse {
   };
   error?: string;
 }
+
+export interface RegisterResponse {
+  success: boolean;
+  error?: string;
+}
+
+
 
 export interface AuthUser {
   id: number;
@@ -110,6 +123,36 @@ export class AuthService {
       throw new Error('Error during logout');
     }
   }
+
+
+
+  async register(credentials: RegisterRequest): Promise<OdooJsonRegisterRpcRequest> {
+  try {
+    const database = this.defaultDatabase;
+
+    // Llamada al método del API de Odoo para registrar por cédula (VAT)
+    const response: OdooJsonRegisterRpcRequest = await apiService.createUser(
+      database,
+      credentials.vat // argumentos
+    );
+
+    // Retorna el resultado tal cual lo devuelve Odoo
+    return response
+      
+    ;
+
+  } catch (error) {
+    console.error('Register error on auth.ts:', error);
+    return {
+      success: "false",
+      error: error instanceof Error ? error.message : 'Error de conexión'
+    };
+  }
+}
+
+
+
+  
 }
 
 export const authService = new AuthService();

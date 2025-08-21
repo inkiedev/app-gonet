@@ -1,16 +1,18 @@
 import { zodResolver } from '@hookform/resolvers/zod';
+import Checkbox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-    Alert,
-    ImageBackground,
-    KeyboardAvoidingView,
-    Platform,
-    ScrollView,
-    StyleSheet,
-    Text,
-    View,
+  Alert,
+  ImageBackground,
+  KeyboardAvoidingView,
+  Platform,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import * as z from 'zod';
@@ -18,6 +20,7 @@ import * as z from 'zod';
 import { AppLogo } from '@/components/app/app-logo';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
+import { authService } from '@/services/auth';
 import { theme } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -46,11 +49,8 @@ const validateCedula = (cedula: string): boolean => {
 
 /* --- Schema with Zod --- */
 const registerSchema = z.object({
-  fullName: z.string().min(3, 'Mínimo 3 caracteres'),
-  email: z.string().email('Formato de email invalido'),
-  password: z.string().min(6, 'Mínimo 6 caracteres'),
   cedula: z.string().refine(validateCedula, {
-    message: 'Cédula no coincide el formato',
+    message: 'Cédula no coincide con el formato',
   }),
 });
 
@@ -59,6 +59,8 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 export default function RegisterScreen() {
   const router = useRouter();
   const [registerError, setRegisterError] = useState<string>('');
+  const [acceptedTerms, setAcceptedTerms] = useState(false);
+
   const {
     control,
     handleSubmit,
@@ -66,19 +68,62 @@ export default function RegisterScreen() {
   } = useForm<RegisterFormData>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      fullName: '',
-      email: '',
-      password: '',
       cedula: '',
     },
   });
 
   const onSubmit = async (data: RegisterFormData) => {
     try {
+      if (!acceptedTerms) {
+        Alert.alert('Aviso', 'Debes aceptar los términos y condiciones');
+        return;
+      }
+
+       const result = await authService.register ({
+              vat: data.cedula,
+              
+            });
+
+      if (result.destinatary && result.success=='true') {
+      const email = result.destinatary;
+      const [user, domain] = email.split('@');
+      const censoredUser = user.length > 2 
+          ? user.slice(0, 2) + '*'.repeat(user.length - 2)
+          : '*'.repeat(user.length);
+      const censoredEmail = `${censoredUser}@${domain}`;
+      
+      Alert.alert("Se envió al correo:", censoredEmail);
+
+      //router.navigate('/login');
+
+
+      }
+      else {
+      if (result.error === "Ya existe un usuario asociad") {
+        Alert.alert("Error", "Ya existe un usuario asociado.");
+      } else if (result.error && result.error.includes("no se encontro contacto con identificador")) {
+        Alert.alert("Error", "No hay ninguna cuenta asociada a ese identificador.");
+      }
+        else if (result.error?.includes("Network request failed")){
+          Alert.alert("Error", "Network request failed");
+        }
+
+       else {
+        Alert.alert("Error", "Ocurrió un error desconocido.");
+      }
+    }
+
+
+      
+
       setRegisterError('');
       // Aquí se llamaría al servicio real de registro
-      Alert.alert('Registration Successful', `Welcome ${data.fullName}`);
-      router.replace('/(tabs)');
+
+
+
+
+
+      
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Connection error';
@@ -107,54 +152,7 @@ export default function RegisterScreen() {
               <FontAwesome name={'user-plus'} style={styles.iconFP} />
 
               <View style={styles.form}>
-                <Controller
-                  control={control}
-                  name="fullName"
-                  render={({ field: { onChange, value, onBlur } }) => (
-                    <Input
-                      placeholder="Nombre Completo"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      error={errors.fullName?.message}
-                      autoCapitalize="words"
-                    />
-                  )}
-                />
-
-                <Controller
-                  control={control}
-                  name="email"
-                  render={({ field: { onChange, value, onBlur } }) => (
-                    <Input
-                      placeholder="Email"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      error={errors.email?.message}
-                      keyboardType="email-address"
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                    />
-                  )}
-                />
-
-                <Controller
-                  control={control}
-                  name="password"
-                  render={({ field: { onChange, value, onBlur } }) => (
-                    <Input
-                      placeholder="Contraseña"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      error={errors.password?.message}
-                      secureTextEntry
-                      showPasswordToggle
-                    />
-                  )}
-                />
-
+                {/* Cedula */}
                 <Controller
                   control={control}
                   name="cedula"
@@ -171,15 +169,31 @@ export default function RegisterScreen() {
                   )}
                 />
 
+                {/* Checkbox de Términos */}
+                <View style={styles.checkboxContainer}>
+                  <Checkbox
+                    value={acceptedTerms}
+                    onValueChange={setAcceptedTerms}
+                    color={acceptedTerms ? theme.colors.primary : undefined}
+                  />
+                  <TouchableOpacity onPress={() => setAcceptedTerms(!acceptedTerms)}>
+                    <Text style={styles.checkboxText}>
+                      Aceptar términos y condiciones
+                    </Text>
+                  </TouchableOpacity>
+                </View>
+
                 {registerError ? (
                   <Text style={styles.errorText}>{registerError}</Text>
                 ) : null}
 
+                {/* Botón */}
                 <Button
                   title="Registrar Cuenta"
                   onPress={handleSubmit(onSubmit)}
                   loading={isSubmitting}
                   fullWidth
+                  disabled={!acceptedTerms}
                 />
               </View>
             </View>
@@ -189,7 +203,6 @@ export default function RegisterScreen() {
     </ImageBackground>
   );
 }
-
 const styles = StyleSheet.create({
   background: { flex: 1 },
   container: { flex: 1 },
@@ -223,5 +236,15 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
     marginBottom: theme.spacing.sm,
     textAlign: 'center',
+  },
+    checkboxContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: theme.spacing.md,
+  },
+  checkboxText: {
+    marginLeft: theme.spacing.sm,
+    color: theme.colors.surface,
+    fontSize: theme.fontSize.sm,
   },
 });
