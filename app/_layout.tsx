@@ -27,10 +27,33 @@ export default function RootLayout() {
   return (
     <StoreProvider>
       <View style={styles.container}>
-        <Stack screenOptions={{ headerShown: false }}>
-          <Stack.Screen name="index" />
-          <Stack.Screen name="(auth)" />
-          <Stack.Screen name="(tabs)" />
+        <Stack 
+          screenOptions={{ 
+            headerShown: false,
+            animation: 'slide_from_right',
+            animationDuration: 300,
+          }}
+        >
+          <Stack.Screen 
+            name="index" 
+            options={{
+              animation: 'fade',
+            }}
+          />
+          <Stack.Screen 
+            name="(auth)" 
+            options={{
+              animation: 'slide_from_bottom',
+              animationDuration: 350,
+            }}
+          />
+          <Stack.Screen 
+            name="(tabs)" 
+            options={{
+              animation: 'slide_from_right',
+              animationDuration: 300,
+            }}
+          />
         </Stack>
         <StatusBar style="auto" />
       </View>
