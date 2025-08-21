@@ -5,6 +5,7 @@ import Soporte from '@/assets/images/iconos gonet app svg_Soporte.svg';
 import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import { Header } from '@/components/layout/header';
 import { authService } from '@/services/auth';
 import { logout } from '@/store/slices/auth-slice';
@@ -120,6 +121,7 @@ export default function HomeScreen() {
 
 
   return (
+    <AuthGuard>
       <SafeAreaView style={styles.container}>
         <Header
           leftAction={{
@@ -172,6 +174,7 @@ export default function HomeScreen() {
           onLogout={handleLogout}
         />
       </SafeAreaView>
+    </AuthGuard>
   );
 }
 

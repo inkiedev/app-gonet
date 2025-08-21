@@ -19,6 +19,7 @@ import { useDispatch } from 'react-redux';
 import * as z from 'zod';
 
 import { AppLogo } from '@/components/app/app-logo';
+import { AuthGuest } from '@/components/auth/AuthGuest';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
 import { authService } from '@/services/auth';
@@ -107,6 +108,7 @@ export default function LoginScreen() {
   };
 
   return (
+    <AuthGuest>
       <ImageBackground
         source={require('@/assets/images/iconos gonet app svg_backing.png')}
         style={styles.background}
@@ -205,6 +207,7 @@ export default function LoginScreen() {
         </KeyboardAvoidingView>
       </SafeAreaView>
     </ImageBackground>
+    </AuthGuest>
   );
 }
 

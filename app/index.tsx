@@ -1,6 +1,7 @@
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
+import { AuthGuest } from "@/components/auth/AuthGuest";
 import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
@@ -198,8 +199,9 @@ export default function PublicHomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
-      <ScrollView style={styles.scrollContainer}>
+    <AuthGuest>
+      <SafeAreaView style={styles.container} edges={["top"]}>
+        <ScrollView style={styles.scrollContainer}>
         {/* Banner */}
         <View style={styles.bannerContainer}>
           <Image
@@ -221,9 +223,10 @@ export default function PublicHomeScreen() {
         <PlanesContent />
       </ScrollView>
 
-      {/* Footer */}
-      <Footer />
-    </SafeAreaView>
+        {/* Footer */}
+        <Footer />
+      </SafeAreaView>
+    </AuthGuest>
   );
 }
 
