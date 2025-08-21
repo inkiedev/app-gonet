@@ -1,239 +1,319 @@
-import { Input } from '@/components/ui/custom-input';
-import Tabs from '@/components/ui/tabs';
-import { theme } from '@/styles/theme'; // Asegúrate de importar tu tema
-import React, { useState } from "react";
-import {
-  ScrollView,
-  StyleSheet,
-  Switch,
-  Text,
-  View
-} from "react-native";
-
+import { Ionicons } from '@expo/vector-icons';
+import { useRouter } from 'expo-router';
+import React, { useState } from 'react';
+import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
-const AjustesContent = () => {
-  const [faceId, setFaceId] = useState(false);
-  const [loginFaceId, setLoginFaceId] = useState(false);
+import { Header } from '@/components/layout/header';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/custom-button';
+import { useResponsive } from '@/hooks/use-responsive';
+import { theme } from '@/styles/theme';
 
-  return (
-    <>
-      <Text style={styles.tabTitle}>Ajustes</Text>
-      <Text style={styles.subTitle}>Sesión</Text>
-      <Text style={styles.centerText}>Administrar dispositivos activos</Text>
+interface UserField {
+  label: string;
+  value: string;
+  icon?: string;
+}
 
-      <Text style={styles.subTitle}>Seguridad</Text>
-      <View style={styles.switchRow}>
-        <Switch value={faceId} onValueChange={setFaceId} />
-        <Text style={styles.switchLabel}>
-          Usar Huella o Face ID en lugar de su contraseña
-        </Text>
-      </View>
+const user = {
+  cedula: '0102525225-1',
+  email: 'asdf@gmail.com',
+  phone: '0990909809',
+  address: 'Av. Cerca 1-01 y Transversal',
+  name: 'Juan Gonzales Gonzales',
+}
 
-      <View style={styles.switchRow}>
-        <Switch value={loginFaceId} onValueChange={setLoginFaceId} />
-        <Text style={styles.switchLabel}>
-          Inicio de sesión con Huella o Face ID
-        </Text>
-      </View>
+export default function AjustesScreen() {
+  const router = useRouter();
+  const { isSmall, isTablet } = useResponsive();
+  const [isEditing, setIsEditing] = useState(false);
 
-      <Text style={styles.availableText}>
-        Disponibilidad: Este dispositivo{" "}
-        {faceId || loginFaceId ? "soporta" : "no soporta"} estas tecnologías.
-      </Text>
-    </>
-  );
-};
-
-const ActualizarDatosContent = () => (
-  <>
-    <Text style={styles.tabTitle}>Actualizar datos</Text>
-    <Input placeholder="Contraseña actual" secureTextEntry />
-    <Input placeholder="Correo" />
-    <Input placeholder="Teléfono" />
-    <Input placeholder="Teléfono opcional" />
-  </>
-);
-
-const CambiarContrasenaContent = () => (
-  <>
-    <Text style={styles.tabTitle}>Actualizar contraseña</Text>
-    <Input placeholder="Contraseña actual" secureTextEntry />
-    <Input placeholder="Contraseña nueva" secureTextEntry />
-    <Input placeholder="Confirmar nueva contraseña" secureTextEntry />
-  </>
-);
-
-
-export const defaultUser = {
-  nombre: "Juan Gonzales",
-  campos: [
-    { campo: "CEDULA", valor: "0123456789" },
-    { campo: "CORREO", valor: "correo@correo.com" },
-    { campo: "TELF1", valor: "0124910258" },
-    { campo: "TELF2", valor: "1234567890" },
-  ],
-};
-
-
-/* --- Pantalla principal --- */
-export default function PerfilScreen() {
-  const nombre = "Juan Gonzales";
-  const campos = [
-    { campo: "CEDULA", valor: "0123456789" },
-    { campo: "CORREO", valor: "correo@correo.com" },
-    { campo: "TELF1", valor: "0124910258" },
-    { campo: "TELF2", valor: "1234567890" },
+  const userFields: UserField[] = [
+    {
+      label: 'Cédula',
+      value: user?.cedula || '0102525225-1',
+      icon: 'card-outline'
+    },
+    {
+      label: 'Correo',
+      value: user?.email || 'john@example.com',
+      icon: 'mail-outline'
+    },
+    {
+      label: 'Contacto',
+      value: user?.phone || '0990909809',
+      icon: 'call-outline'
+    },
+    {
+      label: 'Dirección',
+      value: user?.address || 'Av. Cerca 1-01 y Transversal',
+      icon: 'location-outline'
+    },
   ];
+
+  const handleEdit = () => {
+    if (isEditing) {
+      Alert.alert('Cambios guardados', 'Tu perfil ha sido actualizado');
+      setIsEditing(false);
+    } else {
+      setIsEditing(true);
+    }
+  };
+
+  const handleCancel = () => {
+    setIsEditing(false);
+    Alert.alert('Cambios cancelados', 'No se guardaron los cambios');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
-      <ScrollView>
-        {/* Información inicial */}
-        <Text style={styles.title}>Información</Text>
-        <Text style={styles.nombre}>{nombre}</Text>
+      <Header
+        title="Ajustes de perfil"
+        leftAction={{
+          icon: 'arrow-back',
+          onPress: () => router.back(),
+        }}
+        rightAction={isEditing ? {
+          icon: 'close',
+          onPress: handleCancel,
+        } : undefined}
+        variant="transparent"
+      />
 
-        <View style={styles.infoContainer}>
-          {campos.map((item, idx) => (
-            <View
-              style={idx === campos.length - 1 ? styles.lastInfoRow : styles.infoRow}
-              key={idx}
-            >
-              <Text style={styles.field}>{item.campo}</Text>
-              <Text style={styles.value}>{item.valor}</Text>
-            </View>
-          ))}
+      <ScrollView
+        style={styles.content}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={styles.scrollContent}
+      >
+        <View style={styles.profileHeader}>
+          <View style={styles.avatarContainer}>
+            <Ionicons
+              name="person-circle"
+              size={isSmall ? 80 : 100}
+              color={theme.colors.primary}
+            />
+          </View>
+          <Text style={[
+            styles.userName,
+            { fontSize: isSmall ? theme.fontSize.xl : theme.fontSize.xxl }
+          ]}>
+            {user?.name || 'John Doe'}
+          </Text>
         </View>
 
-        <View style={styles.tabsContainer}>
-          <Tabs
-            tabs={[
-              {
-                id: 'ajustes',
-                label: 'Ajustes',
-                content: <AjustesContent />,
-              },
-              {
-                id: 'actualizar-datos',
-                label: 'Actualizar datos',
-                content: <ActualizarDatosContent />,
-              },
-              {
-                id: 'cambiar-contraseña',
-                label: 'Cambiar contraseña',
-                content: <CambiarContrasenaContent />,
-              },
-            ]}
-            variant="default"
-            contentScrollable={true}
-            tabsScrollable={true}
-            testID="perfil-tabs"
+        <View style={styles.dividerContainer}>
+          <View style={styles.dividerLine} />
+          <Text style={styles.dividerText}>Información Personal</Text>
+          <View style={styles.dividerLine} />
+        </View>
+
+        <Card
+          style={styles.infoCard}
+          padding={isSmall ? "sm" : "md"}
+          variant="elevated"
+        >
+          {userFields.map((field, index) => (
+            <UserInfoRow
+              key={index}
+              field={field}
+              isLast={index === userFields.length - 1}
+              isEditing={isEditing}
+              isSmall={isSmall}
+            />
+          ))}
+        </Card>
+
+        <View style={styles.buttonContainer}>
+          <Button
+            title={isEditing ? "Guardar Cambios" : "Editar Perfil"}
+            onPress={handleEdit}
+            variant="primary"
+            size={isSmall ? "md" : "lg"}
+            fullWidth
+            icon={
+              <Ionicons
+                name={isEditing ? "save-outline" : "create-outline"}
+                size={20}
+                color={theme.colors.text.inverse}
+                style={{ marginRight: theme.spacing.xs }}
+              />
+            }
           />
+
+          {isEditing && (
+            <Button
+              title="Cancelar"
+              onPress={handleCancel}
+              variant="secondary"
+              size={isSmall ? "md" : "lg"}
+              fullWidth
+            />
+          )}
         </View>
       </ScrollView>
     </SafeAreaView>
   );
 }
 
-/* --- Estilos --- */
+interface UserInfoRowProps {
+  field: UserField;
+  isLast: boolean;
+  isEditing: boolean;
+  isSmall: boolean;
+}
+
+const UserInfoRow: React.FC<UserInfoRowProps> = ({
+                                                   field,
+                                                   isLast,
+                                                   isEditing,
+                                                   isSmall
+                                                 }) => {
+  return (
+    <View style={[
+      styles.fieldRow,
+      !isLast && styles.fieldRowBorder,
+      { paddingVertical: isSmall ? theme.spacing.sm : theme.spacing.md }
+    ]}>
+      <View style={styles.fieldLeft}>
+        {field.icon && (
+          <Ionicons
+            name={field.icon as any}
+            size={20}
+            color={theme.colors.secondary}
+            style={styles.fieldIcon}
+          />
+        )}
+        <Text style={[
+          styles.fieldLabel,
+          { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
+        ]}>
+          {field.label}:
+        </Text>
+      </View>
+
+      <Text style={[
+        styles.fieldValue,
+        isEditing && styles.fieldValueEditing,
+        { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
+      ]}>
+        {field.value}
+      </Text>
+    </View>
+  );
+};
+
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
-    padding: theme.spacing.md, 
-    backgroundColor: theme.colors.surface 
+  container: {
+    flex: 1,
   },
-
-  title: { 
-    fontSize: theme.fontSize.xxl, 
-    fontWeight: theme.fontWeight.bold, 
-    marginBottom: theme.spacing.xs, 
-    alignSelf: "center",
-    color: theme.colors.text.primary
+  content: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.lg,
   },
-  nombre: {
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text.secondary,
-    textAlign: "center",
-    marginBottom: theme.spacing.md
+  scrollContent: {
+    paddingBottom: theme.spacing.xl,
   },
-
-  infoContainer: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.sm,
+  profileHeader: {
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
+  },
+  avatarContainer: {
+    marginBottom: theme.spacing.md,
+  },
+  userName: {
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.secondary,
+    textAlign: 'center',
+  },
+  dividerContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginVertical: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.lg,
+  },
+  dividerLine: {
+    flex: 1,
+    height: 2,
+    backgroundColor: theme.colors.primary,
     borderRadius: theme.borderRadius.sm,
+  },
+  dividerText: {
+    marginHorizontal: theme.spacing.md,
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+  },
+  infoCard: {
     marginBottom: theme.spacing.lg,
   },
-  infoRow: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    paddingVertical: theme.spacing.xs,
+  fieldRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  fieldRowBorder: {
     borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border.light
+    borderBottomColor: theme.colors.border.light,
   },
-  lastInfoRow: {
-    flexDirection: "row",
-    justifyContent: "flex-start",
-    paddingVertical: theme.spacing.xs,
-    borderBottomWidth: 0
-  },
-  field: { 
-    fontWeight: theme.fontWeight.bold, 
-    textTransform: "uppercase", 
-    fontSize: theme.fontSize.sm, 
-    width: "20%",
-    color: theme.colors.text.primary
-  },
-  value: { 
-    color: theme.colors.text.secondary, 
-    fontSize: theme.fontSize.sm,
-    maxWidth: "60%",
-    textAlign: "right"
-  },
-  tabTitle: { 
-    fontSize: theme.fontSize.xl, 
-    fontWeight: theme.fontWeight.bold, 
-    marginBottom: theme.spacing.md,
-    color: theme.colors.text.primary
-  },
-  subTitle: { 
-    fontSize: theme.fontSize.md, 
-    fontWeight: theme.fontWeight.bold, 
-    marginTop: theme.spacing.sm, 
-    marginBottom: theme.spacing.xs,
-    color: theme.colors.text.primary
-  },
-  centerText: { 
-    textAlign: "center", 
-    marginBottom: theme.spacing.md, 
-    color: theme.colors.text.secondary 
-  },
-
-  /* Switch */
-  switchRow: {
-    flexDirection: "row", 
-    alignItems: "center", 
-    justifyContent: "flex-start",
-    backgroundColor: theme.colors.surface, 
-    padding: theme.spacing.sm, 
-    borderRadius: theme.borderRadius.sm, 
-    marginBottom: theme.spacing.sm,
-    ...theme.shadows.sm
-  },
-  switchLabel: { 
-    flex: 1, 
-    fontSize: theme.fontSize.sm, 
-    marginLeft: theme.spacing.sm, 
-    color: theme.colors.text.primary 
-  },
-  availableText: { 
-    marginTop: theme.spacing.sm, 
-    fontSize: theme.fontSize.xs, 
-    color: theme.colors.text.secondary 
-  },
-
-  /* Tabs Container */
-  tabsContainer: {
+  fieldLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
     flex: 1,
-    marginTop: theme.spacing.md,
+  },
+  fieldIcon: {
+    marginRight: theme.spacing.sm,
+  },
+  fieldLabel: {
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.secondary,
+  },
+  fieldValue: {
+    flex: 1.5,
+    textAlign: 'right',
+    color: theme.colors.text.secondary,
+  },
+  fieldValueEditing: {
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
+  },
+  statsCard: {
+    marginBottom: theme.spacing.lg,
+  },
+  statsTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.md,
+    textAlign: 'center',
+  },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'space-between',
+  },
+  statItem: {
+    width: '48%',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    marginBottom: theme.spacing.sm,
+  },
+  statIcon: {
+    marginBottom: theme.spacing.xs,
+  },
+  statValue: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primary,
+    marginBottom: theme.spacing.xs,
+  },
+  statLabel: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+  },
+  buttonContainer: {
+    gap: theme.spacing.md,
+    paddingTop: theme.spacing.lg,
   },
 });

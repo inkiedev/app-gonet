@@ -18,6 +18,8 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 import * as z from 'zod';
 
+import { GuestGuard } from '@/components/auth/GuestGuard';
+
 import { AppLogo } from '@/components/app/app-logo';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
@@ -107,15 +109,16 @@ export default function LoginScreen() {
   };
 
   return (
-    <ImageBackground
-      source={require('@/assets/images/iconos gonet app svg_backing.png')}
-      style={styles.background}
-    >
-      <SafeAreaView style={styles.container}>
-        <KeyboardAvoidingView
-          style={styles.keyboardView}
-          behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        >
+    <GuestGuard>
+      <ImageBackground
+        source={require('@/assets/images/iconos gonet app svg_backing.png')}
+        style={styles.background}
+      >
+        <SafeAreaView style={styles.container}>
+          <KeyboardAvoidingView
+            style={styles.keyboardView}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+          >
           <ScrollView
             contentContainerStyle={styles.scrollContent}
             keyboardShouldPersistTaps="handled"
@@ -205,6 +208,7 @@ export default function LoginScreen() {
         </KeyboardAvoidingView>
       </SafeAreaView>
     </ImageBackground>
+    </GuestGuard>
   );
 }
 

@@ -5,14 +5,15 @@ import Soporte from '@/assets/images/iconos gonet app svg_Soporte.svg';
 import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
+import { AuthGuard } from '@/components/auth/AuthGuard';
 import { Header } from '@/components/layout/header';
 import { authService } from '@/services/auth';
 import { logout } from '@/store/slices/auth-slice';
 import { clearUser } from '@/store/slices/user-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
-import React, { useRef, useState } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useRef, useState } from 'react';
+import { Animated, BackHandler, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
 
@@ -51,6 +52,20 @@ export default function HomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
 
+  useEffect(() => {
+    const backAction = () => {
+      BackHandler.exitApp();
+      return true; 
+    };
+
+    const backHandler = BackHandler.addEventListener(
+      "hardwareBackPress",
+      backAction
+    );
+
+    return () => backHandler.remove();
+  }, []);
+
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
   };
@@ -60,7 +75,7 @@ export default function HomeScreen() {
   };
 
   const handleProfilePress = () => {
-    router.push('/home/ajustes');
+    router.push('/home/perfil');
   };
 
   const handleCardToggle = (expanded: boolean) => {
@@ -74,7 +89,6 @@ export default function HomeScreen() {
 
   const handleMenuNavigation = (item: string) => {
     const routeMap: { [key: string]: string } = {
-      'Perfil': '/home/perfil',
       'Ajustes': '/home/ajustes',
       'Agencias': '/home/agencias',
       'Pagos': '/home/pagos',
@@ -107,58 +121,60 @@ export default function HomeScreen() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Header
-        leftAction={{
-          icon: 'menu',
-          onPress: toggleMenu,
-        }}
-        centerContent={
-          <View style={styles.userInfo}>
-            <Text style={styles.userName}>{mockUser.firstName}</Text>
-            <Text style={styles.userName}>{mockUser.lastName}</Text>
-          </View>
-        }
-        rightAction={{
-          icon: 'person',
-          onPress: handleProfilePress,
-        }}
-        variant="transparent"
-      />
-
-      <View style={styles.content}>
-        <HomeExpandableCard
-          plan={mockUser.plan}
-          speed={mockUser.speed}
-          style={styles.planCard}
-          onToggle={handleCardToggle}
+    <AuthGuard>
+      <SafeAreaView style={styles.container}>
+        <Header
+          leftAction={{
+            icon: 'menu',
+            onPress: toggleMenu,
+          }}
+          centerContent={
+            <View style={styles.userInfo}>
+              <Text style={styles.userName}>{mockUser.firstName}</Text>
+              <Text style={styles.userName}>{mockUser.lastName}</Text>
+            </View>
+          }
+          rightAction={{
+            icon: 'person',
+            onPress: handleProfilePress,
+          }}
+          variant="transparent"
         />
 
-        <Animated.View style={[styles.iconsGrid, { opacity: fadeAnim }]}>
-          {iconOptions.map((option, index) => (
-            <IconWithBadge
-              key={index}
-              size={80}
-              SvgComponent={option.SvgComponent}
-              label={option.label}
-              badgeCount={option.badgeCount}
-              onPress={() => console.log(`press ${option.label}`)}
-            />
-          ))}
-        </Animated.View>
-      </View>
+        <View style={styles.content}>
+          <HomeExpandableCard
+            plan={mockUser.plan}
+            speed={mockUser.speed}
+            style={styles.planCard}
+            onToggle={handleCardToggle}
+          />
 
-      <SideMenu
-        visible={menuVisible}
-        onClose={closeMenu}
-        onItemPress={(item: string) => {
-          console.log(`Menu item pressed: ${item}`);
-          handleMenuNavigation(item);
-          closeMenu();
-        }}
-        onLogout={handleLogout}
-      />
-    </SafeAreaView>
+          <Animated.View style={[styles.iconsGrid, { opacity: fadeAnim }]}>
+            {iconOptions.map((option, index) => (
+              <IconWithBadge
+                key={index}
+                size={80}
+                SvgComponent={option.SvgComponent}
+                label={option.label}
+                badgeCount={option.badgeCount}
+                onPress={() => console.log(`press ${option.label}`)}
+              />
+            ))}
+          </Animated.View>
+        </View>
+
+        <SideMenu
+          visible={menuVisible}
+          onClose={closeMenu}
+          onItemPress={(item: string) => {
+            console.log(`Menu item pressed: ${item}`);
+            handleMenuNavigation(item);
+            closeMenu();
+          }}
+          onLogout={handleLogout}
+        />
+      </SafeAreaView>
+    </AuthGuard>
   );
 }
 

@@ -1,17 +1,17 @@
-import React from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Dimensions,
-  TouchableWithoutFeedback,
-} from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { FontAwesome, MaterialIcons, Entypo, MaterialCommunityIcons, Feather } from '@expo/vector-icons';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
-import Animated, { useSharedValue, useAnimatedStyle, withTiming, runOnJS } from 'react-native-reanimated';
+import { Entypo, Feather, FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
+import React from 'react';
+import {
+  Dimensions,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  TouchableWithoutFeedback,
+  View,
+} from 'react-native';
+import Animated, { runOnJS, useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
+import { SafeAreaView } from 'react-native-safe-area-context';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
@@ -30,7 +30,6 @@ interface SideMenuProps extends BaseComponentProps {
 }
 
 const menuItems: MenuItem[] = [
-  { icon: <FontAwesome name="user" size={24} color={theme.colors.text.inverse} />, label: 'Perfil' },
   { icon: <FontAwesome name="cog" size={24} color={theme.colors.text.inverse} />, label: 'Ajustes' },
   { icon: <MaterialIcons name="local-mall" size={24} color={theme.colors.text.inverse} />, label: 'Agencias' },
   { icon: <Entypo name="wallet" size={24} color={theme.colors.text.inverse} />, label: 'Pagos' },
