@@ -89,11 +89,11 @@ export default function LoginScreen() {
           }
 
           Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
-          router.replace('/(tabs)');
+          router.replace('/home');
         } catch (storageError) {
           console.error('Storage error:', storageError);
           Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
-          router.replace('/(tabs)');
+          router.replace('/home');
         }
       } else {
         setLoginError(result.error || 'Error desconocido');

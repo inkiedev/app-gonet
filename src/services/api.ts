@@ -63,6 +63,7 @@ class ApiService {
     const data: OdooJsonRpcResponse = await response.json();
 
     if (data.error) {
+      console.log("error de datos")
       throw new Error(data.error.message || 'API Error');
     }
 

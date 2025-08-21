@@ -79,12 +79,8 @@ export class AuthService {
 
   async logout(): Promise<void> {
     try {
-      // Clear stored session data
       const { secureStorageService } = await import('./secure-storage');
       await secureStorageService.clearCredentials();
-      
-      // In a real implementation, you might want to call an API endpoint
-      // to invalidate the session on the server side
     } catch (error) {
       console.error('Logout error:', error);
       throw new Error('Error during logout');
