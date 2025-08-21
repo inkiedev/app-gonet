@@ -1,9 +1,11 @@
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
+import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
-import { loginSuccess } from "@/store/slices/auth-slice";
+import { RootState } from "@/store";
+import { completeBiometricVerification, restoreSession } from "@/store/slices/auth-slice";
 import { setUser } from "@/store/slices/user-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
@@ -11,7 +13,6 @@ import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "@/store";
 
 
 const useAuth = () => {
@@ -104,7 +105,10 @@ export default function PublicHomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(true);
+  const [biometricPending, setBiometricPending] = useState(false);
   const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
+  const needsBiometricVerification = useSelector((state: RootState) => state.auth.needsBiometricVerification);
+  const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
 
   useEffect(() => {
     const checkStoredCredentials = async () => {
@@ -118,7 +122,7 @@ export default function PublicHomeScreen() {
           });
 
           if (result.success && result.user) {
-            dispatch(loginSuccess({
+            dispatch(restoreSession({
               uid: result.user.uid,
               password: storedCredentials.password,
               username: storedCredentials.username,
@@ -147,16 +151,42 @@ export default function PublicHomeScreen() {
   }, [dispatch, isAuthenticated]);
 
   useEffect(() => {
-    if (isAuthenticated && !isLoading) {
+    const handleBiometricVerification = async () => {
+      if (needsBiometricVerification && !biometricPending) {
+        setBiometricPending(true);
+        
+        const isAvailable = await checkBiometricAvailability();
+        if (isAvailable) {
+          const result = await authenticateWithBiometrics();
+          if (result.success) {
+            dispatch(completeBiometricVerification());
+          }
+        } else {
+          dispatch(completeBiometricVerification());
+        }
+        
+        setBiometricPending(false);
+      }
+    };
+
+    if (isAuthenticated && needsBiometricVerification) {
+      handleBiometricVerification();
+    }
+  }, [isAuthenticated, needsBiometricVerification, biometricPending, checkBiometricAvailability, authenticateWithBiometrics, dispatch]);
+
+  useEffect(() => {
+    if (isAuthenticated && !isLoading && !needsBiometricVerification && !biometricPending) {
       router.replace('/(tabs)/home');
     }
-  }, [isAuthenticated, isLoading, router]);
+  }, [isAuthenticated, isLoading, needsBiometricVerification, biometricPending, router]);
 
-  if (isLoading) {
+  if (isLoading || biometricPending) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Cargando...</Text>
+          <Text style={styles.loadingText}>
+            {biometricPending ? 'Verificando identidad...' : 'Cargando...'}
+          </Text>
         </View>
       </SafeAreaView>
     );

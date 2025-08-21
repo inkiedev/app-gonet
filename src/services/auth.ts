@@ -77,6 +77,30 @@ export class AuthService {
     }
   }
 
+  async validatePassword(credentials: LoginRequest): Promise<LoginResponse> {
+    try {
+      const database = credentials.database || this.defaultDatabase;
+      
+      const authResult: OdooAuthResult = await apiService.login(
+        database,
+        credentials.username,
+        credentials.password
+      );
+
+      return {
+        success: !!authResult.uid,
+        error: authResult.uid ? undefined : 'Contraseña incorrecta'
+      };
+
+    } catch (error) {
+      console.error('Password validation error:', error);
+      return {
+        success: false,
+        error: 'Error al validar la contraseña'
+      };
+    }
+  }
+
   async logout(): Promise<void> {
     try {
       const { secureStorageService } = await import('./secure-storage');

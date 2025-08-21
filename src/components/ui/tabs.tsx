@@ -210,14 +210,10 @@ const getTabBarVariantStyle = (variant: string): ViewStyle => {
     case 'minimal':
       return {
         backgroundColor: 'transparent',
-        borderBottomWidth: 1,
-        borderBottomColor: theme.colors.border.light,
       };
     case 'bordered':
       return {
         backgroundColor: theme.colors.background,
-        borderBottomWidth: 1,
-        borderBottomColor: theme.colors.border.light,
       };
     default:
       return {
@@ -321,59 +317,63 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     width: '100%',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    overflow: 'hidden'
   },
   
   // Tab Bar
   tabBar: {
     flexDirection: 'row',
-    paddingVertical: theme.spacing.xs,
-    paddingHorizontal: theme.spacing.xs,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.sm,
     width: '100%',
   },
   scrollableTabBar: {
     width: '100%',
   },
   scrollableTabBarContent: {
-    paddingHorizontal: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.sm,
   },
   
   // Tabs
   tab: {
-    paddingVertical: theme.spacing.sm,
-    paddingHorizontal: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.lg,
     justifyContent: 'center',
     alignItems: 'center',
-    minHeight: 44, // Accessibility minimum touch target
-    ...theme.shadows.sm,
+    minHeight: 48,
+    marginHorizontal: theme.spacing.xs,
   },
   fixedTab: {
     flex: 1,
   },
   scrollableTab: {
-    flex: 1,
+    minWidth: 120,
     flexShrink: 0,
   },
   activeTab: {
-    // Variant-specific styles applied via functions
   },
   disabledTab: {
-    opacity: 0.5,
+    opacity: 0.4,
     backgroundColor: theme.colors.border.light,
   },
   pressedTab: {
-    opacity: 0.8,
-    transform: [{ scale: 0.98 }],
+    opacity: 0.85,
+    transform: [{ scale: 0.97 }],
   },
   
   // Tab Text
   tabText: {
-    fontSize: theme.fontSize.sm,
+    fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.medium,
     textAlign: 'center',
+    letterSpacing: 0.5,
   },
   activeTabText: {
-    fontWeight: theme.fontWeight.semibold,
+    fontWeight: theme.fontWeight.bold,
+    letterSpacing: 0.8,
   },
   disabledTabText: {
     color: theme.colors.text.disabled,
@@ -382,12 +382,13 @@ const styles = StyleSheet.create({
   // Content
   content: {
     flex: 1,
-    marginTop: theme.spacing.sm,
-    padding: theme.spacing.md,
+    padding: theme.spacing.xl,
+    paddingTop: 0,
+    backgroundColor: theme.colors.surface,
   },
   scrollableContent: {
     flex: 1,
-    marginTop: theme.spacing.sm,
+    marginTop: theme.spacing.md,
   },
 });
 

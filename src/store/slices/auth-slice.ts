@@ -6,6 +6,7 @@ interface AuthState {
   password: string | null;
   username: string | null;
   rememberMe: boolean;
+  needsBiometricVerification: boolean;
 }
 
 const initialState: AuthState = {
@@ -14,6 +15,7 @@ const initialState: AuthState = {
   password: null,
   username: null,
   rememberMe: false,
+  needsBiometricVerification: false,
 };
 
 const authSlice = createSlice({
@@ -31,6 +33,20 @@ const authSlice = createSlice({
       state.password = action.payload.password;
       state.username = action.payload.username;
       state.rememberMe = action.payload.rememberMe;
+      state.needsBiometricVerification = false;
+    },
+    restoreSession: (state, action: PayloadAction<{
+      uid: number;
+      password: string;
+      username: string;
+      rememberMe: boolean;
+    }>) => {
+      state.isAuthenticated = true;
+      state.uid = action.payload.uid;
+      state.password = action.payload.password;
+      state.username = action.payload.username;
+      state.rememberMe = action.payload.rememberMe;
+      state.needsBiometricVerification = true;
     },
     logout: (state) => {
       state.isAuthenticated = false;
@@ -38,6 +54,7 @@ const authSlice = createSlice({
       state.password = null;
       state.username = null;
       state.rememberMe = false;
+      state.needsBiometricVerification = false;
     },
     sessionLogout: (state) => {
       state.isAuthenticated = false;
@@ -46,13 +63,17 @@ const authSlice = createSlice({
         state.password = null;
         state.username = null;
         state.rememberMe = false;
+        state.needsBiometricVerification = false;
       }
     },
     clearSession: (state) => {
       state.isAuthenticated = false;
     },
+    completeBiometricVerification: (state) => {
+      state.needsBiometricVerification = false;
+    },
   },
 });
 
-export const { loginSuccess, logout, sessionLogout, clearSession } = authSlice.actions;
+export const { loginSuccess, restoreSession, logout, sessionLogout, clearSession, completeBiometricVerification } = authSlice.actions;
 export default authSlice.reducer;
