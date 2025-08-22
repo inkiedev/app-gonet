@@ -92,6 +92,7 @@ class ApiService {
       args: [database, username, password, {}]
     });
 
+    console.log(result)
     if (!result || typeof result !== 'number') {
       throw new Error('Invalid login response');
     }
@@ -178,6 +179,25 @@ class ApiService {
       args: [database, 2, 'admin', 'my.app.api', 'request_registration',vat]
     });
 
+
+    return result;
+  }
+
+  async changePassword(database: string, uid: number, password: string, new_password: string): Promise<any> {
+    if (!database || typeof database !== 'string' || database.trim() === '' ||
+        !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid) ||
+        !password || typeof password !== 'string' || password.trim() === '' ||
+        !new_password || typeof new_password !== 'string' || new_password.trim() === '') {
+      throw new Error('Database, uid, password and new_password are required');
+    }
+
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute',
+      args: [database, uid, password, 'my.app.api', 'change_password', uid, password,new_password]
+    });
+
+    console.log(result)
 
     return result;
   }

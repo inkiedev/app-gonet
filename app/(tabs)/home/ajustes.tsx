@@ -17,6 +17,7 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from 'react-redux';
 
+import { Button } from '@/components/ui/custom-button';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AjustesContent = () => {
@@ -167,6 +168,9 @@ const CambiarContrasenaContent = () => {
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { biometricPreferences } = useSelector((state: RootState) => state.auth);
   const [isVerified, setIsVerified] = useState(false);
+  const [currentPassword, setCurrentPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
 
   useEffect(() => {
     if (!biometricPreferences.useBiometricForPassword) {
@@ -194,6 +198,48 @@ const CambiarContrasenaContent = () => {
     }
   };
 
+  const handleChangePassword = async () => {
+    if (newPassword !== confirmPassword) {
+      Alert.alert('Error', 'Las contraseñas no coinciden');
+      return;
+    }
+    if (newPassword.length < 4) {
+      Alert.alert('Error', 'La contraseña debe tener al menos 4 caracteres');
+      return;
+    }
+
+    try {
+      const { authService } = await import('@/services/auth');
+      // First, validate the current password
+      const { secureStorageService } = await import('@/services/secure-storage');
+      const credentials = await secureStorageService.getCredentials();
+      if (!credentials) {
+        Alert.alert('Error', 'No se encontraron credenciales');
+        return;
+      }
+      
+
+      if (credentials.password !=currentPassword ) {
+        console.log(credentials.password, currentPassword)
+        Alert.alert('Error', 'La contraseña actual es incorrecta');
+        return;
+      }
+
+      // If current password is correct, proceed to change the password
+      const response = await authService.changePassword(newPassword);
+      if (response.success) {
+        Alert.alert('Éxito', 'Contraseña actualizada correctamente');
+        setCurrentPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        Alert.alert('Error', response.error || 'No se pudo cambiar la contraseña');
+      }
+    } catch (error) {
+      Alert.alert('Error', 'Ocurrió un error inesperado');
+    }
+  };
+
   if (!isVerified) {
     return (
       <View style={styles.verificationContainer}>
@@ -211,9 +257,25 @@ const CambiarContrasenaContent = () => {
   return (
     <>
       <Text style={styles.tabTitle}>Actualizar contraseña</Text>
-      <Input placeholder="Contraseña actual" secureTextEntry />
-      <Input placeholder="Contraseña nueva" secureTextEntry />
-      <Input placeholder="Confirmar nueva contraseña" secureTextEntry />
+      <Input
+        placeholder="Contraseña actual"
+        secureTextEntry
+        value={currentPassword}
+        onChangeText={setCurrentPassword}
+      />
+      <Input
+        placeholder="Contraseña nueva"
+        secureTextEntry
+        value={newPassword}
+        onChangeText={setNewPassword}
+      />
+      <Input
+        placeholder="Confirmar nueva contraseña"
+        secureTextEntry
+        value={confirmPassword}
+        onChangeText={setConfirmPassword}
+      />
+      <Button title='Actualizar contraseña' onPress={handleChangePassword} />
     </>
   );
 };

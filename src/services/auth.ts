@@ -102,7 +102,7 @@ export class AuthService {
         credentials.username,
         credentials.password
       );
-
+      console.log("validatepaswd auths: ",authResult)
       return {
         success: !!authResult.uid,
         error: authResult.uid ? undefined : 'Contraseña incorrecta'
@@ -154,6 +154,32 @@ export class AuthService {
     };
   }
 }
+
+  async changePassword(new_password: string): Promise<any> {
+    try {
+      const { secureStorageService } = await import('./secure-storage');
+      const credentials = await secureStorageService.getCredentials();
+      if (!credentials) {
+        throw new Error('No credentials found');
+      }
+
+      const database = this.defaultDatabase;
+      const { uid, password } = credentials;
+
+      const result = await apiService.changePassword(database, uid, password, new_password);
+
+      return {
+        success: true,
+        result
+      };
+    } catch (error) {
+      console.error('Change password error:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Error changing password'
+      };
+    }
+  }
 
 
 
