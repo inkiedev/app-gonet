@@ -23,7 +23,7 @@ interface OdooJsonRpcRequest {
 
 interface OdooJsonRegisterRpcRequest{
 error? : string;
-success: string;
+success: boolean;
 message?: string;
 destinatary?: string;
 signup_url?: string;

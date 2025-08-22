@@ -60,6 +60,8 @@ export default function RegisterScreen() {
   const router = useRouter();
   const [registerError, setRegisterError] = useState<string>('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
+  const [emailsended, setEmailSent] = useState(false);
+
 
   const {
     control,
@@ -84,7 +86,7 @@ export default function RegisterScreen() {
               
             });
 
-      if (result.destinatary && result.success=='true') {
+      if (result.destinatary && result.success == true) {
       const email = result.destinatary;
       const [user, domain] = email.split('@');
       const censoredUser = user.length > 2 
@@ -94,27 +96,29 @@ export default function RegisterScreen() {
       
       Alert.alert("Se envió al correo:", censoredEmail);
 
-      //router.navigate('/login');
+      setEmailSent(true);
 
 
       }
       else {
-      if (result.error === "Ya existe un usuario asociad") {
+      if (result.error?.includes("Ya existe un usuario asociad")) {
         Alert.alert("Error", "Ya existe un usuario asociado.");
-      } else if (result.error && result.error.includes("no se encontro contacto con identificador")) {
+      } else if (result.error && result.error.includes("No se encontró contacto con identificador")) {
+
         Alert.alert("Error", "No hay ninguna cuenta asociada a ese identificador.");
+        router.navigate('/contactForm')
+
+
       }
         else if (result.error?.includes("Network request failed")){
           Alert.alert("Error", "Network request failed");
         }
 
        else {
-        Alert.alert("Error", "Ocurrió un error desconocido.");
+        Alert.alert("Error", "Ocurrió un error desconocido.: ");
+        console.log(result);
       }
     }
-
-
-      
 
       setRegisterError('');
       // Aquí se llamaría al servicio real de registro
@@ -193,8 +197,14 @@ export default function RegisterScreen() {
                   onPress={handleSubmit(onSubmit)}
                   loading={isSubmitting}
                   fullWidth
-                  disabled={!acceptedTerms}
+                  disabled={!acceptedTerms }
                 />
+                  {
+                    emailsended &&
+                    <Text style={styles.infotext} > Email Enviado {emailsended}</Text>
+                  }
+                
+
               </View>
             </View>
           </ScrollView>
@@ -236,6 +246,12 @@ const styles = StyleSheet.create({
     marginTop: theme.spacing.xs,
     marginBottom: theme.spacing.sm,
     textAlign: 'center',
+  },
+
+  infotext: {
+    color: theme.colors.surface,
+    fontSize: theme.fontSize.sm,
+    marginTop: theme.spacing.xs,
   },
     checkboxContainer: {
     flexDirection: 'row',
