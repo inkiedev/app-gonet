@@ -6,6 +6,7 @@ import { Platform } from 'react-native';
 const STORAGE_KEYS = {
   CREDENTIALS: 'secure_credentials',
   REMEMBER_ME: 'remember_me',
+  BIOMETRIC_PREFERENCES: 'biometric_preferences',
 };
 
 const ENCRYPTION_KEY = 'gonet_app_secure_key_2024';
@@ -14,6 +15,11 @@ export interface StoredCredentials {
   uid: number;
   username: string;
   password: string;
+}
+
+export interface BiometricPreferences {
+  useBiometricForPassword: boolean;
+  useBiometricForLogin: boolean;
 }
 
 class SecureStorageService {
@@ -102,6 +108,36 @@ class SecureStorageService {
       return rememberMe === 'true';
     } catch (error) {
       return false;
+    }
+  }
+
+  async saveBiometricPreferences(preferences: BiometricPreferences): Promise<void> {
+    try {
+      await this.setSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES, JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Error saving biometric preferences:', error);
+      throw new Error('No se pudieron guardar las preferencias biométricas');
+    }
+  }
+
+  async getBiometricPreferences(): Promise<BiometricPreferences | null> {
+    try {
+      const preferencesData = await this.getSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
+      if (!preferencesData) {
+        return null;
+      }
+      return JSON.parse(preferencesData);
+    } catch (error) {
+      console.error('Error getting biometric preferences:', error);
+      return null;
+    }
+  }
+
+  async clearBiometricPreferences(): Promise<void> {
+    try {
+      await this.deleteSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
+    } catch (error) {
+      console.error('Error clearing biometric preferences:', error);
     }
   }
 }

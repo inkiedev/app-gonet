@@ -6,7 +6,7 @@ import { useBiometricAuth } from "@/hooks/useBiometricAuth";
 import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
 import { RootState } from "@/store";
-import { completeBiometricVerification, restoreSession } from "@/store/slices/auth-slice";
+import { completeBiometricVerification, restoreSession, loadBiometricPreferences } from "@/store/slices/auth-slice";
 import { setUser } from "@/store/slices/user-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
@@ -107,8 +107,7 @@ export default function PublicHomeScreen() {
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(true);
   const [biometricPending, setBiometricPending] = useState(false);
-  const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated);
-  const needsBiometricVerification = useSelector((state: RootState) => state.auth.needsBiometricVerification);
+  const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
 
   useEffect(() => {
@@ -123,6 +122,7 @@ export default function PublicHomeScreen() {
           });
 
           if (result.success && result.user) {
+            await dispatch(loadBiometricPreferences());
             dispatch(restoreSession({
               uid: result.user.uid,
               password: storedCredentials.password,
@@ -156,10 +156,20 @@ export default function PublicHomeScreen() {
       if (needsBiometricVerification && !biometricPending) {
         setBiometricPending(true);
         
-        const isAvailable = await checkBiometricAvailability();
-        if (isAvailable) {
-          const result = await authenticateWithBiometrics();
-          if (result.success) {
+        const storedPreferences = await secureStorageService.getBiometricPreferences();
+        const shouldUseBiometric = storedPreferences?.useBiometricForLogin || false;
+        
+        if (shouldUseBiometric) {
+          const isAvailable = await checkBiometricAvailability();
+          if (isAvailable) {
+            const result = await authenticateWithBiometrics();
+            if (result.success) {
+              dispatch(completeBiometricVerification());
+            } else {
+              setBiometricPending(false);
+              return;
+            }
+          } else {
             dispatch(completeBiometricVerification());
           }
         } else {

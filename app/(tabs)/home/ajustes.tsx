@@ -1,24 +1,72 @@
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
-import { theme } from '@/styles/theme';
 import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { RootState } from '@/store';
+import { loadBiometricPreferences, saveBiometricPreferences, updateBiometricPreferences } from '@/store/slices/auth-slice';
+import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
+  Alert,
   ScrollView,
   StyleSheet,
   Switch,
   Text,
-  View,
-  Alert
+  View
 } from "react-native";
+import { useDispatch, useSelector } from 'react-redux';
 
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AjustesContent = () => {
-  const [faceId, setFaceId] = useState(false);
-  const [loginFaceId, setLoginFaceId] = useState(false);
+  const dispatch = useDispatch();
+  const { rememberMe, biometricPreferences } = useSelector((state: RootState) => state.auth);
+  const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
+  
+  useEffect(() => {
+    if (rememberMe) {
+      dispatch(loadBiometricPreferences() as any);
+    }
+  }, [dispatch, rememberMe]);
+
+  const authenticateForSettingsChange = async (): Promise<boolean> => {
+    const isAvailable = await checkBiometricAvailability();
+    if (isAvailable) {
+      const result = await authenticateWithBiometrics();
+      if (result.success) {
+        return true;
+      } else {
+        Alert.alert('Error', 'Verificación biométrica requerida para cambiar ajustes');
+        return false;
+      }
+    } else {
+      Alert.alert('Error', 'Autenticación biométrica no disponible');
+      return false;
+    }
+  };
+
+  const handleBiometricPasswordChange = async (value: boolean) => {
+    if (!rememberMe) return;
+    
+    const authenticated = await authenticateForSettingsChange();
+    if (authenticated) {
+      const newPreferences = { ...biometricPreferences, useBiometricForPassword: value };
+      dispatch(updateBiometricPreferences({ useBiometricForPassword: value }));
+      dispatch(saveBiometricPreferences(newPreferences) as any);
+    }
+  };
+
+  const handleBiometricLoginChange = async (value: boolean) => {
+    if (!rememberMe) return;
+    
+    const authenticated = await authenticateForSettingsChange();
+    if (authenticated) {
+      const newPreferences = { ...biometricPreferences, useBiometricForLogin: value };
+      dispatch(updateBiometricPreferences({ useBiometricForLogin: value }));
+      dispatch(saveBiometricPreferences(newPreferences) as any);
+    }
+  };
 
   return (
     <>
@@ -27,40 +75,63 @@ const AjustesContent = () => {
       <Text style={styles.centerText}>Administrar dispositivos activos</Text>
 
       <Text style={styles.subTitle}>Seguridad</Text>
-      <View style={styles.switchRow}>
-        <Switch value={faceId} onValueChange={setFaceId} />
-        <Text style={styles.switchLabel}>
+      
+      {!rememberMe && (
+        <Text style={styles.disabledNotice}>
+          Active &ldquo;Recuérdame&rdquo; en el login para habilitar las opciones biométricas
+        </Text>
+      )}
+      
+      <View style={[styles.switchRow, !rememberMe && styles.switchRowDisabled]}>
+        <Switch 
+          value={biometricPreferences.useBiometricForPassword} 
+          onValueChange={handleBiometricPasswordChange}
+          disabled={!rememberMe}
+        />
+        <Text style={[styles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
           Usar Huella o Face ID en lugar de su contraseña
         </Text>
       </View>
 
-      <View style={styles.switchRow}>
-        <Switch value={loginFaceId} onValueChange={setLoginFaceId} />
-        <Text style={styles.switchLabel}>
+      <View style={[styles.switchRow, !rememberMe && styles.switchRowDisabled]}>
+        <Switch 
+          value={biometricPreferences.useBiometricForLogin} 
+          onValueChange={handleBiometricLoginChange}
+          disabled={!rememberMe}
+        />
+        <Text style={[styles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
           Inicio de sesión con Huella o Face ID
         </Text>
       </View>
-
-      <Text style={styles.availableText}>
-        Disponibilidad: Este dispositivo{" "}
-        {faceId || loginFaceId ? "soporta" : "no soporta"} estas tecnologías.
-      </Text>
     </>
   );
 };
 
 const ActualizarDatosContent = () => {
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
+  const { biometricPreferences } = useSelector((state: RootState) => state.auth);
   const [isVerified, setIsVerified] = useState(false);
 
+  useEffect(() => {
+    if (!biometricPreferences.useBiometricForPassword) {
+      setIsVerified(true);
+    } else {
+      setIsVerified(false);
+    }
+  }, [biometricPreferences.useBiometricForPassword]);
+
   const handleSecureAction = async () => {
-    const isAvailable = await checkBiometricAvailability();
-    if (isAvailable) {
-      const result = await authenticateWithBiometrics();
-      if (result.success) {
-        setIsVerified(true);
+    if (biometricPreferences.useBiometricForPassword) {
+      const isAvailable = await checkBiometricAvailability();
+      if (isAvailable) {
+        const result = await authenticateWithBiometrics();
+        if (result.success) {
+          setIsVerified(true);
+        } else {
+          Alert.alert('Error', 'Autenticación biométrica fallida');
+        }
       } else {
-        Alert.alert('Error', 'Autenticación fallida');
+        Alert.alert('Error', 'Autenticación biométrica no disponible');
       }
     } else {
       setIsVerified(true);
@@ -75,7 +146,7 @@ const ActualizarDatosContent = () => {
           Esta acción requiere verificación de identidad
         </Text>
         <Text style={styles.verificationSubtext} onPress={handleSecureAction}>
-          Toca aquí para verificar
+          {biometricPreferences.useBiometricForPassword ? 'Toca aquí para verificar con biometría' : 'Toca aquí para continuar'}
         </Text>
       </View>
     );
@@ -94,16 +165,29 @@ const ActualizarDatosContent = () => {
 
 const CambiarContrasenaContent = () => {
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
+  const { biometricPreferences } = useSelector((state: RootState) => state.auth);
   const [isVerified, setIsVerified] = useState(false);
 
+  useEffect(() => {
+    if (!biometricPreferences.useBiometricForPassword) {
+      setIsVerified(true);
+    } else {
+      setIsVerified(false);
+    }
+  }, [biometricPreferences.useBiometricForPassword]);
+
   const handleSecureAction = async () => {
-    const isAvailable = await checkBiometricAvailability();
-    if (isAvailable) {
-      const result = await authenticateWithBiometrics();
-      if (result.success) {
-        setIsVerified(true);
+    if (biometricPreferences.useBiometricForPassword) {
+      const isAvailable = await checkBiometricAvailability();
+      if (isAvailable) {
+        const result = await authenticateWithBiometrics();
+        if (result.success) {
+          setIsVerified(true);
+        } else {
+          Alert.alert('Error', 'Autenticación biométrica fallida');
+        }
       } else {
-        Alert.alert('Error', 'Autenticación fallida');
+        Alert.alert('Error', 'Autenticación biométrica no disponible');
       }
     } else {
       setIsVerified(true);
@@ -118,7 +202,7 @@ const CambiarContrasenaContent = () => {
           Esta acción requiere verificación de identidad
         </Text>
         <Text style={styles.verificationSubtext} onPress={handleSecureAction}>
-          Toca aquí para verificar
+          {biometricPreferences.useBiometricForPassword ? 'Toca aquí para verificar con biometría' : 'Toca aquí para continuar'}
         </Text>
       </View>
     );
@@ -308,12 +392,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: theme.colors.border.light
   },
+  switchRowDisabled: {
+    opacity: 0.5,
+    backgroundColor: theme.colors.background,
+  },
   switchLabel: { 
     flex: 1, 
     fontSize: theme.fontSize.md, 
     marginLeft: theme.spacing.md, 
     color: theme.colors.text.primary,
     lineHeight: 20
+  },
+  switchLabelDisabled: {
+    color: theme.colors.text.secondary,
+  },
+  disabledNotice: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+    fontStyle: 'italic',
+    paddingHorizontal: theme.spacing.md,
   },
   availableText: { 
     marginTop: theme.spacing.lg, 

@@ -14,6 +14,7 @@ export default function HomeLayout() {
         name="index" 
         options={{
           animation: 'fade',
+          gestureEnabled: false
         }}
       />
       <Stack.Screen 

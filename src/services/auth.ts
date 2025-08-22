@@ -70,6 +70,8 @@ export class AuthService {
           error: 'No se pudo obtener información del usuario'
         };
       }
+
+      console.log(userData)
       
       return {
         success: true,
