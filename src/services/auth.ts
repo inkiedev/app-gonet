@@ -71,8 +71,9 @@ export class AuthService {
         };
       }
 
-      console.log(userData)
-      
+      const { secureStorageService } = await import('./secure-storage');
+      await secureStorageService.saveUserData(userData);
+
       return {
         success: true,
         user: {
@@ -120,6 +121,8 @@ export class AuthService {
     try {
       const { secureStorageService } = await import('./secure-storage');
       await secureStorageService.clearCredentials();
+      await secureStorageService.clearUserData();
+      await secureStorageService.clearBiometricPreferences();
     } catch (error) {
       console.error('Logout error:', error);
       throw new Error('Error during logout');
@@ -146,7 +149,7 @@ export class AuthService {
   } catch (error) {
     console.error('Register error on auth.ts:', error);
     return {
-      success: "false",
+      success: false,
       error: error instanceof Error ? error.message : 'Error de conexión'
     };
   }
