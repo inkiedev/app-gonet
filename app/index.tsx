@@ -1,12 +1,12 @@
+import { AuthGuest } from "@/components/auth/auth-guest";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
-import { AuthGuest } from "@/components/auth/AuthGuest";
-import { useBiometricAuth } from "@/hooks/useBiometricAuth";
+import { useBiometricAuth } from "@/hooks/use-biometric-auth";
 import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
 import { RootState } from "@/store";
-import { completeBiometricVerification, restoreSession, loadBiometricPreferences } from "@/store/slices/auth-slice";
+import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from "@/store/slices/auth-slice";
 import { setUser } from "@/store/slices/user-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";

@@ -1,7 +1,7 @@
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
-import { useBiometricAuth } from '@/hooks/useBiometricAuth';
+import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
 import { loadBiometricPreferences, saveBiometricPreferences, updateBiometricPreferences } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
