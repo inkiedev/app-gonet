@@ -122,7 +122,7 @@ export default function PublicHomeScreen() {
           });
 
           if (result.success && result.user) {
-            await dispatch(loadBiometricPreferences());
+            await dispatch(loadBiometricPreferences() as any);
             dispatch(restoreSession({
               uid: result.user.uid,
               password: storedCredentials.password,

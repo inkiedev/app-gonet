@@ -1,14 +1,17 @@
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSelector, useDispatch } from 'react-redux';
 
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/custom-button';
 import { useResponsive } from '@/hooks/use-responsive';
 import { theme } from '@/styles/theme';
+import { RootState } from '@/store';
+import { loadUserData } from '@/store/slices/auth-slice';
 
 interface UserField {
   label: string;
@@ -16,38 +19,53 @@ interface UserField {
   icon?: string;
 }
 
-const user = {
-  cedula: '0102525225-1',
-  email: 'asdf@gmail.com',
-  phone: '0990909809',
-  address: 'Av. Cerca 1-01 y Transversal',
-  name: 'Juan Gonzales Gonzales',
-}
-
 export default function AjustesScreen() {
   const router = useRouter();
+  const dispatch = useDispatch();
   const { isSmall, isTablet } = useResponsive();
   const [isEditing, setIsEditing] = useState(false);
+  const { userData } = useSelector((state: RootState) => state.auth);
+
+  useEffect(() => {
+    if (!userData) {
+      dispatch(loadUserData() as any);
+    }
+  }, [dispatch, userData]);
 
   const userFields: UserField[] = [
     {
       label: 'Cédula',
-      value: user?.cedula || '0102525225-1',
+      value: userData?.vat || 'No disponible',
       icon: 'card-outline'
     },
     {
       label: 'Correo',
-      value: user?.email || 'john@example.com',
+      value: userData?.email || 'No disponible',
       icon: 'mail-outline'
     },
     {
-      label: 'Contacto',
-      value: user?.phone || '0990909809',
+      label: 'Móvil',
+      value: userData?.mobile || 'No disponible',
       icon: 'call-outline'
     },
     {
+      label: 'Teléfono',
+      value: userData?.phone || 'No disponible',
+      icon: 'call-outline'
+    },
+    {
+      label: 'Ciudad',
+      value: userData?.city || 'No disponible',
+      icon: 'location-outline'
+    },
+    {
       label: 'Dirección',
-      value: user?.address || 'Av. Cerca 1-01 y Transversal',
+      value: userData?.street || 'No disponible',
+      icon: 'location-outline'
+    },
+    {
+      label: 'Dirección 2',
+      value: userData?.street2 || 'No disponible',
       icon: 'location-outline'
     },
   ];
@@ -98,7 +116,7 @@ export default function AjustesScreen() {
             styles.userName,
             { fontSize: isSmall ? theme.fontSize.xl : theme.fontSize.xxl }
           ]}>
-            {user?.name || 'John Doe'}
+            {userData?.name || 'Usuario'}
           </Text>
         </View>
 

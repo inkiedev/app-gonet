@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, saveBiometricPreferences, updateBiometricPreferences } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, saveBiometricPreferences, updateBiometricPreferences, loadUserData } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from "react";
@@ -108,8 +108,9 @@ const AjustesContent = () => {
 };
 
 const ActualizarDatosContent = () => {
+  const dispatch = useDispatch();
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
-  const { biometricPreferences } = useSelector((state: RootState) => state.auth);
+  const { biometricPreferences, userData } = useSelector((state: RootState) => state.auth);
   const [isVerified, setIsVerified] = useState(false);
 
   useEffect(() => {
@@ -118,7 +119,11 @@ const ActualizarDatosContent = () => {
     } else {
       setIsVerified(false);
     }
-  }, [biometricPreferences.useBiometricForPassword]);
+    
+    if (!userData) {
+      dispatch(loadUserData() as any);
+    }
+  }, [biometricPreferences.useBiometricForPassword, dispatch, userData]);
 
   const handleSecureAction = async () => {
     if (biometricPreferences.useBiometricForPassword) {
@@ -156,9 +161,11 @@ const ActualizarDatosContent = () => {
     <>
       <Text style={styles.tabTitle}>Actualizar datos</Text>
       <Input placeholder="Contraseña actual" secureTextEntry />
-      <Input placeholder="Correo" />
-      <Input placeholder="Teléfono" />
-      <Input placeholder="Teléfono opcional" />
+      <Input placeholder="Correo" value={userData?.email || ''} />
+      <Input placeholder="Teléfono móvil" value={userData?.mobile || ''} />
+      <Input placeholder="Teléfono fijo" value={userData?.phone || ''} />
+      <Input placeholder="Dirección" value={userData?.street || ''} />
+      <Input placeholder="Ciudad" value={userData?.city || ''} />
     </>
   );
 };
@@ -219,28 +226,11 @@ const CambiarContrasenaContent = () => {
 };
 
 
-export const defaultUser = {
-  nombre: "Juan Gonzales",
-  campos: [
-    { campo: "CEDULA", valor: "0123456789" },
-    { campo: "CORREO", valor: "correo@correo.com" },
-    { campo: "TELF1", valor: "0124910258" },
-    { campo: "TELF2", valor: "1234567890" },
-  ],
-};
 
 
 /* --- Pantalla principal --- */
 export default function PerfilScreen() {
   const router = useRouter();
-  const nombre = "Juan Gonzales";
-  const campos = [
-    { campo: "CEDULA", valor: "0123456789" },
-    { campo: "CORREO", valor: "correo@correo.com" },
-    { campo: "TELF1", valor: "0124910258" },
-    { campo: "TELF2", valor: "1234567890" },
-  ];
-  
   const handleGoBack = () => {
     router.back();
   };
@@ -258,21 +248,6 @@ export default function PerfilScreen() {
       />
 
       <ScrollView style={styles.content}>
-        <Text style={styles.title}>Información</Text>
-        <Text style={styles.nombre}>{nombre}</Text>
-
-        <View style={styles.infoContainer}>
-          {campos.map((item, idx) => (
-            <View
-              style={idx === campos.length - 1 ? styles.lastInfoRow : styles.infoRow}
-              key={idx}
-            >
-              <Text style={styles.field}>{item.campo}</Text>
-              <Text style={styles.value}>{item.valor}</Text>
-            </View>
-          ))}
-        </View>
-
         <View style={styles.tabsContainer}>
           <Tabs
             tabs={[

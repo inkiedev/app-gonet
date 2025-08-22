@@ -8,21 +8,16 @@ import { SideMenu } from '@/components/app/side-menu';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { Header } from '@/components/layout/header';
 import { authService } from '@/services/auth';
-import { logout } from '@/store/slices/auth-slice';
+import { logout, loadUserData } from '@/store/slices/auth-slice';
 import { clearUser } from '@/store/slices/user-slice';
 import { theme } from '@/styles/theme';
+import { RootState } from '@/store';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
 import { Animated, BackHandler, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
-const mockUser = {
-  firstName: 'Juan',
-  lastName: 'Gonzales',
-  plan: 'GoPlus',
-  speed: 750,
-};
 
 const iconOptions = [
   {
@@ -51,6 +46,7 @@ export default function HomeScreen() {
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
   const dispatch = useDispatch();
+  const { userData } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {
     const backAction = () => {
@@ -65,6 +61,12 @@ export default function HomeScreen() {
 
     return () => backHandler.remove();
   }, []);
+
+  useEffect(() => {
+    if (!userData) {
+      dispatch(loadUserData() as any);
+    }
+  }, [dispatch, userData]);
 
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);
@@ -102,7 +104,7 @@ export default function HomeScreen() {
 
     const route = routeMap[item];
     if (route) {
-      router.push(route);
+      router.push(route as any);
     }
   };
 
@@ -130,8 +132,7 @@ export default function HomeScreen() {
           }}
           centerContent={
             <View style={styles.userInfo}>
-              <Text style={styles.userName}>{mockUser.firstName}</Text>
-              <Text style={styles.userName}>{mockUser.lastName}</Text>
+              <Text style={styles.userName}>{userData?.name || 'Usuario'}</Text>
             </View>
           }
           rightAction={{
@@ -143,8 +144,8 @@ export default function HomeScreen() {
 
         <View style={styles.content}>
           <HomeExpandableCard
-            plan={mockUser.plan}
-            speed={mockUser.speed}
+            plan="GoNet"
+            speed={750}
             style={styles.planCard}
             onToggle={handleCardToggle}
           />

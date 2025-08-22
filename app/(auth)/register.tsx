@@ -106,7 +106,7 @@ export default function RegisterScreen() {
       } else if (result.error && result.error.includes("No se encontró contacto con identificador")) {
 
         Alert.alert("Error", "No hay ninguna cuenta asociada a ese identificador.");
-        router.navigate('/contactForm')
+        router.navigate('/contact-form')
 
 
       }
