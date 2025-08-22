@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   CREDENTIALS: 'secure_credentials',
   REMEMBER_ME: 'remember_me',
   BIOMETRIC_PREFERENCES: 'biometric_preferences',
+  USER_DATA: 'user_data',
 };
 
 const ENCRYPTION_KEY = 'gonet_app_secure_key_2024';
@@ -20,6 +21,18 @@ export interface StoredCredentials {
 export interface BiometricPreferences {
   useBiometricForPassword: boolean;
   useBiometricForLogin: boolean;
+}
+
+export interface UserData {
+  id: number;
+  name: string;
+  email: string;
+  mobile: string;
+  phone: string;
+  street: string;
+  city: string;
+  street2: string;
+  vat: string;
 }
 
 class SecureStorageService {
@@ -138,6 +151,36 @@ class SecureStorageService {
       await this.deleteSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
     } catch (error) {
       console.error('Error clearing biometric preferences:', error);
+    }
+  }
+
+  async saveUserData(userData: UserData): Promise<void> {
+    try {
+      await this.setSecureItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+    } catch (error) {
+      console.error('Error saving user data:', error);
+      throw new Error('No se pudieron guardar los datos del usuario');
+    }
+  }
+
+  async getUserData(): Promise<UserData | null> {
+    try {
+      const userDataString = await this.getSecureItem(STORAGE_KEYS.USER_DATA);
+      if (!userDataString) {
+        return null;
+      }
+      return JSON.parse(userDataString);
+    } catch (error) {
+      console.error('Error getting user data:', error);
+      return null;
+    }
+  }
+
+  async clearUserData(): Promise<void> {
+    try {
+      await this.deleteSecureItem(STORAGE_KEYS.USER_DATA);
+    } catch (error) {
+      console.error('Error clearing user data:', error);
     }
   }
 }

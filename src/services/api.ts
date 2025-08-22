@@ -4,14 +4,14 @@ interface OdooAuthResult {
 
 interface OdooUserData {
   id: number;
-  login: string;
   name: string;
   email: string;
-  active: boolean;
-  partner_id: number;
-  partner_name: string;
-  partner_email: string;
-  partner_vat: string;
+  mobile: string;
+  phone: string;
+  street: string;
+  city: string;
+  street2: string;
+  vat: string;
 }
 
 interface OdooJsonRpcRequest {
@@ -112,11 +112,11 @@ class ApiService {
       args: [database, uid, password, 'my.app.api', 'get_user_data', [uid]]
     });
 
-    if (!result || typeof result !== 'object') {
+    if (!result || !Array.isArray(result) || result.length === 0) {
       throw new Error('Invalid user data response');
     }
 
-    return result;
+    return result[0];
   }
 
   async updateUserProfile(database: string, uid: number, password: string, userId: number, data: any): Promise<boolean> {

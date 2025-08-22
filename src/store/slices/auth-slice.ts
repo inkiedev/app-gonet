@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { secureStorageService, BiometricPreferences } from '@/services/secure-storage';
+import { secureStorageService, BiometricPreferences, UserData } from '@/services/secure-storage';
 
 export const loadBiometricPreferences = createAsyncThunk(
   'auth/loadBiometricPreferences',
@@ -17,6 +17,22 @@ export const saveBiometricPreferences = createAsyncThunk(
   }
 );
 
+export const saveUserData = createAsyncThunk(
+  'auth/saveUserData',
+  async (userData: UserData) => {
+    await secureStorageService.saveUserData(userData);
+    return userData;
+  }
+);
+
+export const loadUserData = createAsyncThunk(
+  'auth/loadUserData',
+  async () => {
+    const userData = await secureStorageService.getUserData();
+    return userData;
+  }
+);
+
 interface AuthState {
   isAuthenticated: boolean;
   uid: number | null;
@@ -28,6 +44,7 @@ interface AuthState {
     useBiometricForPassword: boolean;
     useBiometricForLogin: boolean;
   };
+  userData: UserData | null;
 }
 
 const initialState: AuthState = {
@@ -41,6 +58,7 @@ const initialState: AuthState = {
     useBiometricForPassword: false,
     useBiometricForLogin: false,
   },
+  userData: null,
 };
 
 const authSlice = createSlice({
@@ -84,7 +102,9 @@ const authSlice = createSlice({
         useBiometricForPassword: false,
         useBiometricForLogin: false,
       };
+      state.userData = null;
       secureStorageService.clearBiometricPreferences();
+      secureStorageService.clearUserData();
     },
     sessionLogout: (state) => {
       state.isAuthenticated = false;
@@ -98,7 +118,9 @@ const authSlice = createSlice({
           useBiometricForPassword: false,
           useBiometricForLogin: false,
         };
+        state.userData = null;
         secureStorageService.clearBiometricPreferences();
+        secureStorageService.clearUserData();
       }
     },
     clearSession: (state) => {
@@ -128,6 +150,14 @@ const authSlice = createSlice({
       })
       .addCase(saveBiometricPreferences.fulfilled, (state, action) => {
         state.biometricPreferences = action.payload;
+      })
+      .addCase(saveUserData.fulfilled, (state, action) => {
+        state.userData = action.payload;
+      })
+      .addCase(loadUserData.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.userData = action.payload;
+        }
       });
   },
 });
