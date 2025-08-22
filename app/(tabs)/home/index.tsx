@@ -9,7 +9,6 @@ import { AuthGuard } from '@/components/auth/auth-guard';
 import { Header } from '@/components/layout/header';
 import { authService } from '@/services/auth';
 import { logout, loadUserData } from '@/store/slices/auth-slice';
-import { clearUser } from '@/store/slices/user-slice';
 import { theme } from '@/styles/theme';
 import { RootState } from '@/store';
 import { useRouter } from 'expo-router';
@@ -112,7 +111,6 @@ export default function HomeScreen() {
     try {
       await authService.logout();
       dispatch(logout());
-      dispatch(clearUser());
       
       // Now should redirect properly to main index
       router.replace('/');

@@ -25,7 +25,6 @@ import { Input } from '@/components/ui/custom-input';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
 import { loginSuccess } from '@/store/slices/auth-slice';
-import { setUser } from '@/store/slices/user-slice';
 import { theme } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -73,12 +72,6 @@ export default function LoginScreen() {
           };
 
           dispatch(loginSuccess(loginData));
-          dispatch(setUser({
-            id: result.user.id,
-            name: result.user.name,
-            email: result.user.email,
-            uid: result.user.uid
-          }));
 
           if (data.rememberMe) {
             console.log('Guardando credenciales en el dispositivo')

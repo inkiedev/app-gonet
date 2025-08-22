@@ -7,7 +7,6 @@ import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
 import { RootState } from "@/store";
 import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from "@/store/slices/auth-slice";
-import { setUser } from "@/store/slices/user-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -128,12 +127,6 @@ export default function PublicHomeScreen() {
               password: storedCredentials.password,
               username: storedCredentials.username,
               rememberMe: true
-            }));
-            dispatch(setUser({
-              id: result.user.id,
-              name: result.user.name,
-              email: result.user.email,
-              uid: result.user.uid
             }));
           }
         }
