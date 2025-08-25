@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, saveBiometricPreferences, updateBiometricPreferences, loadUserData } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from "react";
@@ -172,38 +172,11 @@ const ActualizarDatosContent = () => {
 };
 
 const CambiarContrasenaContent = () => {
-  const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
-  const { biometricPreferences } = useSelector((state: RootState) => state.auth);
-  const [isVerified, setIsVerified] = useState(false);
+  const dispatch = useDispatch();
+  const { uid, username, rememberMe } = useSelector((state: RootState) => state.auth);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-
-  useEffect(() => {
-    if (!biometricPreferences.useBiometricForPassword) {
-      setIsVerified(true);
-    } else {
-      setIsVerified(false);
-    }
-  }, [biometricPreferences.useBiometricForPassword]);
-
-  const handleSecureAction = async () => {
-    if (biometricPreferences.useBiometricForPassword) {
-      const isAvailable = await checkBiometricAvailability();
-      if (isAvailable) {
-        const result = await authenticateWithBiometrics();
-        if (result.success) {
-          setIsVerified(true);
-        } else {
-          Alert.alert('Error', 'Autenticación biométrica fallida');
-        }
-      } else {
-        Alert.alert('Error', 'Autenticación biométrica no disponible');
-      }
-    } else {
-      setIsVerified(true);
-    }
-  };
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
@@ -217,7 +190,6 @@ const CambiarContrasenaContent = () => {
 
     try {
       const { authService } = await import('@/services/auth');
-      // First, validate the current password
       const { secureStorageService } = await import('@/services/secure-storage');
       const credentials = await secureStorageService.getCredentials();
       if (!credentials) {
@@ -232,9 +204,16 @@ const CambiarContrasenaContent = () => {
         return;
       }
 
-      // If current password is correct, proceed to change the password
       const response = await authService.changePassword(newPassword);
       if (response.success) {
+        if (uid && username) {
+          await dispatch(updateStoredPassword({ 
+            newPassword, 
+            uid, 
+            username, 
+            rememberMe 
+          }) as any);
+        }
         Alert.alert('Éxito', 'Contraseña actualizada correctamente');
         setCurrentPassword('');
         setNewPassword('');
@@ -246,20 +225,6 @@ const CambiarContrasenaContent = () => {
       Alert.alert('Error', 'Ocurrió un error inesperado');
     }
   };
-
-  if (!isVerified) {
-    return (
-      <View style={styles.verificationContainer}>
-        <Text style={styles.tabTitle}>Actualizar contraseña</Text>
-        <Text style={styles.verificationText}>
-          Esta acción requiere verificación de identidad
-        </Text>
-        <Text style={styles.verificationSubtext} onPress={handleSecureAction}>
-          {biometricPreferences.useBiometricForPassword ? 'Toca aquí para verificar con biometría' : 'Toca aquí para continuar'}
-        </Text>
-      </View>
-    );
-  }
 
   return (
     <>
@@ -286,9 +251,6 @@ const CambiarContrasenaContent = () => {
     </>
   );
 };
-
-
-
 
 /* --- Pantalla principal --- */
 export default function PerfilScreen() {

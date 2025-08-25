@@ -171,14 +171,11 @@ class ApiService {
       throw new Error('All parameters are required');
     }
 
-    
-
     const result = await this.makeJsonRpcRequest('call', {
       service: 'object',
       method: 'execute',
       args: [database, 2, 'admin', 'my.app.api', 'request_registration',vat]
     });
-
 
     return result;
   }
@@ -196,8 +193,6 @@ class ApiService {
       method: 'execute',
       args: [database, uid, password, 'my.app.api', 'change_password', uid, password,new_password]
     });
-
-    console.log(result)
 
     return result;
   }
