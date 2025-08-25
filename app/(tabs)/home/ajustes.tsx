@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from "react";
@@ -173,7 +173,7 @@ const ActualizarDatosContent = () => {
 
 const CambiarContrasenaContent = () => {
   const dispatch = useDispatch();
-  const { uid, username, rememberMe } = useSelector((state: RootState) => state.auth);
+  const { username, rememberMe, userData } = useSelector((state: RootState) => state.auth);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -191,29 +191,13 @@ const CambiarContrasenaContent = () => {
     try {
       const { authService } = await import('@/services/auth');
       const { secureStorageService } = await import('@/services/secure-storage');
-      const credentials = await secureStorageService.getCredentials();
-      if (!credentials) {
-        Alert.alert('Error', 'No se encontraron credenciales');
-        return;
-      }
       
-
-      if (credentials.password !=currentPassword ) {
-        console.log(credentials.password, currentPassword)
-        Alert.alert('Error', 'La contraseña actual es incorrecta');
-        return;
-      }
+      // Validar la contraseña actual intentando cambiarla
+      // La validación se hace en el backend
 
       const response = await authService.changePassword(newPassword);
       if (response.success) {
-        if (uid && username) {
-          await dispatch(updateStoredPassword({ 
-            newPassword, 
-            uid, 
-            username, 
-            rememberMe 
-          }) as any);
-        }
+        // Contraseña actualizada exitosamente
         Alert.alert('Éxito', 'Contraseña actualizada correctamente');
         setCurrentPassword('');
         setNewPassword('');

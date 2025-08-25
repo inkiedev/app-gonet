@@ -24,7 +24,8 @@ import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
-import { loginSuccess } from '@/store/slices/auth-slice';
+import { apiService } from '@/services/api';
+import { loginSuccess, saveRememberMe } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -64,23 +65,26 @@ export default function LoginScreen() {
 
       if (result.success && result.user) {
         try {
+          // Obtener el sessionId del apiService
+          const sessionId = apiService.getSessionId();
+          
+          if (!sessionId) {
+            throw new Error('No se pudo obtener el session ID');
+          }
+
           const loginData = {
-            uid: result.user.uid,
-            password: data.password,
             username: data.username,
-            rememberMe: data.rememberMe || false
+            rememberMe: data.rememberMe || false,
+            sessionId: sessionId
           };
 
           dispatch(loginSuccess(loginData));
 
-          if (data.rememberMe) {
-            console.log('Guardando credenciales en el dispositivo')
-            await secureStorageService.saveCredentials({
-              uid: result.user.uid,
-              username: data.username,
-              password: data.password
-            }, true);
-          }
+          // Guardar preferencias de "recuérdame"
+          await dispatch(saveRememberMe({
+            username: data.username,
+            rememberMe: data.rememberMe || false
+          }));
 
           Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
           router.replace('/home');

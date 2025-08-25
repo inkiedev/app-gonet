@@ -5,8 +5,9 @@ import { PlanCard } from "@/components/ui/plan-card";
 import { useBiometricAuth } from "@/hooks/use-biometric-auth";
 import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
+import { apiService } from "@/services/api";
 import { RootState } from "@/store";
-import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from "@/store/slices/auth-slice";
+import { completeBiometricVerification, loadBiometricPreferences, restoreSession, loadRememberMe } from "@/store/slices/auth-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -110,35 +111,35 @@ export default function PublicHomeScreen() {
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
 
   useEffect(() => {
-    const checkStoredCredentials = async () => {
+    const checkStoredSession = async () => {
       try {
-        const storedCredentials = await secureStorageService.getCredentials();
+        // Cargar preferencias de recuérdame
+        await dispatch(loadRememberMe() as any);
         
-        if (storedCredentials) {
-          const result = await authService.login({
-            username: storedCredentials.username,
-            password: storedCredentials.password
-          });
-
-          if (result.success && result.user) {
-            await dispatch(loadBiometricPreferences() as any);
+        // Intentar restaurar la sesión
+        const sessionRestoreResult = await authService.restoreSession();
+        
+        if (sessionRestoreResult.success && sessionRestoreResult.userData && sessionRestoreResult.username) {
+          await dispatch(loadBiometricPreferences() as any);
+          
+          const sessionId = apiService.getSessionId();
+          if (sessionId) {
             dispatch(restoreSession({
-              uid: result.user.uid,
-              password: storedCredentials.password,
-              username: storedCredentials.username,
-              rememberMe: true
+              username: sessionRestoreResult.username,
+              rememberMe: true,
+              sessionId: sessionId
             }));
           }
         }
       } catch (error) {
-        console.error('Auto-login error:', error);
+        console.error('Session restore error:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     if (!isAuthenticated) {
-      checkStoredCredentials();
+      checkStoredSession();
     } else {
       setIsLoading(false);
     }

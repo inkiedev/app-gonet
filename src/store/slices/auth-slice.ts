@@ -33,26 +33,24 @@ export const loadUserData = createAsyncThunk(
   }
 );
 
-export const updateStoredPassword = createAsyncThunk(
-  'auth/updateStoredPassword',
-  async ({ newPassword, uid, username, rememberMe }: { 
-    newPassword: string; 
-    uid: number; 
-    username: string; 
-    rememberMe: boolean; 
-  }) => {
-    if (rememberMe) {
-      const updatedCredentials = { uid, username, password: newPassword };
-      await secureStorageService.saveCredentials(updatedCredentials, rememberMe);
-    }
-    return newPassword;
+export const loadRememberMe = createAsyncThunk(
+  'auth/loadRememberMe',
+  async () => {
+    const rememberData = await secureStorageService.getRememberMe();
+    return rememberData;
+  }
+);
+
+export const saveRememberMe = createAsyncThunk(
+  'auth/saveRememberMe',
+  async ({ username, rememberMe }: { username: string; rememberMe: boolean }) => {
+    await secureStorageService.saveRememberMe(username, rememberMe);
+    return { username, rememberMe };
   }
 );
 
 interface AuthState {
   isAuthenticated: boolean;
-  uid: number | null;
-  password: string | null;
   username: string | null;
   rememberMe: boolean;
   needsBiometricVerification: boolean;
@@ -61,12 +59,11 @@ interface AuthState {
     useBiometricForLogin: boolean;
   };
   userData: UserData | null;
+  sessionId: string | null;
 }
 
 const initialState: AuthState = {
   isAuthenticated: false,
-  uid: null,
-  password: null,
   username: null,
   rememberMe: false,
   needsBiometricVerification: false,
@@ -75,6 +72,7 @@ const initialState: AuthState = {
     useBiometricForLogin: false,
   },
   userData: null,
+  sessionId: null,
 };
 
 const authSlice = createSlice({
@@ -82,35 +80,29 @@ const authSlice = createSlice({
   initialState,
   reducers: {
     loginSuccess: (state, action: PayloadAction<{
-      uid: number;
-      password: string;
       username: string;
       rememberMe: boolean;
+      sessionId: string;
     }>) => {
       state.isAuthenticated = true;
-      state.uid = action.payload.uid;
-      state.password = action.payload.password;
       state.username = action.payload.username;
       state.rememberMe = action.payload.rememberMe;
+      state.sessionId = action.payload.sessionId;
       state.needsBiometricVerification = false;
     },
     restoreSession: (state, action: PayloadAction<{
-      uid: number;
-      password: string;
       username: string;
       rememberMe: boolean;
+      sessionId: string;
     }>) => {
       state.isAuthenticated = true;
-      state.uid = action.payload.uid;
-      state.password = action.payload.password;
       state.username = action.payload.username;
       state.rememberMe = action.payload.rememberMe;
+      state.sessionId = action.payload.sessionId;
       state.needsBiometricVerification = true;
     },
     logout: (state) => {
       state.isAuthenticated = false;
-      state.uid = null;
-      state.password = null;
       state.username = null;
       state.rememberMe = false;
       state.needsBiometricVerification = false;
@@ -119,14 +111,13 @@ const authSlice = createSlice({
         useBiometricForLogin: false,
       };
       state.userData = null;
-      secureStorageService.clearBiometricPreferences();
-      secureStorageService.clearUserData();
+      state.sessionId = null;
+      // Los datos se limpian desde el authService
     },
     sessionLogout: (state) => {
       state.isAuthenticated = false;
+      state.sessionId = null;
       if (!state.rememberMe) {
-        state.uid = null;
-        state.password = null;
         state.username = null;
         state.rememberMe = false;
         state.needsBiometricVerification = false;
@@ -135,9 +126,8 @@ const authSlice = createSlice({
           useBiometricForLogin: false,
         };
         state.userData = null;
-        secureStorageService.clearBiometricPreferences();
-        secureStorageService.clearUserData();
       }
+      // La limpieza de datos se maneja desde el authService
     },
     clearSession: (state) => {
       state.isAuthenticated = false;
@@ -156,8 +146,8 @@ const authSlice = createSlice({
         state.biometricPreferences.useBiometricForLogin = action.payload.useBiometricForLogin;
       }
     },
-    updatePassword: (state, action: PayloadAction<string>) => {
-      state.password = action.payload;
+    setSessionId: (state, action: PayloadAction<string>) => {
+      state.sessionId = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -178,11 +168,18 @@ const authSlice = createSlice({
           state.userData = action.payload;
         }
       })
-      .addCase(updateStoredPassword.fulfilled, (state, action) => {
-        state.password = action.payload;
+      .addCase(loadRememberMe.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.rememberMe = action.payload.rememberMe;
+          state.username = action.payload.username;
+        }
+      })
+      .addCase(saveRememberMe.fulfilled, (state, action) => {
+        state.rememberMe = action.payload.rememberMe;
+        state.username = action.payload.username;
       });
   },
 });
 
-export const { loginSuccess, restoreSession, logout, sessionLogout, clearSession, completeBiometricVerification, updateBiometricPreferences, updatePassword } = authSlice.actions;
+export const { loginSuccess, restoreSession, logout, sessionLogout, clearSession, completeBiometricVerification, updateBiometricPreferences, setSessionId } = authSlice.actions;
 export default authSlice.reducer;
