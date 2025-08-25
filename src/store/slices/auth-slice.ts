@@ -33,6 +33,22 @@ export const loadUserData = createAsyncThunk(
   }
 );
 
+export const updateStoredPassword = createAsyncThunk(
+  'auth/updateStoredPassword',
+  async ({ newPassword, uid, username, rememberMe }: { 
+    newPassword: string; 
+    uid: number; 
+    username: string; 
+    rememberMe: boolean; 
+  }) => {
+    if (rememberMe) {
+      const updatedCredentials = { uid, username, password: newPassword };
+      await secureStorageService.saveCredentials(updatedCredentials, rememberMe);
+    }
+    return newPassword;
+  }
+);
+
 interface AuthState {
   isAuthenticated: boolean;
   uid: number | null;
@@ -140,6 +156,9 @@ const authSlice = createSlice({
         state.biometricPreferences.useBiometricForLogin = action.payload.useBiometricForLogin;
       }
     },
+    updatePassword: (state, action: PayloadAction<string>) => {
+      state.password = action.payload;
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -158,9 +177,12 @@ const authSlice = createSlice({
         if (action.payload) {
           state.userData = action.payload;
         }
+      })
+      .addCase(updateStoredPassword.fulfilled, (state, action) => {
+        state.password = action.payload;
       });
   },
 });
 
-export const { loginSuccess, restoreSession, logout, sessionLogout, clearSession, completeBiometricVerification, updateBiometricPreferences } = authSlice.actions;
+export const { loginSuccess, restoreSession, logout, sessionLogout, clearSession, completeBiometricVerification, updateBiometricPreferences, updatePassword } = authSlice.actions;
 export default authSlice.reducer;
