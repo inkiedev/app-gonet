@@ -3,7 +3,7 @@ import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, saveBiometricPreferences, updateBiometricPreferences, loadUserData } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from "react";
@@ -400,7 +400,9 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xl, 
     fontWeight: theme.fontWeight.bold, 
     color: theme.colors.primaryDark,
-    textAlign: "center"
+    textAlign: "center",
+    marginBottom: theme.spacing.xl
+    
   },
   subTitle: { 
     fontSize: theme.fontSize.lg, 
