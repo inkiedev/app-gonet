@@ -4,13 +4,12 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 const STORAGE_KEYS = {
-  CREDENTIALS: 'secure_credentials',
-  REMEMBER_ME: 'remember_me',
-  BIOMETRIC_PREFERENCES: 'biometric_preferences',
-  USER_DATA: 'user_data',
+  MASTER_KEY: 'master_encryption_key',
+  CREDENTIALS: 'encrypted_credentials',
+  REMEMBER_ME: 'remember_me_flag',
+  BIOMETRIC_PREFERENCES: 'encrypted_biometric_preferences',
+  USER_DATA: 'encrypted_user_data',
 };
-
-const ENCRYPTION_KEY = 'gonet_app_secure_key_2024';
 
 export interface StoredCredentials {
   uid: number;
@@ -36,47 +35,82 @@ export interface UserData {
 }
 
 class SecureStorageService {
-  private encrypt(data: string): string {
-    return CryptoJS.AES.encrypt(data, ENCRYPTION_KEY).toString();
+  private generateMasterKey(): string {
+    return CryptoJS.lib.WordArray.random(256/8).toString();
   }
 
-  private decrypt(encryptedData: string): string {
-    const bytes = CryptoJS.AES.decrypt(encryptedData, ENCRYPTION_KEY);
+  private async getMasterKey(): Promise<string | null> {
+    if (Platform.OS === 'web') {
+      return await AsyncStorage.getItem(STORAGE_KEYS.MASTER_KEY);
+    } else {
+      return await SecureStore.getItemAsync(STORAGE_KEYS.MASTER_KEY);
+    }
+  }
+
+  private async setMasterKey(key: string): Promise<void> {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.setItem(STORAGE_KEYS.MASTER_KEY, key);
+    } else {
+      await SecureStore.setItemAsync(STORAGE_KEYS.MASTER_KEY, key);
+    }
+  }
+
+  private async deleteMasterKey(): Promise<void> {
+    if (Platform.OS === 'web') {
+      await AsyncStorage.removeItem(STORAGE_KEYS.MASTER_KEY);
+    } else {
+      await SecureStore.deleteItemAsync(STORAGE_KEYS.MASTER_KEY);
+    }
+  }
+
+  private async encrypt(data: string): Promise<string> {
+    const masterKey = await this.getMasterKey();
+    if (!masterKey) {
+      throw new Error('Master key not found');
+    }
+    return CryptoJS.AES.encrypt(data, masterKey).toString();
+  }
+
+  private async decrypt(encryptedData: string): Promise<string> {
+    const masterKey = await this.getMasterKey();
+    if (!masterKey) {
+      throw new Error('Master key not found');
+    }
+    const bytes = CryptoJS.AES.decrypt(encryptedData, masterKey);
     return bytes.toString(CryptoJS.enc.Utf8);
   }
 
-  private async setSecureItem(key: string, value: string): Promise<void> {
-    if (Platform.OS === 'web') {
-      const encryptedValue = this.encrypt(value);
-      await AsyncStorage.setItem(key, encryptedValue);
-    } else {
-      await SecureStore.setItemAsync(key, value);
+  private async setEncryptedItem(key: string, value: string): Promise<void> {
+    const encryptedValue = await this.encrypt(value);
+    await AsyncStorage.setItem(key, encryptedValue);
+  }
+
+  private async getEncryptedItem(key: string): Promise<string | null> {
+    const encryptedValue = await AsyncStorage.getItem(key);
+    if (!encryptedValue) return null;
+    try {
+      return await this.decrypt(encryptedValue);
+    } catch (error) {
+      console.error('Error decrypting data:', error);
+      return null;
     }
   }
 
-  private async getSecureItem(key: string): Promise<string | null> {
-    if (Platform.OS === 'web') {
-      const encryptedValue = await AsyncStorage.getItem(key);
-      if (!encryptedValue) return null;
-      return this.decrypt(encryptedValue);
-    } else {
-      return await SecureStore.getItemAsync(key);
-    }
-  }
-
-  private async deleteSecureItem(key: string): Promise<void> {
-    if (Platform.OS === 'web') {
-      await AsyncStorage.removeItem(key);
-    } else {
-      await SecureStore.deleteItemAsync(key);
-    }
+  private async deleteEncryptedItem(key: string): Promise<void> {
+    await AsyncStorage.removeItem(key);
   }
 
   async saveCredentials(credentials: StoredCredentials, rememberMe: boolean): Promise<void> {
     try {
       if (rememberMe) {
-        await this.setSecureItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credentials));
-        await this.setSecureItem(STORAGE_KEYS.REMEMBER_ME, 'true');
+        let masterKey = await this.getMasterKey();
+        if (!masterKey) {
+          masterKey = this.generateMasterKey();
+          await this.setMasterKey(masterKey);
+        }
+        
+        await this.setEncryptedItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credentials));
+        await AsyncStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
       } else {
         await this.clearCredentials();
       }
@@ -88,12 +122,17 @@ class SecureStorageService {
 
   async getCredentials(): Promise<StoredCredentials | null> {
     try {
-      const rememberMe = await this.getSecureItem(STORAGE_KEYS.REMEMBER_ME);
+      const rememberMe = await AsyncStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
       if (rememberMe !== 'true') {
         return null;
       }
 
-      const credentialsData = await this.getSecureItem(STORAGE_KEYS.CREDENTIALS);
+      const masterKey = await this.getMasterKey();
+      if (!masterKey) {
+        return null;
+      }
+
+      const credentialsData = await this.getEncryptedItem(STORAGE_KEYS.CREDENTIALS);
       if (!credentialsData) {
         return null;
       }
@@ -108,8 +147,9 @@ class SecureStorageService {
 
   async clearCredentials(): Promise<void> {
     try {
-      await this.deleteSecureItem(STORAGE_KEYS.CREDENTIALS);
-      await this.deleteSecureItem(STORAGE_KEYS.REMEMBER_ME);
+      await this.deleteEncryptedItem(STORAGE_KEYS.CREDENTIALS);
+      await AsyncStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+      await this.deleteMasterKey();
     } catch (error) {
       console.error('Error clearing credentials:', error);
     }
@@ -117,7 +157,7 @@ class SecureStorageService {
 
   async isRememberMeEnabled(): Promise<boolean> {
     try {
-      const rememberMe = await this.getSecureItem(STORAGE_KEYS.REMEMBER_ME);
+      const rememberMe = await AsyncStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
       return rememberMe === 'true';
     } catch (error) {
       return false;
@@ -126,7 +166,11 @@ class SecureStorageService {
 
   async saveBiometricPreferences(preferences: BiometricPreferences): Promise<void> {
     try {
-      await this.setSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES, JSON.stringify(preferences));
+      const masterKey = await this.getMasterKey();
+      if (!masterKey) {
+        throw new Error('Master key not found');
+      }
+      await this.setEncryptedItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES, JSON.stringify(preferences));
     } catch (error) {
       console.error('Error saving biometric preferences:', error);
       throw new Error('No se pudieron guardar las preferencias biométricas');
@@ -135,7 +179,11 @@ class SecureStorageService {
 
   async getBiometricPreferences(): Promise<BiometricPreferences | null> {
     try {
-      const preferencesData = await this.getSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
+      const masterKey = await this.getMasterKey();
+      if (!masterKey) {
+        return null;
+      }
+      const preferencesData = await this.getEncryptedItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
       if (!preferencesData) {
         return null;
       }
@@ -148,7 +196,7 @@ class SecureStorageService {
 
   async clearBiometricPreferences(): Promise<void> {
     try {
-      await this.deleteSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
+      await this.deleteEncryptedItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
     } catch (error) {
       console.error('Error clearing biometric preferences:', error);
     }
@@ -156,7 +204,11 @@ class SecureStorageService {
 
   async saveUserData(userData: UserData): Promise<void> {
     try {
-      await this.setSecureItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+      const masterKey = await this.getMasterKey();
+      if (!masterKey) {
+        throw new Error('Master key not found');
+      }
+      await this.setEncryptedItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
     } catch (error) {
       console.error('Error saving user data:', error);
       throw new Error('No se pudieron guardar los datos del usuario');
@@ -165,7 +217,11 @@ class SecureStorageService {
 
   async getUserData(): Promise<UserData | null> {
     try {
-      const userDataString = await this.getSecureItem(STORAGE_KEYS.USER_DATA);
+      const masterKey = await this.getMasterKey();
+      if (!masterKey) {
+        return null;
+      }
+      const userDataString = await this.getEncryptedItem(STORAGE_KEYS.USER_DATA);
       if (!userDataString) {
         return null;
       }
@@ -178,7 +234,7 @@ class SecureStorageService {
 
   async clearUserData(): Promise<void> {
     try {
-      await this.deleteSecureItem(STORAGE_KEYS.USER_DATA);
+      await this.deleteEncryptedItem(STORAGE_KEYS.USER_DATA);
     } catch (error) {
       console.error('Error clearing user data:', error);
     }
