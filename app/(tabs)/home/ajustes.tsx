@@ -346,7 +346,9 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xl, 
     fontWeight: theme.fontWeight.bold, 
     color: theme.colors.primaryDark,
-    textAlign: "center"
+    textAlign: "center",
+    marginBottom: theme.spacing.xl
+    
   },
   subTitle: { 
     fontSize: theme.fontSize.lg, 
