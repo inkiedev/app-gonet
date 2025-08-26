@@ -22,6 +22,7 @@ import { AppLogo } from '@/components/app/app-logo';
 import { AuthGuest } from '@/components/auth/auth-guest';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
+import { useNotificationContext } from '@/contexts/NotificationContext';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
 import { loginSuccess } from '@/store/slices/auth-slice';
@@ -40,6 +41,7 @@ export default function LoginScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [loginError, setLoginError] = useState<string>('');
+  const { showSuccess, showError, showWarning } = useNotificationContext();
   const {
     control,
     handleSubmit,
@@ -82,21 +84,37 @@ export default function LoginScreen() {
             }, true);
           }
 
-          Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
+          showSuccess(
+            '¡Bienvenido!',
+            `Hola ${result.user.name}, sesión iniciada correctamente`,
+            3000
+          );
           router.replace('/home');
         } catch (storageError) {
           console.error('Storage error:', storageError);
-          Alert.alert('Login exitoso', `Bienvenido ${result.user.name}`);
+          showWarning(
+            'Advertencia',
+            'Sesión iniciada pero hubo un problema guardando las credenciales',
+            4000
+          );
           router.replace('/home');
         }
       } else {
         setLoginError(result.error || 'Error desconocido');
-        Alert.alert('Error', result.error || 'Credenciales incorrectas');
+        showError(
+          'Error de autenticación',
+          result.error || 'Credenciales incorrectas. Verifica tu usuario y contraseña.',
+          5000
+        );
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Error de conexión';
       setLoginError(errorMessage);
-      Alert.alert('Error', errorMessage);
+      showError(
+        'Error de conexión',
+        'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
+        5000
+      );
     }
   };
 
