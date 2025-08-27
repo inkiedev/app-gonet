@@ -1,6 +1,7 @@
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
+import { useNotificationContext } from '@/contexts/NotificationContext';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
 import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences } from '@/store/slices/auth-slice';
@@ -24,6 +25,7 @@ const AjustesContent = () => {
   const dispatch = useDispatch();
   const { rememberMe, biometricPreferences } = useSelector((state: RootState) => state.auth);
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
+  const { showSuccess, showError } = useNotificationContext();
   
   useEffect(() => {
     if (rememberMe) {
@@ -38,11 +40,11 @@ const AjustesContent = () => {
       if (result.success) {
         return true;
       } else {
-        Alert.alert('Error', 'Verificación biométrica requerida para cambiar ajustes');
+        showError('Verificación requerida', 'Verificación biométrica requerida para cambiar ajustes');
         return false;
       }
     } else {
-      Alert.alert('Error', 'Autenticación biométrica no disponible');
+      showError('Biometría no disponible', 'Autenticación biométrica no disponible en este dispositivo');
       return false;
     }
   };
@@ -113,6 +115,7 @@ const ActualizarDatosContent = () => {
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { biometricPreferences, userData } = useSelector((state: RootState) => state.auth);
   const [isVerified, setIsVerified] = useState(false);
+  const { showError } = useNotificationContext();
 
   useEffect(() => {
     if (!biometricPreferences.useBiometricForPassword) {
@@ -134,10 +137,10 @@ const ActualizarDatosContent = () => {
         if (result.success) {
           setIsVerified(true);
         } else {
-          Alert.alert('Error', 'Autenticación biométrica fallida');
+          showError('Autenticación fallida', 'La verificación biométrica no fue exitosa');
         }
       } else {
-        Alert.alert('Error', 'Autenticación biométrica no disponible');
+        showError('Biometría no disponible', 'Autenticación biométrica no disponible en este dispositivo');
       }
     } else {
       setIsVerified(true);
@@ -177,20 +180,22 @@ const CambiarContrasenaContent = () => {
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
+  const { showSuccess, showError, showWarning } = useNotificationContext();
 
   const handleChangePassword = async () => {
     if (newPassword !== confirmPassword) {
-      Alert.alert('Error', 'Las contraseñas no coinciden');
+      showError('Error de validación', 'Las contraseñas no coinciden. Verifica que ambas sean idénticas.');
       return;
     }
     if (newPassword.length < 4) {
-      Alert.alert('Error', 'La contraseña debe tener al menos 4 caracteres');
+      showError('Contraseña débil', 'La contraseña debe tener al menos 4 caracteres.');
       return;
     }
 
     try {
       const { authService } = await import('@/services/auth');
       const { secureStorageService } = await import('@/services/secure-storage');
+<<<<<<< HEAD
       
       // Validar la contraseña actual intentando cambiarla
       // La validación se hace en el backend
@@ -199,14 +204,52 @@ const CambiarContrasenaContent = () => {
       if (response.success) {
         // Contraseña actualizada exitosamente
         Alert.alert('Éxito', 'Contraseña actualizada correctamente');
+=======
+      const credentials = await secureStorageService.getCredentials();
+      if (!credentials) {
+        showWarning('Credenciales no encontradas', 'No se pudieron recuperar las credenciales guardadas. Intenta cerrar sesión y volver a iniciarla.');
+        return;
+      }
+      
+
+      if (credentials.password !=currentPassword ) {
+        console.log(credentials.password, currentPassword)
+        showError('Contraseña incorrecta', 'La contraseña actual ingresada no es correcta.');
+        return;
+      }
+
+      const response = await authService.changePassword(newPassword);
+      if (response.success) {
+        if (uid && username) {
+          await dispatch(updateStoredPassword({ 
+            newPassword, 
+            uid, 
+            username, 
+            rememberMe 
+          }) as any);
+        }
+        showSuccess(
+          '¡Contraseña actualizada!',
+          'Tu contraseña ha sido cambiada exitosamente. Ya puedes usar la nueva contraseña para iniciar sesión.',
+          5000
+        );
+>>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
       } else {
-        Alert.alert('Error', response.error || 'No se pudo cambiar la contraseña');
+        showError(
+          'Error al cambiar contraseña',
+          response.error || 'No se pudo cambiar la contraseña. Inténtalo nuevamente.',
+          5000
+        );
       }
     } catch (error) {
-      Alert.alert('Error', 'Ocurrió un error inesperado');
+      showError(
+        'Error inesperado',
+        'Ocurrió un error inesperado al cambiar la contraseña. Verifica tu conexión e inténtalo nuevamente.',
+        5000
+      );
     }
   };
 

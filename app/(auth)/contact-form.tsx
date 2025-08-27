@@ -19,6 +19,7 @@ import { AppLogo } from "@/components/app/app-logo";
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import { Select, SelectOption } from "@/components/ui/custom-select";
+import { useNotificationContext } from '@/contexts/NotificationContext';
 import { theme } from "@/styles/theme";
 import { FontAwesome } from "@expo/vector-icons";
 
@@ -38,6 +39,7 @@ type FormData = z.infer<typeof formSchema>;
 
 export default function ContactFormScreen() {
   const router = useRouter();
+  const { showSuccess, showError } = useNotificationContext();
 
   const {
     control,
@@ -56,9 +58,29 @@ export default function ContactFormScreen() {
 
   const onSubmit = async (data: FormData) => {
     try {
+<<<<<<< HEAD
       Alert.alert("Formulario enviado", "Un vendedor se contactara pronto con usted");
+=======
+      // Simulamos el envío del formulario
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      showSuccess(
+        '¡Formulario enviado!',
+        'Hemos recibido tu solicitud. Nos pondremos en contacto contigo pronto.',
+        5000
+      );
+      
+      // Opcional: redirigir de vuelta al login después de un momento
+      setTimeout(() => {
+        router.replace('/login');
+      }, 2000);
+>>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
     } catch (error) {
-      Alert.alert("Error", "No se pudo enviar el formulario");
+      showError(
+        'Error al enviar',
+        'No se pudo enviar el formulario. Por favor, inténtalo nuevamente.',
+        5000
+      );
     }
   };
 

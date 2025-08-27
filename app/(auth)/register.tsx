@@ -20,6 +20,7 @@ import * as z from 'zod';
 import { AppLogo } from '@/components/app/app-logo';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
+import { useNotificationContext } from '@/contexts/NotificationContext';
 import { authService } from '@/services/auth';
 import { theme } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
@@ -61,6 +62,7 @@ export default function RegisterScreen() {
   const [registerError, setRegisterError] = useState<string>('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [emailsended, setEmailSent] = useState(false);
+  const { showSuccess, showError, showInfo, showWarning } = useNotificationContext();
 
 
   const {
@@ -77,7 +79,10 @@ export default function RegisterScreen() {
   const onSubmit = async (data: RegisterFormData) => {
     try {
       if (!acceptedTerms) {
-        Alert.alert('Aviso', 'Debes aceptar los términos y condiciones');
+        showWarning(
+          'Términos requeridos',
+          'Debes aceptar los términos y condiciones para continuar'
+        );
         return;
       }
 
@@ -94,7 +99,11 @@ export default function RegisterScreen() {
           : '*'.repeat(user.length);
       const censoredEmail = `${censoredUser}@${domain}`;
       
-      Alert.alert("Se envió al correo:", censoredEmail);
+      showSuccess(
+        '¡Registro exitoso!',
+        `Se ha enviado un correo de confirmación a: ${censoredEmail}`,
+        6000
+      );
 
       setEmailSent(true);
 
@@ -102,20 +111,32 @@ export default function RegisterScreen() {
       }
       else {
       if (result.error?.includes("Ya existe un usuario asociad")) {
-        Alert.alert("Error", "Ya existe un usuario asociado.");
+        showError(
+          'Usuario existente',
+          'Ya existe un usuario asociado a esta cédula. Si olvidaste tu contraseña, contacta soporte.',
+          5000
+        );
       } else if (result.error && result.error.includes("No se encontró contacto con identificador")) {
-
-        Alert.alert("Error", "No hay ninguna cuenta asociada a ese identificador.");
+        showInfo(
+          'Registro requerido',
+          'No hay ninguna cuenta asociada a ese identificador. Te redirigimos al formulario de contacto.',
+          5000
+        );
         router.navigate('/contact-form')
-
-
       }
         else if (result.error?.includes("Network request failed")){
-          Alert.alert("Error", "Network request failed");
+          showError(
+            'Error de conexión',
+            'No se pudo conectar con el servidor. Verifica tu conexión a internet.',
+            5000
+          );
         }
-
        else {
-        Alert.alert("Error", "Ocurrió un error desconocido.: ");
+        showError(
+          'Error desconocido',
+          'Ocurrió un error inesperado. Por favor, intenta nuevamente.',
+          5000
+        );
         console.log(result);
       }
     }
@@ -130,9 +151,13 @@ export default function RegisterScreen() {
       
     } catch (error) {
       const errorMessage =
-        error instanceof Error ? error.message : 'Connection error';
+        error instanceof Error ? error.message : 'Error de conexión';
       setRegisterError(errorMessage);
-      Alert.alert('Error', errorMessage);
+      showError(
+        'Error de conexión',
+        'No se pudo procesar tu registro. Verifica tu conexión e intenta nuevamente.',
+        5000
+      );
     }
   };
 

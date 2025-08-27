@@ -195,9 +195,8 @@ class ApiService {
       args: [database, username, password, {}]
     });
 
-    console.log(result)
     if (!result || typeof result !== 'number') {
-      throw new Error('Invalid login response');
+      throw new Error('Las credenciales no son correctas');
     }
 
     return { uid: result };

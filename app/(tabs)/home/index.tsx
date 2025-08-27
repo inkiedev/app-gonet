@@ -7,6 +7,7 @@ import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { Header } from '@/components/layout/header';
+import { useNotificationContext } from '@/contexts/NotificationContext';
 import { authService } from '@/services/auth';
 import { logout, loadUserData } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
@@ -46,6 +47,7 @@ export default function HomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => state.auth);
+  const { showSuccess, showError, showInfo } = useNotificationContext();
 
   useEffect(() => {
     const backAction = () => {
@@ -109,13 +111,31 @@ export default function HomeScreen() {
 
   const handleLogout = async () => {
     try {
+      showInfo(
+        'Cerrando sesión...',
+        'Un momento, estamos cerrando tu sesión de forma segura.',
+        2000
+      );
+      
       await authService.logout();
       dispatch(logout());
+      
+      showSuccess(
+        '¡Hasta pronto!',
+        'Tu sesión ha sido cerrada correctamente.',
+        3000
+      );
       
       // Now should redirect properly to main index
       router.replace('/');
     } catch (error) {
       console.error('Logout failed:', error);
+      showError(
+        'Error al cerrar sesión',
+        'Hubo un problema cerrando tu sesión. Por seguridad, serás redirigido al login.',
+        4000
+      );
+      router.replace('/');
     }
   };
 
