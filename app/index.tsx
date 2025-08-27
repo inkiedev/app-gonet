@@ -3,11 +3,11 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
 import { useBiometricAuth } from "@/hooks/use-biometric-auth";
+import { apiService } from "@/services/api";
 import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
-import { apiService } from "@/services/api";
 import { RootState } from "@/store";
-import { completeBiometricVerification, loadBiometricPreferences, restoreSession, loadRememberMe } from "@/store/slices/auth-slice";
+import { completeBiometricVerification, loadBiometricPreferences, loadRememberMe, restoreSession } from "@/store/slices/auth-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -225,7 +225,7 @@ export default function PublicHomeScreen() {
 
         {/* Planes Content */}
         <PlanesContent />
-      </ScrollView>
+      </ScrollView>   
 
         {/* Footer */}
         <Footer />

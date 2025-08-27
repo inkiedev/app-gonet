@@ -56,7 +56,7 @@ export default function ContactFormScreen() {
 
   const onSubmit = async (data: FormData) => {
     try {
-      Alert.alert("Formulario enviado", JSON.stringify(data, null, 2));
+      Alert.alert("Formulario enviado", "Un vendedor se contactara pronto con usted");
     } catch (error) {
       Alert.alert("Error", "No se pudo enviar el formulario");
     }
