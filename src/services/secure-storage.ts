@@ -1,8 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-<<<<<<< HEAD
-=======
 import * as Crypto from 'expo-crypto';
->>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
@@ -14,8 +11,6 @@ const STORAGE_KEYS = {
   USERNAME: 'username',
 };
 
-<<<<<<< HEAD
-=======
 const MASTER_KEY_NAME = 'gonet_master_encryption_key';
 
 export interface StoredCredentials {
@@ -24,7 +19,6 @@ export interface StoredCredentials {
   password: string;
 }
 
->>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
 export interface BiometricPreferences {
   useBiometricForPassword: boolean;
   useBiometricForLogin: boolean;
@@ -43,11 +37,6 @@ export interface UserData {
 }
 
 class SecureStorageService {
-<<<<<<< HEAD
-  private async setSecureItem(key: string, value: string): Promise<void> {
-    if (Platform.OS === 'web') {
-      await AsyncStorage.setItem(key, value);
-=======
   private masterKey: string | null = null;
 
   private async getMasterKey(): Promise<string> {
@@ -63,7 +52,6 @@ class SecureStorageService {
       }
       this.masterKey = masterKey;
       return masterKey;
->>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
     } else {
       let masterKey = await SecureStore.getItemAsync(MASTER_KEY_NAME);
       if (!masterKey) {
@@ -121,12 +109,6 @@ class SecureStorageService {
   }
 
   private async getSecureItem(key: string): Promise<string | null> {
-<<<<<<< HEAD
-    if (Platform.OS === 'web') {
-      return await AsyncStorage.getItem(key);
-    } else {
-      return await SecureStore.getItemAsync(key);
-=======
     const encryptedValue = await AsyncStorage.getItem(key);
     if (!encryptedValue) return null;
     try {
@@ -134,7 +116,6 @@ class SecureStorageService {
     } catch (error) {
       console.error('Error decrypting data:', error);
       return null;
->>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
     }
   }
 

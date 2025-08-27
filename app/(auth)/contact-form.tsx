@@ -3,14 +3,13 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
   ScrollView,
   StyleSheet,
   Text,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import * as z from "zod";
@@ -58,9 +57,6 @@ export default function ContactFormScreen() {
 
   const onSubmit = async (data: FormData) => {
     try {
-<<<<<<< HEAD
-      Alert.alert("Formulario enviado", "Un vendedor se contactara pronto con usted");
-=======
       // Simulamos el envío del formulario
       await new Promise(resolve => setTimeout(resolve, 2000));
       
@@ -74,7 +70,6 @@ export default function ContactFormScreen() {
       setTimeout(() => {
         router.replace('/login');
       }, 2000);
->>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
     } catch (error) {
       showError(
         'Error al enviar',

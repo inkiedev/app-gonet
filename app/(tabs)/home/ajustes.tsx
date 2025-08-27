@@ -9,7 +9,6 @@ import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from "react";
 import {
-  Alert,
   ScrollView,
   StyleSheet,
   Switch,
@@ -195,16 +194,6 @@ const CambiarContrasenaContent = () => {
     try {
       const { authService } = await import('@/services/auth');
       const { secureStorageService } = await import('@/services/secure-storage');
-<<<<<<< HEAD
-      
-      // Validar la contraseña actual intentando cambiarla
-      // La validación se hace en el backend
-
-      const response = await authService.changePassword(newPassword);
-      if (response.success) {
-        // Contraseña actualizada exitosamente
-        Alert.alert('Éxito', 'Contraseña actualizada correctamente');
-=======
       const credentials = await secureStorageService.getCredentials();
       if (!credentials) {
         showWarning('Credenciales no encontradas', 'No se pudieron recuperar las credenciales guardadas. Intenta cerrar sesión y volver a iniciarla.');
@@ -233,7 +222,6 @@ const CambiarContrasenaContent = () => {
           'Tu contraseña ha sido cambiada exitosamente. Ya puedes usar la nueva contraseña para iniciar sesión.',
           5000
         );
->>>>>>> f18f105ae7565e2d0c753688ffe5769c3acdbff7
         setCurrentPassword('');
         setNewPassword('');
         setConfirmPassword('');
