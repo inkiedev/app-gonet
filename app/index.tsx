@@ -3,17 +3,17 @@ import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
 import { useBiometricAuth } from "@/hooks/use-biometric-auth";
-import { apiService } from "@/services/api";
 import { authService } from "@/services/auth";
 import { secureStorageService } from "@/services/secure-storage";
 import { RootState } from "@/store";
-import { completeBiometricVerification, loadBiometricPreferences, loadRememberMe, restoreSession } from "@/store/slices/auth-slice";
+import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from "@/store/slices/auth-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
+``
 
 interface Plan {
   id: string;
@@ -101,35 +101,35 @@ export default function PublicHomeScreen() {
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
 
   useEffect(() => {
-    const checkStoredSession = async () => {
+    const checkStoredCredentials = async () => {
       try {
-        // Cargar preferencias de recuérdame
-        await dispatch(loadRememberMe() as any);
+        const storedCredentials = await secureStorageService.getCredentials();
         
-        // Intentar restaurar la sesión
-        const sessionRestoreResult = await authService.restoreSession();
-        
-        if (sessionRestoreResult.success && sessionRestoreResult.userData && sessionRestoreResult.username) {
-          await dispatch(loadBiometricPreferences() as any);
-          
-          const sessionId = apiService.getSessionId();
-          if (sessionId) {
+        if (storedCredentials) {
+          const result = await authService.login({
+            username: storedCredentials.username,
+            password: storedCredentials.password
+          });
+
+          if (result.success && result.user) {
+            await dispatch(loadBiometricPreferences() as any);
             dispatch(restoreSession({
-              username: sessionRestoreResult.username,
-              rememberMe: true,
-              sessionId: sessionId
+              uid: result.user.uid,
+              password: storedCredentials.password,
+              username: storedCredentials.username,
+              rememberMe: true
             }));
           }
         }
       } catch (error) {
-        console.error('Session restore error:', error);
+        console.error('Auto-login error:', error);
       } finally {
         setIsLoading(false);
       }
     };
 
     if (!isAuthenticated) {
-      checkStoredSession();
+      checkStoredCredentials();
     } else {
       setIsLoading(false);
     }
@@ -215,7 +215,7 @@ export default function PublicHomeScreen() {
 
         {/* Planes Content */}
         <PlanesContent />
-      </ScrollView>   
+      </ScrollView>
 
         {/* Footer */}
         <Footer />

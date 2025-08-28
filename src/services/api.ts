@@ -2,12 +2,6 @@ interface OdooAuthResult {
   uid: number;
 }
 
-interface OdooSessionResult {
-  session_id: string;
-  uid?: number;
-  username?: string;
-}
-
 interface OdooUserData {
   id: number;
   name: string;
@@ -50,7 +44,6 @@ interface OdooJsonRpcResponse {
 class ApiService {
   private baseUrl: string;
   private requestId: number = 1;
-  private sessionId: string | null = null;
 
   constructor(baseUrl: string) {
     this.baseUrl = baseUrl;
@@ -64,18 +57,11 @@ class ApiService {
       id: this.requestId++
     };
 
-    const headers: HeadersInit = {
-      'Content-Type': 'application/json',
-    };
-
-    // Agregar cookie de sesión si está disponible
-    if (this.sessionId) {
-      headers['Cookie'] = `session_id=${this.sessionId}`;
-    }
-
     const response = await fetch(`${this.baseUrl}/jsonrpc`, {
       method: 'POST',
-      headers: headers,
+      headers: {
+        'Content-Type': 'application/json',
+      },
       body: JSON.stringify(request)
     });
 
@@ -91,95 +77,6 @@ class ApiService {
     }
 
     return data.result;
-  }
-
-  private async makeSessionAuthRequest(database: string, username: string, password: string): Promise<OdooSessionResult> {
-    const response = await fetch(`${this.baseUrl}/web/session/authenticate`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        params: {
-          db: database,
-          login: username,
-          password: password
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    // Extraer session_id de las cookies de respuesta
-    const setCookieHeader = response.headers.get('set-cookie');
-    let sessionId = '';
-    
-    if (setCookieHeader) {
-      const sessionMatch = setCookieHeader.match(/session_id=([^;]+)/);
-      if (sessionMatch) {
-        sessionId = sessionMatch[1];
-      }
-    }
-
-    const data = await response.json();
-    
-    if (data.error) {
-      throw new Error(data.error.message || 'Authentication Error');
-    }
-
-    return {
-      session_id: sessionId,
-      uid: data.result?.uid,
-      username: data.result?.username
-    };
-  }
-
-  private async makeDatasetCallKw(model: string, method: string, args: any[] = [], kwargs: any = {}): Promise<any> {
-    if (!this.sessionId) {
-      throw new Error('No active session. Please authenticate first.');
-    }
-
-    const response = await fetch(`${this.baseUrl}/web/dataset/call_kw`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Cookie': `session_id=${this.sessionId}`
-      },
-      body: JSON.stringify({
-        params: {
-          model: model,
-          method: method,
-          args: args,
-          kwargs: kwargs
-        }
-      })
-    });
-
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-
-    if (data.error) {
-      throw new Error(data.error.message || 'API Error');
-    }
-
-    return data.result;
-  }
-
-  setSessionId(sessionId: string): void {
-    this.sessionId = sessionId;
-  }
-
-  getSessionId(): string | null {
-    return this.sessionId;
-  }
-
-  clearSession(): void {
-    this.sessionId = null;
   }
 
   async login(database: string, username: string, password: string): Promise<OdooAuthResult> {
@@ -202,36 +99,18 @@ class ApiService {
     return { uid: result };
   }
 
-  async loginWithSession(database: string, username: string, password: string): Promise<OdooSessionResult> {
+  async getUserData(database: string, uid: number, password: string): Promise<OdooUserData> {
     if (!database || typeof database !== 'string' || database.trim() === '' ||
-        !username || typeof username !== 'string' || username.trim() === '' ||
+        !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid) ||
         !password || typeof password !== 'string' || password.trim() === '') {
-      throw new Error('Database, username and password are required');
+      throw new Error('Database, uid and password are required');
     }
 
-    const sessionResult = await this.makeSessionAuthRequest(database, username, password);
-    
-    if (!sessionResult.session_id || !sessionResult.uid) {
-      throw new Error('Invalid session authentication response');
-    }
-
-    // Establecer el session_id para futuras llamadas
-    this.sessionId = sessionResult.session_id;
-
-    return sessionResult;
-  }
-
-  async getUserData(database: string, uid: number): Promise<OdooUserData> {
-    if (!database || typeof database !== 'string' || database.trim() === '' ||
-        !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid)) {
-      throw new Error('Database and uid are required');
-    }
-
-    if (!this.sessionId) {
-      throw new Error('No active session. Please authenticate first.');
-    }
-
-    const result = await this.makeDatasetCallKw('my.app.api', 'get_user_data', [uid]);
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute_kw',
+      args: [database, uid, password, 'my.app.api', 'get_user_data', [uid]]
+    });
 
     if (!result || !Array.isArray(result) || result.length === 0) {
       throw new Error('Invalid user data response');
@@ -240,40 +119,44 @@ class ApiService {
     return result[0];
   }
 
-  async updateUserProfile(database: string, userId: number, data: any): Promise<boolean> {
+  async updateUserProfile(database: string, uid: number, password: string, userId: number, data: any): Promise<boolean> {
     if (!database || typeof database !== 'string' || database.trim() === '' ||
+        !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid) ||
+        !password || typeof password !== 'string' || password.trim() === '' ||
         !userId || typeof userId !== 'number' || userId <= 0 || !Number.isInteger(userId) ||
         data == null) {
-      throw new Error('Database, userId and data are required');
+      throw new Error('All parameters are required');
     }
 
     if (typeof data !== 'object' || Array.isArray(data)) {
       throw new Error('Data must be an object');
     }
 
-    if (!this.sessionId) {
-      throw new Error('No active session. Please authenticate first.');
-    }
-
-    const result = await this.makeDatasetCallKw('res.users', 'write', [[userId], data]);
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute_kw',
+      args: [database, uid, password, 'res.users', 'write', [userId, data]]
+    });
 
     return result === true;
   }
 
-  async searchUsers(database: string, domain: any[] = []): Promise<number[]> {
-    if (!database || typeof database !== 'string' || database.trim() === '') {
-      throw new Error('Database is required');
+  async searchUsers(database: string, uid: number, password: string, domain: any[] = []): Promise<number[]> {
+    if (!database || typeof database !== 'string' || database.trim() === '' ||
+        !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid) ||
+        !password || typeof password !== 'string' || password.trim() === '') {
+      throw new Error('Database, uid and password are required');
     }
 
     if (!Array.isArray(domain)) {
       throw new Error('Domain must be an array');
     }
 
-    if (!this.sessionId) {
-      throw new Error('No active session. Please authenticate first.');
-    }
-
-    const result = await this.makeDatasetCallKw('res.users', 'search', [domain]);
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute_kw',
+      args: [database, uid, password, 'res.users', 'search', [domain]]
+    });
 
     return result || [];
   }
@@ -296,18 +179,19 @@ class ApiService {
     return result;
   }
 
-  async changePassword(database: string, uid: number, new_password: string): Promise<any> {
+  async changePassword(database: string, uid: number, password: string, new_password: string): Promise<any> {
     if (!database || typeof database !== 'string' || database.trim() === '' ||
         !uid || typeof uid !== 'number' || uid <= 0 || !Number.isInteger(uid) ||
+        !password || typeof password !== 'string' || password.trim() === '' ||
         !new_password || typeof new_password !== 'string' || new_password.trim() === '') {
-      throw new Error('Database, uid and new_password are required');
+      throw new Error('Database, uid, password and new_password are required');
     }
 
-    if (!this.sessionId) {
-      throw new Error('No active session. Please authenticate first.');
-    }
-
-    const result = await this.makeDatasetCallKw('my.app.api', 'change_password', [uid, new_password]);
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute',
+      args: [database, uid, password, 'my.app.api', 'change_password', uid, password,new_password]
+    });
 
     return result;
   }
@@ -317,5 +201,5 @@ export const apiService = new ApiService(
   process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8069'
 );
 
-export type { OdooAuthResult, OdooSessionResult, OdooJsonRegisterRpcRequest, OdooJsonRpcResponse, OdooUserData };
+export type { OdooAuthResult, OdooJsonRegisterRpcRequest, OdooJsonRpcResponse, OdooUserData };
 

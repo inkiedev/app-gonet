@@ -1,4 +1,4 @@
-import { apiService, OdooAuthResult, OdooSessionResult, OdooJsonRegisterRpcRequest, OdooUserData } from './api';
+import { apiService, OdooAuthResult, OdooJsonRegisterRpcRequest, OdooUserData } from './api';
 
 export interface LoginRequest {
   username: string;
@@ -45,27 +45,23 @@ export class AuthService {
     try {
       const database = credentials.database || this.defaultDatabase;
       
-      // Usar el nuevo sistema de autenticación con sesión
-      const sessionResult: OdooSessionResult = await apiService.loginWithSession(
+      const authResult: OdooAuthResult = await apiService.login(
         database,
         credentials.username,
         credentials.password
       );
 
-      if (!sessionResult.uid || !sessionResult.session_id) {
+      if (!authResult.uid) {
         return {
           success: false,
           error: 'Credenciales incorrectas'
         };
       }
 
-      // Guardar el session_id para futuras consultas
-      const { secureStorageService } = await import('./secure-storage');
-      await secureStorageService.saveSessionId(sessionResult.session_id);
-
       const userData: OdooUserData = await apiService.getUserData(
         database,
-        sessionResult.uid
+        authResult.uid,
+        credentials.password
       );
 
       if (!userData) {
@@ -75,6 +71,7 @@ export class AuthService {
         };
       }
 
+      const { secureStorageService } = await import('./secure-storage');
       await secureStorageService.saveUserData(userData);
 
       return {
@@ -83,7 +80,7 @@ export class AuthService {
           id: userData.id,
           name: userData.name,
           email: userData.email || '',
-          uid: sessionResult.uid
+          uid: authResult.uid
         }
       };
 
@@ -123,64 +120,12 @@ export class AuthService {
   async logout(): Promise<void> {
     try {
       const { secureStorageService } = await import('./secure-storage');
-      await secureStorageService.clearAll();
-      apiService.clearSession();
+      await secureStorageService.clearCredentials();
+      await secureStorageService.clearUserData();
+      await secureStorageService.clearBiometricPreferences();
     } catch (error) {
       console.error('Logout error:', error);
       throw new Error('Error during logout');
-    }
-  }
-
-  async restoreSession(): Promise<{ success: boolean; userData?: any; username?: string; error?: string }> {
-    try {
-      const { secureStorageService } = await import('./secure-storage');
-      
-      // Verificar si está habilitado el recuérdame
-      const rememberData = await secureStorageService.getRememberMe();
-      if (!rememberData.rememberMe || !rememberData.username) {
-        return { success: false, error: 'Remember me not enabled' };
-      }
-
-      // Verificar si hay session_id guardado
-      const sessionId = await secureStorageService.getSessionId();
-      if (!sessionId) {
-        return { success: false, error: 'No saved session found' };
-      }
-
-      // Restaurar session_id en el API service
-      apiService.setSessionId(sessionId);
-
-      // Verificar si la sesión sigue siendo válida intentando obtener datos del usuario
-      const userData = await secureStorageService.getUserData();
-      if (!userData) {
-        return { success: false, error: 'No user data found' };
-      }
-
-      // Intentar una llamada de prueba para verificar que la sesión es válida
-      try {
-        await apiService.getUserData(this.defaultDatabase, userData.id);
-        return { 
-          success: true, 
-          userData, 
-          username: rememberData.username 
-        };
-      } catch (error) {
-        // Si la sesión expiró, limpiar datos de sesión pero mantener preferencias
-        await secureStorageService.clearSessionId();
-        apiService.clearSession();
-        return { 
-          success: false, 
-          error: 'Session expired', 
-          username: rememberData.username 
-        };
-      }
-
-    } catch (error) {
-      console.error('Session restore error:', error);
-      return { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Error restoring session' 
-      };
     }
   }
 
@@ -213,24 +158,15 @@ export class AuthService {
   async changePassword(new_password: string): Promise<any> {
     try {
       const { secureStorageService } = await import('./secure-storage');
-      
-      // Verificar que hay una sesión activa
-      const sessionId = await secureStorageService.getSessionId();
-      if (!sessionId) {
-        throw new Error('No active session found');
+      const credentials = await secureStorageService.getCredentials();
+      if (!credentials) {
+        throw new Error('No credentials found');
       }
 
-      // Obtener datos del usuario para el uid
-      const userData = await secureStorageService.getUserData();
-      if (!userData) {
-        throw new Error('No user data found');
-      }
-
-      // El session_id ya está configurado en apiService
-      apiService.setSessionId(sessionId);
-      
       const database = this.defaultDatabase;
-      const result = await apiService.changePassword(database, userData.id, new_password);
+      const { uid, password } = credentials;
+
+      const result = await apiService.changePassword(database, uid, password, new_password);
 
       return {
         success: true,

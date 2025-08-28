@@ -4,7 +4,7 @@ import Tabs from '@/components/ui/tabs';
 import { useNotificationContext } from '@/contexts/NotificationContext';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from "react";
@@ -175,7 +175,7 @@ const ActualizarDatosContent = () => {
 
 const CambiarContrasenaContent = () => {
   const dispatch = useDispatch();
-  const { username, rememberMe, userData } = useSelector((state: RootState) => state.auth);
+  const { uid, username, rememberMe } = useSelector((state: RootState) => state.auth);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
