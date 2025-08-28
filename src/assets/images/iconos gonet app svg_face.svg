@@ -1,27 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <svg id="Capa_1" data-name="Capa 1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 14 18">
   <defs>
-    <style>
-      .cls-1 {
-        fill: #fff;
-      }
-
-      .cls-2 {
-        fill: none;
-      }
-
-      .cls-3 {
-        fill: url(#Degradado_sin_nombre_4);
-      }
-
-      .cls-4 {
-        opacity: .15;
-      }
-
-      .cls-5 {
-        clip-path: url(#clippath);
-      }
-    </style>
     <linearGradient id="Degradado_sin_nombre_4" data-name="Degradado sin nombre 4" x1="2.81" y1="8.74" x2="9.87" y2="8.74" gradientUnits="userSpaceOnUse">
       <stop offset="0" stop-color="#464b4d"/>
       <stop offset="1" stop-color="#1a1d1e"/>

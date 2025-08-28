@@ -3,12 +3,14 @@ import Instagram from '@/assets/images/iconos gonet app svg_instagram.svg';
 import Location from '@/assets/images/iconos gonet app svg_ubicacion.svg';
 import Web from '@/assets/images/iconos gonet app svg_web.svg';
 import Whatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
-import { Card } from '@/components/ui/card';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
+import { useCardExpansion } from '@/contexts/CardExpansionContext';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
 import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+
+const SVG_SIZE = 26
 
 interface SocialMediaItem {
   icon: React.ReactNode;
@@ -22,27 +24,27 @@ interface FooterProps extends BaseComponentProps {
 
 const socialMediaItems: SocialMediaItem[] = [
   {
-    icon: <Facebook width={26} height={26} />,
+    icon: <Facebook width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse}/>,
     url: 'https://www.facebook.com',
     name: 'Facebook',
   },
   {
-    icon: <Instagram width={26} height={26} />,
+    icon: <Instagram width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
     url: 'https://www.instagram.com',
     name: 'Instagram',
   },
   {
-    icon: <Web width={26} height={26} />,
+    icon: <Web width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
     url: 'https://www.gonet.com',
     name: 'Website',
   },
   {
-    icon: <Whatsapp width={26} height={26} />,
+    icon: <Whatsapp width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
     url: 'https://www.whatsapp.com',
     name: 'WhatsApp',
   },
   {
-    icon: <Location width={26} height={26} />,
+    icon: <Location width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
     url: 'https://www.google.com',
     name: 'Location',
   },
@@ -53,6 +55,12 @@ export const Footer: React.FC<FooterProps> = ({
                                                 style,
                                                 testID,
                                               }) => {
+  const { showFooter } = useCardExpansion();
+
+  if (!showFooter) {
+    return null;
+  }
+
   const handleSocialPress = async (url: string, name: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
@@ -69,10 +77,10 @@ export const Footer: React.FC<FooterProps> = ({
   return (
     <View style={[styles.container, style]} testID={testID}>
       <LinearGradient
-        colors={['#00543b', '#00d280', '#006a54']}
-        locations={[0, 0.5, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 1 }}
+        colors={['#919191','#919191', '#b3b3b3']}
+        locations={[0, 0.1, 1]}
+        start={{ x: 0.5, y: 0 }}
+        end={{ x: 0.5, y: 1 }}
         style={styles.gradient}
       >
         <View style={styles.content}>
@@ -85,13 +93,7 @@ export const Footer: React.FC<FooterProps> = ({
                 accessibilityLabel={`Open ${item.name}`}
                 accessibilityRole="button"
               >
-                <Card
-                  style={styles.socialCard}
-                  variant="elevated"
-                  padding="xs"
-                >
-                  {item.icon}
-                </Card>
+                {item.icon}
               </TouchableOpacity>
             ))}
           </View>
@@ -105,7 +107,7 @@ export const Footer: React.FC<FooterProps> = ({
 
 const styles = StyleSheet.create({
   container: {
-    height: 150,
+    height: 80,
   },
   gradient: {
     flex: 1,
@@ -134,7 +136,7 @@ const styles = StyleSheet.create({
   versionText: {
     color: theme.colors.text.inverse,
     fontSize: theme.fontSize.xs,
-    marginTop: theme.spacing.lg,
+    marginTop: theme.spacing.xs,
     fontWeight: theme.fontWeight.medium,
   },
 });

@@ -34,6 +34,7 @@ export const theme = {
     md: 12,
     lg: 16,
     xl: 20,
+    xxl: 30,
     full: 50,
   },
   fontSize: {
@@ -50,6 +51,7 @@ export const theme = {
     medium: '500' as const,
     semibold: '600' as const,
     bold: '700' as const,
+    bolder: '800' as const,
   },
   shadows: {
     sm: {

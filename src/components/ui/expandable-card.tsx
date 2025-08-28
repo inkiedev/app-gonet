@@ -42,17 +42,17 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       Animated.parallel([
         Animated.timing(animatedHeight, {
           toValue: 1,
-          duration: 300,
+          duration: 500,
           useNativeDriver: false,
         }),
         Animated.timing(animatedOpacity, {
           toValue: 1,
-          duration: 300,
+          duration: 500,
           useNativeDriver: false,
         }),
         Animated.timing(animatedRotation, {
           toValue: 1,
-          duration: 300,
+          duration: 500,
           useNativeDriver: true,
         }),
       ]).start();
@@ -60,17 +60,17 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       Animated.parallel([
         Animated.timing(animatedHeight, {
           toValue: 0,
-          duration: 250,
+          duration: 500,
           useNativeDriver: false,
         }),
         Animated.timing(animatedOpacity, {
           toValue: 0,
-          duration: 250,
+          duration: 500,
           useNativeDriver: false,
         }),
         Animated.timing(animatedRotation, {
           toValue: 0,
-          duration: 250,
+          duration: 500,
           useNativeDriver: true,
         }),
       ]).start();

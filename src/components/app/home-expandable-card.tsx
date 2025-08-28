@@ -1,4 +1,4 @@
-import { SpeedCircle } from '@/components/app/speed-circle';
+import Notification from '@/assets/images/iconos gonet app svg_notificacion.svg';
 import { Card } from '@/components/ui/card';
 import { ExpandableCard } from '@/components/ui/expandable-card';
 import { theme } from '@/styles/theme';
@@ -48,21 +48,12 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
   return (
     <View style={[styles.container, style]} testID={testID}>
       <Card style={styles.card} variant="elevated">
-        <Text style={styles.planTitle}>{plan}</Text>
-
-        <View style={styles.speedContainer}>
-          <SpeedCircle speed={speed} size={180}/>
-          <View style={styles.speedShadow}></View>
+        <View style={styles.featuresContainer}>
+          <Notification width={35} height={35} />
+          <Text style={styles.clientTitle}>{"Juan Gonzales".split(" ").join("\n")}</Text>
+          <Text style={styles.planTitle}>{plan}</Text>
+          <View style={styles.planSpeedContainer}><Text style={styles.planSpeed}>{speed}</Text><Text style={styles.planMbps}> Mbps</Text></View>
         </View>
-
-        <View style={styles.planFeatures}>
-          <Text style={styles.featuresText}>
-            Incluye: <AntDesign name="Safety" size={15} color={theme.colors.primaryDark} />{' '}
-            <FontAwesome5 name="wifi" size={15} color={theme.colors.primaryDark} />{' '}
-            <FontAwesome5 name="dollar-sign" size={15} color={theme.colors.primaryDark} />
-          </Text>
-        </View>
-
         <ExpandableCard
           style={styles.expandableCardContainer}
           onToggle={onToggle}
@@ -120,12 +111,17 @@ const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUp
 const styles = StyleSheet.create({
   container: {
     width: '100%',
-    maxWidth: 300,
+  },
+  clientTitle: {
+    textAlign: 'center',
+    fontStyle: 'italic'
   },
   card: {
+    marginTop: theme.spacing.sm,
     width: '100%',
     alignItems: 'center',
-    borderRadius: theme.borderRadius.full,
+    borderRadius: theme.borderRadius.xxl,
+    paddingHorizontal: theme.spacing.lg,
   },
   planTitle: {
     color: theme.colors.primaryDark,
@@ -133,7 +129,6 @@ const styles = StyleSheet.create({
     fontStyle: 'italic',
     fontWeight: theme.fontWeight.bold,
     textAlign: 'center',
-    marginBottom: theme.spacing.md,
   },
   planFeatures: {
     width: '100%',
@@ -158,7 +153,6 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    paddingVertical: theme.spacing.sm,
     gap: theme.spacing.xs,
   },
   detailsLink: {
@@ -229,5 +223,26 @@ const styles = StyleSheet.create({
   speedContainer: {
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  featuresContainer: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center'
+  },
+  planSpeedContainer: {
+    flexDirection: 'row',
+    alignItems: 'flex-end'
+  },
+  planSpeed: {
+    color: theme.colors.primaryDark,
+    fontSize: theme.fontSize.xxl,
+    fontWeight: theme.fontWeight.bolder,
+    textAlign: 'center',
+  },
+  planMbps: {
+    color: theme.colors.primaryDark,
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.medium,
   }
 });

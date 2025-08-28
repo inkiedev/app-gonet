@@ -1,3 +1,4 @@
+import Beneficios from '@/assets/images/iconos gonet app svg_beneficios.svg';
 import Servicios from '@/assets/images/iconos gonet app svg_gonetBlack.svg';
 import Mensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
 import Pagos from '@/assets/images/iconos gonet app svg_Pagos.svg';
@@ -8,13 +9,15 @@ import { SideMenu } from '@/components/app/side-menu';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { Header } from '@/components/layout/header';
 import { useNotificationContext } from '@/contexts/NotificationContext';
+import { useCardExpansion } from '@/contexts/CardExpansionContext';
+import { useResponsive } from '@/hooks/use-responsive';
 import { authService } from '@/services/auth';
-import { logout, loadUserData } from '@/store/slices/auth-slice';
-import { theme } from '@/styles/theme';
 import { RootState } from '@/store';
+import { loadUserData, logout } from '@/store/slices/auth-slice';
+import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, BackHandler, StyleSheet, Text, View } from 'react-native';
+import { Animated, BackHandler, ImageBackground, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -38,16 +41,21 @@ const iconOptions = [
     SvgComponent: Soporte,
     label: 'Soporte',
   },
+  {
+    SvgComponent: Beneficios,
+    label: 'Beneficios',
+  },
 ];
 
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
-  const [isCardExpanded, setIsCardExpanded] = useState(false);
   const fadeAnim = useRef(new Animated.Value(1)).current;
   const router = useRouter();
   const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => state.auth);
   const { showSuccess, showError, showInfo } = useNotificationContext();
+  const { toggleExpansion } = useCardExpansion();
+  const { height } = useResponsive();
 
   useEffect(() => {
     const backAction = () => {
@@ -82,7 +90,7 @@ export default function HomeScreen() {
   };
 
   const handleCardToggle = (expanded: boolean) => {
-    setIsCardExpanded(expanded);
+    toggleExpansion();
     Animated.timing(fadeAnim, {
       toValue: expanded ? 0 : 1,
       duration: 300,
@@ -143,22 +151,30 @@ export default function HomeScreen() {
   return (
     <AuthGuard>
       <SafeAreaView style={styles.container}>
-        <Header
-          leftAction={{
-            icon: 'menu',
-            onPress: toggleMenu,
-          }}
-          centerContent={
-            <View style={styles.userInfo}>
-              <Text style={styles.userName}>{userData?.name || 'Usuario'}</Text>
-            </View>
-          }
-          rightAction={{
-            icon: 'person',
-            onPress: handleProfilePress,
-          }}
-          variant="transparent"
-        />
+        <ImageBackground
+          source={require("@/assets/images/publicidad.webp")}
+          style={[styles.banner, { height: height * 0.55 }]}
+          resizeMode="cover"
+        >
+            <Header
+              rightAction={{
+                icon: 'menu',
+                onPress: toggleMenu,
+              }}
+              variant="transparent"
+            />
+
+            <SideMenu
+              visible={menuVisible}
+              onClose={closeMenu}
+              onItemPress={(item: string) => {
+                console.log(`Menu item pressed: ${item}`);
+                handleMenuNavigation(item);
+                closeMenu();
+              }}
+              onLogout={handleLogout}
+            />
+        </ImageBackground>
 
         <View style={styles.content}>
           <HomeExpandableCard
@@ -172,7 +188,7 @@ export default function HomeScreen() {
             {iconOptions.map((option, index) => (
               <IconWithBadge
                 key={index}
-                size={80}
+                size={60}
                 SvgComponent={option.SvgComponent}
                 label={option.label}
                 badgeCount={option.badgeCount}
@@ -201,31 +217,23 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
-  userInfo: {
-    alignItems: 'center',
-  },
-  userName: {
-    color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.md,
-    fontStyle: 'italic',
+  banner: {
   },
   content: {
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-evenly',
-    paddingHorizontal: theme.spacing.xl,
+    paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
+    gap: theme.spacing.md,
   },
   planCard: {
     alignSelf: 'center',
-    marginVertical: theme.spacing.lg,
+    width: '100%'
   },
   iconsGrid: {
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    paddingVertical: theme.spacing.xl,
-    flexWrap: 'wrap',
-    gap: theme.spacing.sm,
   },
 });
