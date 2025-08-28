@@ -4,10 +4,11 @@ import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
 
 const STORAGE_KEYS = {
-  CREDENTIALS: 'secure_credentials',
   REMEMBER_ME: 'remember_me',
   BIOMETRIC_PREFERENCES: 'biometric_preferences',
   USER_DATA: 'user_data',
+  SESSION_ID: 'session_id',
+  USERNAME: 'username',
 };
 
 const MASTER_KEY_NAME = 'gonet_master_encryption_key';
@@ -138,52 +139,47 @@ class SecureStorageService {
     }
   }
 
-  async saveCredentials(credentials: StoredCredentials, rememberMe: boolean): Promise<void> {
+  async saveRememberMe(username: string, rememberMe: boolean): Promise<void> {
     try {
       if (rememberMe) {
-        await this.setSecureItem(STORAGE_KEYS.CREDENTIALS, JSON.stringify(credentials));
-        await this.setSecureItem(STORAGE_KEYS.REMEMBER_ME, 'true');
+        await AsyncStorage.setItem(STORAGE_KEYS.REMEMBER_ME, 'true');
+        await AsyncStorage.setItem(STORAGE_KEYS.USERNAME, username);
       } else {
-        await this.clearCredentials();
+        await this.clearRememberMe();
       }
     } catch (error) {
-      console.error('Error saving credentials:', error);
-      throw new Error('No se pudieron guardar las credenciales');
+      console.error('Error saving remember me:', error);
+      throw new Error('No se pudo guardar la preferencia de recordar');
     }
   }
 
-  async getCredentials(): Promise<StoredCredentials | null> {
+  async getRememberMe(): Promise<{ rememberMe: boolean; username: string | null }> {
     try {
-      const rememberMe = await this.getSecureItem(STORAGE_KEYS.REMEMBER_ME);
-      if (rememberMe !== 'true') {
-        return null;
-      }
-
-      const credentialsData = await this.getSecureItem(STORAGE_KEYS.CREDENTIALS);
-      if (!credentialsData) {
-        return null;
-      }
-
-      return JSON.parse(credentialsData);
+      const rememberMe = await AsyncStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
+      const username = await AsyncStorage.getItem(STORAGE_KEYS.USERNAME);
+      
+      return {
+        rememberMe: rememberMe === 'true',
+        username: rememberMe === 'true' ? username : null
+      };
     } catch (error) {
-      console.error('Error getting credentials:', error);
-      await this.clearCredentials();
-      return null;
+      console.error('Error getting remember me:', error);
+      return { rememberMe: false, username: null };
     }
   }
 
-  async clearCredentials(): Promise<void> {
+  async clearRememberMe(): Promise<void> {
     try {
-      await this.deleteSecureItem(STORAGE_KEYS.CREDENTIALS);
-      await this.deleteSecureItem(STORAGE_KEYS.REMEMBER_ME);
+      await AsyncStorage.removeItem(STORAGE_KEYS.REMEMBER_ME);
+      await AsyncStorage.removeItem(STORAGE_KEYS.USERNAME);
     } catch (error) {
-      console.error('Error clearing credentials:', error);
+      console.error('Error clearing remember me:', error);
     }
   }
 
   async isRememberMeEnabled(): Promise<boolean> {
     try {
-      const rememberMe = await this.getSecureItem(STORAGE_KEYS.REMEMBER_ME);
+      const rememberMe = await AsyncStorage.getItem(STORAGE_KEYS.REMEMBER_ME);
       return rememberMe === 'true';
     } catch (error) {
       return false;
@@ -192,7 +188,7 @@ class SecureStorageService {
 
   async saveBiometricPreferences(preferences: BiometricPreferences): Promise<void> {
     try {
-      await this.setSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES, JSON.stringify(preferences));
+      await AsyncStorage.setItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES, JSON.stringify(preferences));
     } catch (error) {
       console.error('Error saving biometric preferences:', error);
       throw new Error('No se pudieron guardar las preferencias biométricas');
@@ -201,7 +197,7 @@ class SecureStorageService {
 
   async getBiometricPreferences(): Promise<BiometricPreferences | null> {
     try {
-      const preferencesData = await this.getSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
+      const preferencesData = await AsyncStorage.getItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
       if (!preferencesData) {
         return null;
       }
@@ -214,7 +210,7 @@ class SecureStorageService {
 
   async clearBiometricPreferences(): Promise<void> {
     try {
-      await this.deleteSecureItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
+      await AsyncStorage.removeItem(STORAGE_KEYS.BIOMETRIC_PREFERENCES);
     } catch (error) {
       console.error('Error clearing biometric preferences:', error);
     }
@@ -222,7 +218,8 @@ class SecureStorageService {
 
   async saveUserData(userData: UserData): Promise<void> {
     try {
-      await this.setSecureItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
+      // Guardamos los datos del usuario sin encriptación en AsyncStorage
+      await AsyncStorage.setItem(STORAGE_KEYS.USER_DATA, JSON.stringify(userData));
     } catch (error) {
       console.error('Error saving user data:', error);
       throw new Error('No se pudieron guardar los datos del usuario');
@@ -231,7 +228,8 @@ class SecureStorageService {
 
   async getUserData(): Promise<UserData | null> {
     try {
-      const userDataString = await this.getSecureItem(STORAGE_KEYS.USER_DATA);
+      // Obtener los datos del usuario desde AsyncStorage sin encriptación
+      const userDataString = await AsyncStorage.getItem(STORAGE_KEYS.USER_DATA);
       if (!userDataString) {
         return null;
       }
@@ -244,9 +242,48 @@ class SecureStorageService {
 
   async clearUserData(): Promise<void> {
     try {
-      await this.deleteSecureItem(STORAGE_KEYS.USER_DATA);
+      // Limpiar los datos del usuario desde AsyncStorage
+      await AsyncStorage.removeItem(STORAGE_KEYS.USER_DATA);
     } catch (error) {
       console.error('Error clearing user data:', error);
+    }
+  }
+
+  async saveSessionId(sessionId: string): Promise<void> {
+    try {
+      // El session_id se guarda en almacenamiento seguro ya que es sensible
+      await this.setSecureItem(STORAGE_KEYS.SESSION_ID, sessionId);
+    } catch (error) {
+      console.error('Error saving session ID:', error);
+      throw new Error('No se pudo guardar el session ID');
+    }
+  }
+
+  async getSessionId(): Promise<string | null> {
+    try {
+      return await this.getSecureItem(STORAGE_KEYS.SESSION_ID);
+    } catch (error) {
+      console.error('Error getting session ID:', error);
+      return null;
+    }
+  }
+
+  async clearSessionId(): Promise<void> {
+    try {
+      await this.deleteSecureItem(STORAGE_KEYS.SESSION_ID);
+    } catch (error) {
+      console.error('Error clearing session ID:', error);
+    }
+  }
+
+  async clearAll(): Promise<void> {
+    try {
+      await this.clearSessionId();
+      await this.clearRememberMe();
+      await this.clearUserData();
+      await this.clearBiometricPreferences();
+    } catch (error) {
+      console.error('Error clearing all data:', error);
     }
   }
 }
