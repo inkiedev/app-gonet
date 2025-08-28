@@ -14,16 +14,6 @@ import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
 
-
-const useAuth = () => {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  
-  const login = () => setIsAuthenticated(true);
-  const logout = () => setIsAuthenticated(false);
-  
-  return { isAuthenticated, login, logout };
-};
-
 interface Plan {
   id: string;
   name: string;

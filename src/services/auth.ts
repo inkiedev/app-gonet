@@ -39,7 +39,7 @@ export interface AuthUser {
 
 
 export class AuthService {
-  private defaultDatabase = 'app';
+  private defaultDatabase = 'enterprise';
 
   async login(credentials: LoginRequest): Promise<LoginResponse> {
     try {

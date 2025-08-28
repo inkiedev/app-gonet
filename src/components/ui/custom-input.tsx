@@ -3,6 +3,7 @@ import { BaseComponentProps } from '@/types/common';
 import { FontAwesome } from '@expo/vector-icons';
 import React, { forwardRef, useState } from 'react';
 import {
+  Platform,
   StyleSheet,
   Text,
   TextInput,
@@ -156,7 +157,10 @@ const styles = StyleSheet.create({
     paddingVertical: theme.spacing.sm,
     fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
-  },
+    ...(Platform.OS === 'web' && {
+      outlineStyle: 'none'
+    }),
+  } as any,
   inputWithLeftIcon: {
     paddingLeft: 0,
   },

@@ -4,7 +4,6 @@ import { useRouter } from 'expo-router';
 import React, { useState } from 'react';
 import { Controller, useForm } from 'react-hook-form';
 import {
-  Alert,
   ImageBackground,
   KeyboardAvoidingView,
   Platform,
@@ -12,7 +11,7 @@ import {
   StyleSheet,
   Text,
   TouchableOpacity,
-  View,
+  View
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch } from 'react-redux';
@@ -118,106 +117,116 @@ export default function LoginScreen() {
     }
   };
 
+  const renderContent = () => (
+    <ScrollView
+      contentContainerStyle={styles.scrollContent}
+      keyboardShouldPersistTaps="handled"
+    >
+      <View style={styles.content}>
+        <Text style={styles.welcomeText}>BIENVENIDO</Text>
+
+        <AppLogo variant="small" />
+
+        <TouchableOpacity style={styles.userSection} onPress={() => router.navigate("./register")}>
+        <FontAwesome name = {"user"} style = {styles.iconFP}/>
+        <View style={styles.userSection}>
+          <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
+          <Text style={styles.registerText}>Regístrate aquí</Text>
+        </View>
+        </TouchableOpacity>
+
+        <View style={styles.divider} />
+
+        <View style={styles.form}>
+          <Controller
+            control={control}
+            name="username"
+            render={({ field: { onChange, value, onBlur } }) => (
+              <Input
+                placeholder="Nombre de Usuario"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                error={errors.username?.message}
+                autoCapitalize="none"
+                autoCorrect={false}
+                testID="username-input"
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="password"
+            render={({ field: { onChange, value, onBlur } }) => (
+              <Input
+                placeholder="Contraseña"
+                value={value}
+                onChangeText={onChange}
+                onBlur={onBlur}
+                error={errors.password?.message}
+                secureTextEntry
+                showPasswordToggle
+                testID="password-input"
+              />
+            )}
+          />
+
+          <Controller
+            control={control}
+            name="rememberMe"
+            render={({ field: { onChange, value } }) => (
+              <View style={styles.checkboxContainer}>
+                <Checkbox
+                  value={value || false}
+                  onValueChange={onChange}
+                  style={styles.checkbox}
+                  color={value ? theme.colors.primary : undefined}
+                />
+                <TouchableOpacity onPress={() => onChange(!value)}>
+                  <Text style={styles.checkboxLabel}>Recuérdame</Text>
+                </TouchableOpacity>
+              </View>
+            )}
+          />
+
+          {loginError ? (
+            <Text style={styles.errorText} testID="login-error">
+              {loginError}
+            </Text>
+          ) : null}
+
+          <Button 
+            title="Iniciar Sesión"
+            onPress={handleSubmit(onSubmit)}
+            loading={isSubmitting}
+            fullWidth
+            testID="login-button"
+          />
+        </View>
+      </View>
+    </ScrollView>
+  );
+
   return (
     <AuthGuest>
       <ImageBackground
-        source={require('@/assets/images/iconos gonet app svg_backing.png')}
-        style={styles.background}
+        source={Platform.OS === 'web' 
+          ? require('@/assets/images/iconos gonet app svg_backing desktop.png')
+          : require('@/assets/images/iconos gonet app svg_backing.png')
+        }
+        style={Platform.OS === 'web' ? styles.webBackground : styles.background}
+        resizeMode="cover"
       >
         <SafeAreaView style={styles.container}>
           <KeyboardAvoidingView
             style={styles.keyboardView}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
-          <ScrollView
-            contentContainerStyle={styles.scrollContent}
-            keyboardShouldPersistTaps="handled"
-          >
-            <View style={styles.content}>
-              <Text style={styles.welcomeText}>BIENVENIDO</Text>
-
-              <AppLogo variant="small" />
-
-              <TouchableOpacity style={styles.userSection} onPress={() => router.navigate("./register")}>
-              <FontAwesome name = {"user"} style = {styles.iconFP}/>
-              <View style={styles.userSection}>
-                <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
-                <Text style={styles.registerText}>Regístrate aquí</Text>
-              </View>
-              </TouchableOpacity>
-
-              <View style={styles.divider} />
-
-              <View style={styles.form}>
-                <Controller
-                  control={control}
-                  name="username"
-                  render={({ field: { onChange, value, onBlur } }) => (
-                    <Input
-                      placeholder="Nombre de Usuario"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      error={errors.username?.message}
-                      autoCapitalize="none"
-                      autoCorrect={false}
-                      testID="username-input"
-                    />
-                  )}
-                />
-
-                <Controller
-                  control={control}
-                  name="password"
-                  render={({ field: { onChange, value, onBlur } }) => (
-                    <Input
-                      placeholder="Contraseña"
-                      value={value}
-                      onChangeText={onChange}
-                      onBlur={onBlur}
-                      error={errors.password?.message}
-                      secureTextEntry
-                      showPasswordToggle
-                      testID="password-input"
-                    />
-                  )}
-                />
-
-                <Controller
-                  control={control}
-                  name="rememberMe"
-                  render={({ field: { onChange, value } }) => (
-                    <View style={styles.checkboxContainer}>
-                      <Checkbox
-                        value={value || false}
-                        onValueChange={onChange}
-                        style={styles.checkbox}
-                        color={value ? theme.colors.primary : undefined}
-                      />
-                      <Text style={styles.checkboxLabel}>Recuérdame</Text>
-                    </View>
-                  )}
-                />
-
-                {loginError ? (
-                  <Text style={styles.errorText} testID="login-error">
-                    {loginError}
-                  </Text>
-                ) : null}
-
-                <Button 
-                  title="Iniciar Sesión"
-                  onPress={handleSubmit(onSubmit)}
-                  loading={isSubmitting}
-                  fullWidth
-                  testID="login-button"
-                />
-              </View>
-            </View>
-          </ScrollView>
-        </KeyboardAvoidingView>
-      </SafeAreaView>
-    </ImageBackground>
+            {renderContent()}
+          </KeyboardAvoidingView>
+        </SafeAreaView>
+      </ImageBackground>
     </AuthGuest>
   );
 }
@@ -226,6 +235,15 @@ const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
+  webBackground: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    ...(Platform.OS === 'web' && {
+      minHeight: '100vh',
+      minWidth: '100vw',
+    }),
+  } as any,
   container: {
     flex: 1,
   },
@@ -267,6 +285,8 @@ const styles = StyleSheet.create({
     backgroundColor: theme.colors.text.inverse,
     width: '70%',
     marginVertical: theme.spacing.lg,
+    maxWidth: 500,
+    marginBottom: theme.spacing.xxl,
   },
   form: {
     width: '100%',
