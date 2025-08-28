@@ -45,12 +45,10 @@ export const Input = forwardRef<TextInput, InputProps>(({
 
   const containerStyle: ViewStyle[] = [styles.inputContainer];
 
-  if (isFocused) {
-    containerStyle.push(styles.focused);
-  }
-
   if (hasError) {
     containerStyle.push(styles.error);
+  } else if (isFocused) {
+    containerStyle.push(styles.focused);
   }
 
   // Renombrar variable local para evitar conflicto
@@ -87,12 +85,18 @@ export const Input = forwardRef<TextInput, InputProps>(({
 
         <TextInput
           ref={ref}
+          {...textInputProps}
           style={combinedInputStyle}
           placeholderTextColor={theme.colors.text.secondary}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
+          onFocus={(e) => {
+            setIsFocused(true);
+            textInputProps.onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setIsFocused(false);
+            textInputProps.onBlur?.(e);
+          }}
           secureTextEntry={isSecure}
-          {...textInputProps}
         />
 
         {showPasswordToggle && (
