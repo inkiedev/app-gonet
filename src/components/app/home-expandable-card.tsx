@@ -1,31 +1,34 @@
 import Notification from '@/assets/images/iconos gonet app svg_notificacion.svg';
+import Dollar from '@/assets/images/iconos gonet dollar.svg';
+import Down from '@/assets/images/iconos gonet down.svg';
+import Gomax from '@/assets/images/iconos gonet gomax.svg';
+import Wifi from '@/assets/images/iconos gonet wifi.svg';
 import { Card } from '@/components/ui/card';
 import { ExpandableCard } from '@/components/ui/expandable-card';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
-import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
-import React from 'react';
+import React, { ReactNode } from 'react';
 import { Animated, StyleSheet, Text, View } from 'react-native';
 import Badge from './badge';
 
 const features = [
   {
-    icon: 'Safety',
+    icon: <Gomax color={theme.colors.primaryDark} />,
     title: 'Lite Tv Streaming',
     detail: '5 meses',
     value: '1 pantalla',
     canUpgrade: true
   },
   {
-    icon: 'wifi',
+    icon: <Wifi color={theme.colors.primaryDark} />,
     title: 'Wifi Total',
     detail: '2 Routers',
     value: 'Wifi6',
     canUpgrade: true
   },
   {
-    icon: 'upload',
+    icon: <Dollar color={theme.colors.primaryDark}  />,
     title: 'Precio Promocional',
     detail: '$ 19.90',
     value: 'x 8 Pagos',
@@ -71,7 +74,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
                 {isExpanded ? 'Ocultar Detalles' : 'Ver Detalles'}
               </Text>
               <Animated.View style={{ transform: [{ rotate: rotation }] }}>
-                <AntDesign name="down" size={16} color={theme.colors.primaryDark} />
+                <Down color={theme.colors.primaryDark} width={15} height={15} />
               </Animated.View>
             </View>
           )}
@@ -99,7 +102,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
 };
 
 interface DetailRowProps {
-  icon: string;
+  icon: ReactNode;
   title: string;
   detail: string;
   value: string;
@@ -108,7 +111,7 @@ interface DetailRowProps {
 
 const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUpgrade }) => (
   <View style={styles.detailRow}>
-    <FontAwesome5 name={icon} size={16} color={theme.colors.primary} />
+    { icon }
     <Text style={styles.detailTitle}>{title}</Text>
     <Text style={styles.detailDetail}>{detail}</Text>
     <Text style={styles.detailValue}>{value}</Text>

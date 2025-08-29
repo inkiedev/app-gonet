@@ -4,6 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
+  Easing,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -60,17 +61,18 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       Animated.parallel([
         Animated.timing(animatedHeight, {
           toValue: 0,
-          duration: 500,
+          duration: 200,
+          easing: Easing.exp,
           useNativeDriver: false,
         }),
         Animated.timing(animatedOpacity, {
           toValue: 0,
-          duration: 500,
+          duration: 200,
           useNativeDriver: false,
         }),
         Animated.timing(animatedRotation, {
           toValue: 0,
-          duration: 500,
+          duration: 200,
           useNativeDriver: true,
         }),
       ]).start();

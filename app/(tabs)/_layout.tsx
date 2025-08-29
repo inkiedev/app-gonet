@@ -6,6 +6,7 @@ import { Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import React from 'react';
 import { StyleSheet, View } from 'react-native';
+import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 
 const LayoutContent: React.FC = () => {
@@ -23,7 +24,11 @@ const LayoutContent: React.FC = () => {
       >
         <Slot />
       </LinearGradient>
-      {showFooter && <Footer />}
+      {showFooter && 
+        <Animated.View exiting={FadeOutDown} entering={FadeInDown} >
+          <Footer />
+        </Animated.View>
+      }
     </View>
   );
 };
