@@ -60,7 +60,7 @@ export const neighborhoods = {
       region: { latitude: -0.200, longitude: -78.500, latitudeDelta: 0.02, longitudeDelta: 0.02 },
     },
     {
-      label: "La Floresta",
+      label: "La Flore",
       value: "la-floresta",
       polygon: [
         { latitude: -0.205, longitude: -78.485 },
@@ -85,7 +85,7 @@ export const neighborhoods = {
       region: { latitude: -0.200, longitude: -78.500, latitudeDelta: 0.02, longitudeDelta: 0.02 },
     },
     {
-      label: "Vergel 123 12323",
+      label: "Estadio",
       value: "vergel1",
       polygon: [
         { latitude: -0.195, longitude: -78.495 },
@@ -96,7 +96,7 @@ export const neighborhoods = {
       region: { latitude: -0.200, longitude: -78.500, latitudeDelta: 0.02, longitudeDelta: 0.02 },
     },
     {
-      label: "Vergel",
+      label: "Monay",
       value: "vergel2",
       polygon: [
         { latitude: -0.195, longitude: -78.495 },
@@ -151,7 +151,7 @@ export const neighborhoods = {
       region: { latitude: -0.200, longitude: -78.500, latitudeDelta: 0.02, longitudeDelta: 0.02 },
     },
     {
-      label: "Vergel sapo sapo",
+      label: "Vergel 1234 1234",
       value: "vergel23",
       polygon: [
         { latitude: -0.195, longitude: -78.495 },

@@ -2,10 +2,11 @@ import { Header } from "@/components/layout/header";
 import { Button as CustomButton } from "@/components/ui/custom-button";
 import { Map } from "@/components/ui/map";
 import { agencies, cities, neighborhoods, polygons, regionCoordinates } from "@/data/agencies";
+import { theme } from "@/styles/theme";
 import * as Location from 'expo-location';
 import { Router, useRouter } from "expo-router";
-import React, { useCallback, useEffect, useMemo, useState } from "react";
-import { Button, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Button, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // --- Types ---
@@ -120,35 +121,93 @@ const CitySelector = ({ onCitySelect, router }: { onCitySelect: (city: City) => 
 
 const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect }: { city: City, selectedNeighborhood: Neighborhood | null, onNeighborhoodSelect: (neighborhood: Neighborhood | null) => void }) => {
     const availableNeighborhoods = neighborhoods[city.value] || [];
+    const [showRightArrow, setShowRightArrow] = useState(false);
+    const [showLeftArrow, setShowLeftArrow] = useState(false);
+    const [containerWidth, setContainerWidth] = useState(0);
+    const [contentWidth, setContentWidth] = useState(0);
+    const scrollViewRef = useRef<ScrollView>(null);
+    const [scrollPosition, setScrollPosition] = useState(0);
+
+    useEffect(() => {
+        const scrollable = contentWidth > containerWidth;
+        const notAtEnd = contentWidth - scrollPosition > containerWidth + 10;
+        setShowRightArrow(scrollable && notAtEnd);
+        setShowLeftArrow(scrollable && scrollPosition > 0);
+    }, [containerWidth, contentWidth, scrollPosition]);
+
+    const handleScroll = (event: any) => {
+        setScrollPosition(event.nativeEvent.contentOffset.x);
+    };
+
+    const handleRightArrowPress = () => {
+        if (scrollViewRef.current) {
+            const newPosition = scrollPosition + containerWidth * 0.8;
+            scrollViewRef.current.scrollTo({ x: newPosition, animated: true });
+        }
+    };
+
+    const handleLeftArrowPress = () => {
+        if (scrollViewRef.current) {
+            const newPosition = scrollPosition - containerWidth * 0.8;
+            scrollViewRef.current.scrollTo({ x: newPosition, animated: true });
+        }
+    };
 
     if (availableNeighborhoods.length === 0) {
-        return null; // No neighborhoods to select
+        return null;
     }
 
     return (
         <View style={styles.neighborhoodSelectorContainer}>
             <Text style={styles.neighborhoodSelectorTitle}>Seleccionar Barrio</Text>
-            <ScrollView 
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                contentContainerStyle={styles.neighborhoodButtonsContainer}
+            <View 
+                style={styles.scrollViewContainer}
+                onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
             >
-                {availableNeighborhoods.map(neighborhood => (
-                    <CustomButton 
-                        key={neighborhood.value} 
-                        title={neighborhood.label} 
-                        onPress={() => onNeighborhoodSelect(neighborhood)} 
-                        variant={selectedNeighborhood?.value === neighborhood.value ? 'pressed' : 'primary'}
+                {showLeftArrow && (
+                    <View style={styles.arrowContainerLeft}>
+                    <TouchableOpacity onPress={handleLeftArrowPress} activeOpacity={0.7}>
+                        <Text style={styles.arrowText}>‹</Text>
+                    </TouchableOpacity>
+                    
+                    </View>
+
+                    
+                    
+
+                )}
+                
+                <ScrollView
+                    ref={scrollViewRef}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    onContentSizeChange={setContentWidth}
+                    onScroll={handleScroll}
+                    scrollEventThrottle={16}
+                    contentContainerStyle={styles.neighborhoodButtonsContainer}
+                >
+                    {availableNeighborhoods.map(neighborhood => (
+                        <CustomButton
+                            key={neighborhood.value}
+                            title={neighborhood.label}
+                            onPress={() => onNeighborhoodSelect(neighborhood)}
+                            variant={selectedNeighborhood?.value === neighborhood.value ? 'pressed' : 'primary'}
+                            style={styles.neighborhoodButton}
+                        />
+                    ))}
+                    <CustomButton
+                        title="Limpiar"
+                        onPress={() => onNeighborhoodSelect(null)}
+                        variant="secondary"
                         style={styles.neighborhoodButton}
                     />
-                ))}
-                <CustomButton 
-                    title="Limpiar" 
-                    onPress={() => onNeighborhoodSelect(null)} 
-                    variant="secondary"
-                    style={styles.neighborhoodButton}
-                />
-            </ScrollView>
+                </ScrollView>
+                {showRightArrow && (
+                    <TouchableOpacity onPress={handleRightArrowPress} style={styles.arrowContainerRight} activeOpacity={0.7}>
+                        <Text style={styles.arrowText}>›</Text>
+                    </TouchableOpacity>
+                )}
+            </View>
         </View>
     );
 };
@@ -309,6 +368,40 @@ const styles = StyleSheet.create({
     neighborhoodButton: {
         marginHorizontal: 5,
     },
+    scrollViewContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        padding: 20,
+    },
+    arrowContainerLeft: {
+        position: 'absolute',
+        left: theme.spacing.sm,
+        
+        
+        borderWidth: 1.5,
+        borderColor: 'rgba(69, 175, 94, 1)',
+        justifyContent: 'center',
+        paddingHorizontal: 8,
+        backgroundColor: 'rgba(150, 204, 163, 1)',
+        borderRadius: 5,
+        zIndex: 2,
+    },
+    arrowContainerRight: {
+        position: 'absolute',
+        right: theme.spacing.sm,
+        borderWidth: 1.5,
+        borderColor: 'rgba(69, 175, 94, 1)',
+        justifyContent: 'center',
+        paddingHorizontal: 8,
+        backgroundColor: 'rgba(150, 204, 163, 1)',
+        borderRadius: 5,
+    },
+    arrowText: {
+        fontSize: 30,
+        bottom:4,
+        color: '#edf5ebff',
+        fontWeight: 'bold',
+    },
     agencyInfoContainer: {
         position: 'absolute',
         bottom: 20,
@@ -327,5 +420,15 @@ const styles = StyleSheet.create({
         fontSize: 20,
         fontWeight: 'bold',
         marginBottom: 8,
+    },
+
+
+        fadeRight: {
+          position: "absolute",
+            top: 0,
+            bottom: 0,
+         left: 26,  // lo mueves hacia adentro desde la derecha
+        width: 50,  // este será el ancho del gradiente
+        zIndex: 1,
     },
 });
