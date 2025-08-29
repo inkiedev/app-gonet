@@ -1,3 +1,4 @@
+import { CardExpansionProvider } from '@/contexts/CardExpansionContext';
 import { NotificationProvider } from '@/contexts/NotificationContext';
 import { StoreProvider } from '@/providers/store-provider';
 import { useFonts } from 'expo-font';
@@ -28,37 +29,39 @@ export default function RootLayout() {
   return (
     <StoreProvider>
       <NotificationProvider>
-        <View style={styles.container}>
-          <Stack 
-            screenOptions={{ 
-              headerShown: false,
-              animation: 'slide_from_right',
-              animationDuration: 300,
-            }}
-          >
-            <Stack.Screen 
-              name="index" 
-              options={{
-                animation: 'fade',
-              }}
-            />
-            <Stack.Screen 
-              name="(auth)" 
-              options={{
-                animation: 'slide_from_bottom',
-                animationDuration: 350,
-              }}
-            />
-            <Stack.Screen 
-              name="(tabs)" 
-              options={{
+        <CardExpansionProvider>
+          <View style={styles.container}>
+            <Stack 
+              screenOptions={{ 
+                headerShown: false,
                 animation: 'slide_from_right',
                 animationDuration: 300,
               }}
-            />
-          </Stack>
-          <StatusBar style="auto" />
-        </View>
+            >
+              <Stack.Screen 
+                name="index" 
+                options={{
+                  animation: 'fade',
+                }}
+              />
+              <Stack.Screen 
+                name="(auth)" 
+                options={{
+                  animation: 'slide_from_bottom',
+                  animationDuration: 350,
+                }}
+              />
+              <Stack.Screen 
+                name="(tabs)" 
+                options={{
+                  animation: 'slide_from_right',
+                  animationDuration: 300,
+                }}
+              />
+            </Stack>
+            <StatusBar style="auto" />
+          </View>
+        </CardExpansionProvider>
       </NotificationProvider>
     </StoreProvider>
   );

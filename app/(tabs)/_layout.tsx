@@ -1,5 +1,5 @@
 import { Footer } from '@/components/layout/footer';
-import { CardExpansionProvider, useCardExpansion } from '@/contexts/CardExpansionContext';
+import { useCardExpansion } from '@/contexts/CardExpansionContext';
 import { theme } from '@/styles/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Slot } from 'expo-router';
@@ -31,9 +31,7 @@ const LayoutContent: React.FC = () => {
 export default function TabsLayout() {
   return (
     <SafeAreaProvider>
-      <CardExpansionProvider>
-        <LayoutContent />
-      </CardExpansionProvider>
+      <LayoutContent />
     </SafeAreaProvider>
   );
 }
