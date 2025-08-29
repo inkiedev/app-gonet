@@ -212,12 +212,6 @@ export default function PublicHomeScreen() {
 
               
             />
-
-          <Button
-            title="Agencias"
-            onPress={() => router.navigate("/(tabs)/home/agencias")}
-          />
-
           </View>
         </View>
 
