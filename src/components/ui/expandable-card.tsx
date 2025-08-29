@@ -9,7 +9,7 @@ import {
   Text,
   TouchableOpacity,
   View,
-  ViewStyle,
+  ViewStyle
 } from 'react-native';
 
 interface ExpandableCardProps extends BaseComponentProps {
@@ -61,18 +61,20 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
       Animated.parallel([
         Animated.timing(animatedHeight, {
           toValue: 0,
-          duration: 200,
-          easing: Easing.exp,
+          duration: 400,
+          easing: Easing.bezier(0.4, 0.0, 0.2, 1),
           useNativeDriver: false,
         }),
         Animated.timing(animatedOpacity, {
           toValue: 0,
-          duration: 200,
+          duration: 350,
+          easing: Easing.bezier(0.4, 0.0, 0.2, 1),
           useNativeDriver: false,
         }),
         Animated.timing(animatedRotation, {
           toValue: 0,
-          duration: 200,
+          duration: 400,
+          easing: Easing.bezier(0.4, 0.0, 0.2, 1),
           useNativeDriver: true,
         }),
       ]).start();

@@ -1,6 +1,13 @@
+import Location from '@/assets/images/iconos gonet agencias.svg';
+import Gift from '@/assets/images/iconos gonet beneficios.svg';
+import Cart from '@/assets/images/iconos gonet cart.svg';
+import Logout from '@/assets/images/iconos gonet logout.svg';
+import Perfil from '@/assets/images/iconos gonet profile.svg';
+import Security from '@/assets/images/iconos gonet security.svg';
+import Settings from '@/assets/images/iconos gonet settings.svg';
+import Wallet from '@/assets/images/iconos gonet wallet.svg';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
-import { Entypo, Feather, FontAwesome, MaterialCommunityIcons, MaterialIcons } from '@expo/vector-icons';
 import React from 'react';
 import {
   Dimensions,
@@ -15,6 +22,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const screenWidth = Dimensions.get('window').width;
 const screenHeight = Dimensions.get('window').height;
+const MENU_COLOR = theme.colors.text.primary;
 
 interface MenuItem {
   icon: React.ReactNode;
@@ -30,20 +38,18 @@ interface SideMenuProps extends BaseComponentProps {
 }
 
 const menuItems: MenuItem[] = [
-  { icon: <FontAwesome name="cog" size={24} color={theme.colors.text.inverse} />, label: 'Ajustes' },
-  { icon: <MaterialIcons name="local-mall" size={24} color={theme.colors.text.inverse} />, label: 'Agencias' },
-  { icon: <Entypo name="wallet" size={24} color={theme.colors.text.inverse} />, label: 'Pagos' },
-  { icon: <MaterialIcons name="support-agent" size={24} color={theme.colors.text.inverse} />, label: 'Soporte' },
-  { icon: <Feather name="shopping-cart" size={24} color={theme.colors.text.inverse} />, label: 'Servicios' },
-  { icon: <MaterialIcons name="card-giftcard" size={24} color={theme.colors.text.inverse} />, label: 'Promociones' },
-  { icon: <MaterialCommunityIcons name="star" size={24} color={theme.colors.text.inverse} />, label: 'Go Club' },
-  { icon: <MaterialIcons name="rate-review" size={24} color={theme.colors.text.inverse} />, label: 'Calificanos' },
-  { icon: <MaterialIcons name="view-list" size={24} color={theme.colors.text.inverse} />, label: 'Mi Plan' },
-  { icon: <MaterialCommunityIcons name="logout-variant" size={24} color={theme.colors.text.inverse} />, label: 'Cerrar Sesión' },
+  { icon: <Perfil color={MENU_COLOR} />, label: 'Perfil' },
+  { icon: <Settings color={MENU_COLOR} />, label: 'Configuracion App' },
+  { icon: <Location color={MENU_COLOR} />, label: 'Agencias' },
+  { icon: <Wallet color={MENU_COLOR} />, label: 'Consulta Pagos' },
+  { icon: <Security color={MENU_COLOR} />, label: 'Seguridad' },
+  { icon: <Cart color={MENU_COLOR} />, label: 'Adquiere mas' },
+  { icon: <Gift color={MENU_COLOR} />, label: 'Beneficios GoNet' },
+  { icon: <Logout color={MENU_COLOR} />, label: 'Cerrar Sesion' },
 ];
 
 export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPress, onLogout, testID }) => {
-  const slideAnim = useSharedValue(-screenWidth * 0.6);
+  const slideAnim = useSharedValue(screenWidth * 0.6);
   const opacityAnim = useSharedValue(0);
   const [shouldRender, setShouldRender] = React.useState(visible);
 
@@ -54,7 +60,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPres
       slideAnim.value = withTiming(0, { duration: 300 });
     } else {
       opacityAnim.value = withTiming(0, { duration: 300 });
-      slideAnim.value = withTiming(-screenWidth * 0.6, { duration: 300 }, (finished) => {
+      slideAnim.value = withTiming(screenWidth * 0.6, { duration: 300 }, (finished) => {
         if (finished) {
           runOnJS(setShouldRender)(false);
         }
@@ -116,15 +122,15 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.3)',
     zIndex: 1000,
   },
-  container: { flex: 1 },
+  container: { flex: 1, flexDirection: 'row', justifyContent: 'flex-end' },
   menu: {
-    width: screenWidth * 0.6,
+    width: screenWidth * 0.65,
     height: screenHeight,
-    backgroundColor: theme.colors.primaryDark,
+    backgroundColor: theme.colors.text.inverse,
     paddingTop: theme.spacing.xxl,
     paddingHorizontal: theme.spacing.lg,
-    borderTopRightRadius: theme.borderRadius.xl,
-    borderBottomRightRadius: theme.borderRadius.xl,
+    borderTopLeftRadius: theme.borderRadius.xl,
+    borderBottomLeftRadius: theme.borderRadius.xl,
     ...theme.shadows.lg,
   },
   menuContent: { flex: 1 },
@@ -138,7 +144,7 @@ const styles = StyleSheet.create({
   menuItemIcon: { width: 32, alignItems: 'center', marginRight: theme.spacing.md },
   menuItemText: {
     fontSize: theme.fontSize.md,
-    color: theme.colors.text.inverse,
+    color: theme.colors.text.primary,
     fontWeight: theme.fontWeight.medium,
   },
 });

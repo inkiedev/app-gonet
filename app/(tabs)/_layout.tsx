@@ -1,6 +1,5 @@
 import { Footer } from '@/components/layout/footer';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
-import { theme } from '@/styles/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -13,23 +12,25 @@ const LayoutContent: React.FC = () => {
   const { showFooter } = useCardExpansion();
   
   return (
-    <View style={styles.container}>
-      <StatusBar style="dark" />
-      <LinearGradient
+    <LinearGradient
         colors={['#ffffff', '#dfdfdfff', '#ffffff']}
         locations={[0.1, 0.5, 0.9]}
         start={{ x: 0, y: 0 }}
         end={{ x: 1, y: 1 }}
         style={styles.content}
-      >
+    >
+      <View style={styles.container}>
+        <StatusBar style="dark" />
+
         <Slot />
-      </LinearGradient>
-      {showFooter && 
-        <Animated.View exiting={FadeOutDown} entering={FadeInDown} >
-          <Footer />
-        </Animated.View>
-      }
-    </View>
+
+        {showFooter && 
+          <Animated.View exiting={FadeOutDown.duration(400)} entering={FadeInDown.duration(400)} >
+            <Footer />
+          </Animated.View>
+        }
+      </View>
+    </LinearGradient>
   );
 };
 
@@ -44,7 +45,6 @@ export default function TabsLayout() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.primaryDark,
   },
   content: {
     flex: 1,

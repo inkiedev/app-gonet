@@ -20,7 +20,7 @@ import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
+import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -52,12 +52,13 @@ const iconOptions = [
 
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
+  const opacity = useSharedValue(1);
+  const heightAnimation = useSharedValue(60);
   const router = useRouter();
   const dispatch = useDispatch();
   const { userData } = useSelector((state: RootState) => state.auth);
   const { showSuccess, showError, showInfo } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
-  const [iconsVisible, setIconsVisible] = useState(true);
   const { height } = useResponsive();
 
   useEffect(() => {
@@ -94,8 +95,16 @@ export default function HomeScreen() {
 
   const handleCardToggle = (expanded: boolean) => {
     toggleExpansion();
-    setIconsVisible(!iconsVisible);
+    opacity.value = withTiming(expanded ? 0 : 1, { duration: 500 });
+    heightAnimation.value = withTiming(expanded ? 0 : 60, { duration: 500 });
   };
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: opacity.value,
+      height: heightAnimation.value,
+    };
+  });
 
   const handleMenuNavigation = (item: string) => {
     const routeMap: { [key: string]: string } = {
@@ -184,22 +193,18 @@ export default function HomeScreen() {
             onToggle={handleCardToggle}
           />
 
-          {
-            iconsVisible &&  (
-              <Animated.View style={styles.iconsGrid} entering={FadeInDown} exiting={FadeOutDown} >
-                {iconOptions.map((option, index) => (
-                  <IconWithBadge
-                    key={index}
-                    size={60}
-                    SvgComponent={option.SvgComponent}
-                    label={option.label}
-                    badgeCount={option.badgeCount}
-                    onPress={() => console.log(`press ${option.label}`)}
-                  />
-                ))}
-              </Animated.View>
-            )
-          }
+          <Animated.View style={[styles.iconsGrid, animatedStyle]}>
+            {iconOptions.map((option, index) => (
+              <IconWithBadge
+                key={index}
+                size={60}
+                SvgComponent={option.SvgComponent}
+                label={option.label}
+                badgeCount={option.badgeCount}
+                onPress={() => console.log(`press ${option.label}`)}
+              />
+            ))}
+          </Animated.View>
         </View>
       </SafeAreaView>
     </AuthGuard>
@@ -226,7 +231,7 @@ const styles = StyleSheet.create({
     flex: 1,
     display: 'flex',
     flexDirection: 'column',
-    justifyContent: 'flex-start',
+    justifyContent: 'space-evenly',
     paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
     gap: theme.spacing.md,
   },
