@@ -209,7 +209,15 @@ export default function PublicHomeScreen() {
               title="Iniciar Sesión" 
               onPress={handleLogin}
               style={styles.loginButton}
+
+              
             />
+
+          <Button
+            title="Agencias"
+            onPress={() => router.navigate("/(tabs)/home/agencias")}
+          />
+
           </View>
         </View>
 

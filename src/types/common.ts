@@ -1,4 +1,4 @@
-import { ViewStyle, TextStyle } from 'react-native';
+import { TextStyle, ViewStyle } from 'react-native';
 
 export interface BaseComponentProps {
   style?: ViewStyle;
@@ -10,6 +10,6 @@ export interface BaseTextProps {
   testID?: string;
 }
 
-export type Variant = 'primary' | 'secondary' | 'outline' | 'ghost';
+export type Variant = 'primary' | 'secondary' | 'outline' | 'ghost'|'pressed';
 export type Size = 'sm' | 'md' | 'lg';
 export type ColorScheme = 'light' | 'dark';
