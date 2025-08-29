@@ -18,7 +18,7 @@ import { AppLogo } from "@/components/app/app-logo";
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import { Select, SelectOption } from "@/components/ui/custom-select";
-import { useNotificationContext } from '@/contexts/NotificationContext';
+import { useNotificationContext } from '@/contexts/notification-context';
 import { theme } from "@/styles/theme";
 import { FontAwesome } from "@expo/vector-icons";
 

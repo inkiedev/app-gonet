@@ -1,3 +1,4 @@
+import Menu from '@/assets/images/iconos gonet app menu.svg';
 import Beneficios from '@/assets/images/iconos gonet app svg_beneficios.svg';
 import Servicios from '@/assets/images/iconos gonet app svg_gonetBlack.svg';
 import Mensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
@@ -8,8 +9,9 @@ import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { AuthGuard } from '@/components/auth/auth-guard';
 import { Header } from '@/components/layout/header';
-import { useNotificationContext } from '@/contexts/NotificationContext';
-import { useCardExpansion } from '@/contexts/CardExpansionContext';
+import { ImageCarousel } from '@/components/ui/image-carousel';
+import { useCardExpansion } from '@/contexts/card-expansion-container';
+import { useNotificationContext } from '@/contexts/notification-context';
 import { useResponsive } from '@/hooks/use-responsive';
 import { authService } from '@/services/auth';
 import { RootState } from '@/store';
@@ -17,7 +19,7 @@ import { loadUserData, logout } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useRef, useState } from 'react';
-import { Animated, BackHandler, ImageBackground, StyleSheet, View } from 'react-native';
+import { Animated, BackHandler, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -151,30 +153,31 @@ export default function HomeScreen() {
   return (
     <AuthGuard>
       <SafeAreaView style={styles.container}>
-        <ImageBackground
-          source={require("@/assets/images/publicidad.webp")}
-          style={[styles.banner, { height: height * 0.55 }]}
-          resizeMode="cover"
-        >
-            <Header
-              rightAction={{
-                icon: 'menu',
-                onPress: toggleMenu,
-              }}
-              variant="transparent"
-            />
+        <View style={styles.bannerContainer}>
+          <ImageCarousel
+            style={styles.banner}
+            height={height * 0.55}
+          />
+          <Header
+            rightAction={{
+              icon: <Menu width={24} height={24} fill={theme.colors.primary} />,
+              onPress: toggleMenu,
+            }}
+            variant="transparent"
+            style={styles.fixedHeader}
+          />
+        </View>
 
-            <SideMenu
-              visible={menuVisible}
-              onClose={closeMenu}
-              onItemPress={(item: string) => {
-                console.log(`Menu item pressed: ${item}`);
-                handleMenuNavigation(item);
-                closeMenu();
-              }}
-              onLogout={handleLogout}
-            />
-        </ImageBackground>
+        <SideMenu
+          visible={menuVisible}
+          onClose={closeMenu}
+          onItemPress={(item: string) => {
+            console.log(`Menu item pressed: ${item}`);
+            handleMenuNavigation(item);
+            closeMenu();
+          }}
+          onLogout={handleLogout}
+        />
 
         <View style={styles.content}>
           <HomeExpandableCard
@@ -197,17 +200,6 @@ export default function HomeScreen() {
             ))}
           </Animated.View>
         </View>
-
-        <SideMenu
-          visible={menuVisible}
-          onClose={closeMenu}
-          onItemPress={(item: string) => {
-            console.log(`Menu item pressed: ${item}`);
-            handleMenuNavigation(item);
-            closeMenu();
-          }}
-          onLogout={handleLogout}
-        />
       </SafeAreaView>
     </AuthGuard>
   );
@@ -217,7 +209,17 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  bannerContainer: {
+    position: 'relative',
+  },
   banner: {
+  },
+  fixedHeader: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 10,
   },
   content: {
     flex: 1,

@@ -1,6 +1,7 @@
 import Notification from '@/assets/images/iconos gonet app svg_notificacion.svg';
 import { Card } from '@/components/ui/card';
 import { ExpandableCard } from '@/components/ui/expandable-card';
+import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
 import { AntDesign, FontAwesome5 } from '@expo/vector-icons';
@@ -45,9 +46,16 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
   style,
   testID,
 }) => {
+  const { isExpanded } = useCardExpansion();
+
   return (
     <View style={[styles.container, style]} testID={testID}>
-      <Card style={styles.card} variant="elevated">
+      <Card 
+        style={{
+          ...styles.card, paddingBottom: isExpanded ? 0 : theme.spacing.md
+        }} 
+        variant="elevated"
+      >
         <View style={styles.featuresContainer}>
           <Notification width={35} height={35} />
           <Text style={styles.clientTitle}>{"Juan Gonzales".split(" ").join("\n")}</Text>
@@ -121,7 +129,7 @@ const styles = StyleSheet.create({
     width: '100%',
     alignItems: 'center',
     borderRadius: theme.borderRadius.xxl,
-    paddingHorizontal: theme.spacing.lg,
+    paddingHorizontal: theme.spacing.lg
   },
   planTitle: {
     color: theme.colors.primaryDark,

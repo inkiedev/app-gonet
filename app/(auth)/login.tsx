@@ -21,7 +21,7 @@ import { AppLogo } from '@/components/app/app-logo';
 import { AuthGuest } from '@/components/auth/auth-guest';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
-import { useNotificationContext } from '@/contexts/NotificationContext';
+import { useNotificationContext } from '@/contexts/notification-context';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
 import { loginSuccess } from '@/store/slices/auth-slice';

@@ -1,5 +1,5 @@
 import { Footer } from '@/components/layout/footer';
-import { useCardExpansion } from '@/contexts/CardExpansionContext';
+import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { theme } from '@/styles/theme';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Slot } from 'expo-router';

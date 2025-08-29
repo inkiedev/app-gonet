@@ -1,7 +1,7 @@
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
 import Tabs from '@/components/ui/tabs';
-import { useNotificationContext } from '@/contexts/NotificationContext';
+import { useNotificationContext } from '@/contexts/notification-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
 import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';

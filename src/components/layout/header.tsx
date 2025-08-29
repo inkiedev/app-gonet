@@ -1,17 +1,16 @@
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
-import { Ionicons } from '@expo/vector-icons';
 import React from 'react';
 import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
 
 interface HeaderProps extends BaseComponentProps {
   title?: string;
   leftAction?: {
-    icon: string;
+    icon: React.ReactNode;
     onPress: () => void;
   };
   rightAction?: {
-    icon: string;
+    icon: React.ReactNode;
     onPress: () => void;
     testID? : string;
   };
@@ -38,11 +37,7 @@ export const Header: React.FC<HeaderProps> = ({
               style={styles.actionButton}
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={leftAction.icon as any}
-                size={24}
-                color={theme.colors.primary}
-              />
+              {leftAction.icon}
             </TouchableOpacity>
           )}
         </View>
@@ -60,11 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
               style={styles.actionButton}
               activeOpacity={0.7}
             >
-              <Ionicons
-                name={rightAction.icon as any}
-                size={24}
-                color={theme.colors.primary}
-              />
+              {rightAction.icon}
             </TouchableOpacity>
           )}
         </View>
