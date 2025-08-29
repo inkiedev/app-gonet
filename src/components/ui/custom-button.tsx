@@ -147,5 +147,11 @@ const styles = StyleSheet.create({
   lgText: {
     fontSize: theme.fontSize.lg,
   },
+  pressed: {
+    backgroundColor: theme.colors.darkgreen,
+  },
+  pressedText: {
+      color: theme.colors.text.inverse,
+  }
 });
 

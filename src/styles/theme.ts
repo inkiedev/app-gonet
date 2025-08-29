@@ -8,6 +8,8 @@ export const theme = {
     error: '#ff4444',
     success: '#00aa44',
     warning: '#ffaa00',
+    lightgreen: '#AABF0B',
+    darkgreen: '#17775a',
     text: {
       primary: '#333333',
       contrast : '#952CAB',

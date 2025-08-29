@@ -9,6 +9,22 @@ interface MapProps {
     longitudeDelta: number;
   };
   style?: any;
+  polygons?: {
+    coordinates: { latitude: number; longitude: number }[];
+    strokeColor?: string;
+    fillColor?: string;
+  }[];
+  markers?: {
+    coordinate: { latitude: number; longitude: number };
+    title?: string;
+    description?: string;
+    image?: any;
+  }[];
+  onMarkerPress?: (marker: any) => void;
+  userLocation?: {
+    latitude: number;
+    longitude: number;
+  };
 }
 
 export const Map: React.FC<MapProps> = (props) => {
