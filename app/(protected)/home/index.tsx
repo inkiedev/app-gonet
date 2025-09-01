@@ -88,10 +88,6 @@ export default function HomeScreen() {
     setMenuVisible(false);
   };
 
-  const handleProfilePress = () => {
-    router.push('/(protected)/home/perfil' as any);
-  };
-
   const handleCardToggle = (expanded: boolean) => {
     toggleExpansion();
     opacity.value = withTiming(expanded ? 0 : 1, { duration: 500 });
@@ -139,7 +135,6 @@ export default function HomeScreen() {
         3000
       );
       
-      // Now should redirect properly to main index
       router.replace('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -174,7 +169,6 @@ export default function HomeScreen() {
         visible={menuVisible}
         onClose={closeMenu}
         onItemPress={(item: string) => {
-          console.log(`Menu item pressed: ${item}`);
           handleMenuNavigation(item);
           closeMenu();
         }}

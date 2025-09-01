@@ -89,10 +89,6 @@ export default function HomeScreen() {
     setMenuVisible(false);
   };
 
-  const handleProfilePress = () => {
-    router.push('/home/perfil');
-  };
-
   const handleCardToggle = (expanded: boolean) => {
     toggleExpansion();
     opacity.value = withTiming(expanded ? 0 : 1, { duration: 500 });

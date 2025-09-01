@@ -45,7 +45,7 @@ const menuItems: MenuItem[] = [
   { icon: <Security color={MENU_COLOR} />, label: 'Seguridad' },
   { icon: <Cart color={MENU_COLOR} />, label: 'Adquiere mas' },
   { icon: <Gift color={MENU_COLOR} />, label: 'Beneficios GoNet' },
-  { icon: <Logout color={MENU_COLOR} />, label: 'Cerrar Sesion' },
+  { icon: <Logout color={MENU_COLOR} />, label: 'Cerrar Sesión' },
 ];
 
 export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPress, onLogout, testID }) => {
