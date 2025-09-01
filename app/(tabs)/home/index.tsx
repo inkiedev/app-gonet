@@ -108,15 +108,13 @@ export default function HomeScreen() {
 
   const handleMenuNavigation = (item: string) => {
     const routeMap: { [key: string]: string } = {
-      'Ajustes': '/home/ajustes',
+      'Perfil': '/home/perfil',
+      'Configuracion App': '/home/ajustes',
       'Agencias': '/home/agencias',
-      'Pagos': '/home/pagos',
-      'Soporte': '/home/soporte',
-      'Servicios': '/home/servicios',
-      'Promociones': '/home/promociones',
-      'Go Club': '/home/goclub',
-      'Calificanos': '/home/calificanos',
-      'Mi Plan': '/home/planes',
+      'Consulta Pagos': '/home/pagos',
+      'Seguridad': '/home/soporte',
+      'Adquiere mas': '/home/servicios',
+      'Beneficios GoNet': '/home/goclub',
     };
 
     const route = routeMap[item];

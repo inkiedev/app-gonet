@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/custom-button";
 import { theme } from "@/styles/theme";
 import { router } from "expo-router";
 import React from "react";
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Image, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -12,7 +13,7 @@ export default function CedulaScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Header
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: () => router.back(),
         }}
         title="Promociones"

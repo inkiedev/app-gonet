@@ -5,6 +5,7 @@ import { theme } from "@/styles/theme";
 import { BaseComponentProps } from "@/types/common";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -136,7 +137,7 @@ export default function Soporte({ onSendMessage, userContext, style, testID }: S
       <Header
         title="Soporte"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"

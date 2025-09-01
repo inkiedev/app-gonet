@@ -5,6 +5,7 @@ import { agencies, cities, neighborhoods, polygons, regionCoordinates } from "@/
 import { theme } from "@/styles/theme";
 import * as Location from 'expo-location';
 import { Router, useRouter } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -100,7 +101,7 @@ const CitySelector = ({ onCitySelect, router }: { onCitySelect: (city: City) => 
         <SafeAreaView style={styles.container} edges={["top"]}>
             <Header
                 leftAction={{
-                    icon: "arrow-back",
+                    icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
                     onPress: () => router.back(),
                 }}
                 title="Seleccionar Ciudad"
@@ -301,7 +302,7 @@ export default function AgenciesScreen() {
         <SafeAreaView style={styles.container} edges={["top"]}>
             <Header
                 leftAction={{
-                    icon: "arrow-back",
+                    icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
                     onPress: () => setSelectedCity(null),
                 }}
                 title={`Agencias en ${selectedCity.label}`}

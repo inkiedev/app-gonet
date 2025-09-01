@@ -1,17 +1,19 @@
+import Back from '@/assets/images/iconos gonet back.svg';
+import Cross from '@/assets/images/iconos gonet cross.svg';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/custom-button';
 import { useResponsive } from '@/hooks/use-responsive';
-import { theme } from '@/styles/theme';
 import { RootState } from '@/store';
 import { loadUserData } from '@/store/slices/auth-slice';
+import { theme } from '@/styles/theme';
 
 interface UserField {
   label: string;
@@ -89,11 +91,11 @@ export default function AjustesScreen() {
       <Header
         title="Ajustes de perfil"
         leftAction={{
-          icon: 'arrow-back',
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: () => router.back(),
         }}
         rightAction={isEditing ? {
-          icon: 'close',
+          icon: <Cross width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleCancel,
         } : undefined}
         variant="transparent"

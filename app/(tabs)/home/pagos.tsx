@@ -6,6 +6,7 @@ import { ExpandableCard } from "@/components/ui/expandable-card";
 import { theme } from "@/styles/theme";
 import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -145,7 +146,7 @@ export default function PaymentsScreen() {
       <Header
         title="Pagos"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"

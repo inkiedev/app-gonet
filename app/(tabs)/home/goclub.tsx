@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/custom-button";
 import { theme } from "@/styles/theme";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
 import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
@@ -36,7 +37,7 @@ export default function CedulaScreen() {
     <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
       <Header
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: () => router.back(),
         }}
         title="Go Club"

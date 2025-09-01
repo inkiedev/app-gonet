@@ -7,6 +7,7 @@ import { RootState } from '@/store';
 import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useEffect, useState } from "react";
 import {
   ScrollView,
@@ -280,7 +281,7 @@ export default function PerfilScreen() {
       <Header
         title="Ajustes"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"

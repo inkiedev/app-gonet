@@ -5,6 +5,7 @@ import { PlanCard } from "@/components/ui/plan-card";
 import { theme } from "@/styles/theme";
 import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -110,7 +111,7 @@ export default function InternetPlans() {
       <Header
         title="Mi Plan"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"

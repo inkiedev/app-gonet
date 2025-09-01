@@ -5,6 +5,7 @@ import Tabs from "@/components/ui/tabs";
 import { theme } from "@/styles/theme";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useEffect, useState } from "react";
 import {
   Alert,
@@ -119,7 +120,7 @@ export default function CalificanosScreen(): React.ReactElement {
 
 <Header style={styles.header} 
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: () => router.back(),
         }}
         title="Calificanos"
