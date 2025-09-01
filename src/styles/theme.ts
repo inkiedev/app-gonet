@@ -1,3 +1,14 @@
+// This file is deprecated. Use useTheme hook from @/contexts/theme-context instead.
+// Keeping for backward compatibility.
+
+import { useTheme } from '@/contexts/theme-context';
+
+// For backward compatibility - use the theme context instead
+export const useAppTheme = () => {
+  return useTheme();
+};
+
+// Legacy export - consider migrating to useTheme hook
 export const theme = {
   colors: {
     primary: '#00fe9b',
@@ -10,6 +21,7 @@ export const theme = {
     warning: '#ffaa00',
     lightgreen: '#AABF0B',
     darkgreen: '#17775a',
+    shadow: '#000000',
     text: {
       primary: '#333333',
       contrast : '#952CAB',
@@ -47,6 +59,12 @@ export const theme = {
     xl: 20,
     xxl: 24,
     huge: 32,
+  },
+  fontFamily: {
+    regular: 'Montserrat_400Regular',
+    medium: 'Montserrat_500Medium',
+    semiBold: 'Montserrat_600SemiBold',
+    bold: 'Montserrat_700Bold',
   },
   fontWeight: {
     normal: '400' as const,

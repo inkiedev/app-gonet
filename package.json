@@ -15,6 +15,7 @@
     "test:band": "jest --config __tests__/jest.config.js --runInBand"
   },
   "dependencies": {
+    "@expo-google-fonts/montserrat": "^0.4.1",
     "@expo/vector-icons": "^14.1.0",
     "@hookform/resolvers": "^5.2.1",
     "@react-native-async-storage/async-storage": "^2.1.2",

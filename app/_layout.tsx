@@ -1,21 +1,26 @@
 import { CardExpansionProvider } from '@/contexts/card-expansion-container';
 import { NotificationProvider } from '@/contexts/notification-context';
-import { StoreProvider } from '@/providers/store-provider';
 import { AuthRouteProvider } from '@/providers/auth-route-provider';
-import { useFonts } from 'expo-font';
+import { StoreProvider } from '@/providers/store-provider';
+import { ThemeProvider } from '@/contexts/theme-context';
+import { TextOverrideProvider } from '@/components/providers/text-override-provider';
+import { ThemedStatusBar } from '@/components/ui/themed-status-bar';
+import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, useFonts } from '@expo-google-fonts/montserrat';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
 import React, { useEffect } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { StyleSheet, Text, TextInput, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
 
 SplashScreen.preventAutoHideAsync().then();
 
 export default function RootLayout() {
   const [fontsLoaded] = useFonts({
-    SpaceMono: require('@/assets/fonts/SpaceMono-Regular.ttf'),
-    Barlow: require('@/assets/fonts/Barlow-Light.ttf'),
+    Montserrat_400Regular,
+    Montserrat_500Medium,
+    Montserrat_600SemiBold,
+    Montserrat_700Bold,
   });
 
   useEffect(() => {
@@ -29,59 +34,64 @@ export default function RootLayout() {
   }
 
   return (
-    <StoreProvider>
-      <GestureHandlerRootView>
-        <NotificationProvider>
-          <CardExpansionProvider>
-            <AuthRouteProvider>
-              <View style={styles.container}>
-                <Stack 
-                  screenOptions={{ 
-                    headerShown: false,
-                    animation: 'slide_from_right',
-                    animationDuration: 300,
-                  }}
-                >
-                  <Stack.Screen 
-                    name="index" 
-                    options={{
-                      animation: 'fade',
-                    }}
-                  />
-                  <Stack.Screen 
-                    name="(auth)" 
-                    options={{
-                      animation: 'slide_from_bottom',
-                      animationDuration: 350,
-                    }}
-                  />
-                  <Stack.Screen 
-                    name="(protected)" 
-                    options={{
-                      animation: 'slide_from_right',
-                      animationDuration: 300,
-                    }}
-                  />
-                  <Stack.Screen 
-                    name="(tabs)" 
-                    options={{
-                      animation: 'slide_from_right',
-                      animationDuration: 300,
-                    }}
-                  />
-                </Stack>
-                <StatusBar style="auto" />
-              </View>
-            </AuthRouteProvider>
-          </CardExpansionProvider>
-        </NotificationProvider>
-      </GestureHandlerRootView>
-    </StoreProvider>
+    <ThemeProvider>
+      <TextOverrideProvider>
+        <StoreProvider>
+          <GestureHandlerRootView>
+            <NotificationProvider>
+              <CardExpansionProvider>
+                <AuthRouteProvider>
+                  <View style={styles.container}>
+                    <Stack 
+                      screenOptions={{ 
+                        headerShown: false,
+                        animation: 'slide_from_right',
+                        animationDuration: 300,
+                      }}
+                    >
+                      <Stack.Screen 
+                        name="index" 
+                        options={{
+                          animation: 'fade',
+                        }}
+                      />
+                      <Stack.Screen 
+                        name="(auth)" 
+                        options={{
+                          animation: 'slide_from_bottom',
+                          animationDuration: 350,
+                        }}
+                      />
+                      <Stack.Screen 
+                        name="(protected)" 
+                        options={{
+                          animation: 'slide_from_right',
+                          animationDuration: 300,
+                        }}
+                      />
+                      <Stack.Screen 
+                        name="(tabs)" 
+                        options={{
+                          animation: 'slide_from_right',
+                          animationDuration: 300,
+                        }}
+                      />
+                    </Stack>
+                    <ThemedStatusBar />
+                  </View>
+                </AuthRouteProvider>
+              </CardExpansionProvider>
+            </NotificationProvider>
+          </GestureHandlerRootView>
+        </StoreProvider>
+      </TextOverrideProvider>
+    </ThemeProvider>
   );
 }
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    fontFamily: 'Montserrat_400Regular',
   },
 });

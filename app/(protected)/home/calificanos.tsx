@@ -1,7 +1,7 @@
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
-import Tabs from "@/components/ui/tabs";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { theme } from "@/styles/theme";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
@@ -132,29 +132,32 @@ export default function CalificanosScreen(): React.ReactElement {
 
       <StarRating rating={puntuacion} onChange={setPuntuacion} />
 
-      <View style={styles.tabsContainer}>
-        <Tabs
-          tabs={[
+      <View style={styles.segmentedContainer}>
+        <SegmentedControl
+          segments={[
             {
               id: 'encuestas',
               label: 'Encuesta',
               content: <EncuestasContent />,
+              icon: <Ionicons name="clipboard-outline" size={16} color={theme.colors.primary} />,
             },
             {
               id: 'sugerencias',
-              label: 'Sugerencias',
+              label: 'Feedback',
               content: <SugerenciasContent />,
+              icon: <Ionicons name="chatbubble-outline" size={16} color={theme.colors.primary} />,
             },
             {
               id: 'siguenos',
-              label: 'Síguenos',
+              label: 'Social',
               content: <SiguenosContent />,
+              icon: <Ionicons name="heart-outline" size={16} color={theme.colors.primary} />,
             },
           ]}
-          variant="default"
-          contentScrollable={false}
-          tabsScrollable={false}
-          testID="calificanos-tabs"
+          variant="glass"
+          animated={true}
+          size="md"
+          tintColor={theme.colors.primary}
         />
       </View>
 
@@ -196,7 +199,7 @@ const styles = StyleSheet.create({
   starIcon: {
     marginHorizontal: 2,
   },
-  tabsContainer: {
+  segmentedContainer: {
     flex: 1,
     marginTop: theme.spacing.lg,
     width: "100%",

@@ -11,11 +11,11 @@ import { Header } from '@/components/layout/header';
 import { ImageCarousel } from '@/components/ui/image-carousel';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useNotificationContext } from '@/contexts/notification-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
 import { authService } from '@/services/auth';
 import { RootState } from '@/store';
 import { loadUserData, logout } from '@/store/slices/auth-slice';
-import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
@@ -59,6 +59,7 @@ export default function HomeScreen() {
   const { showSuccess, showError, showInfo } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
   const { height } = useResponsive();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const backAction = () => {
@@ -149,7 +150,7 @@ export default function HomeScreen() {
 
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
       <View style={styles.bannerContainer}>
         <ImageCarousel
           style={styles.banner}
@@ -221,8 +222,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-evenly',
-    paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
-    gap: theme.spacing.md,
+    paddingHorizontal: 16,
+    gap: 16,
   },
   planCard: {
     alignSelf: 'center',

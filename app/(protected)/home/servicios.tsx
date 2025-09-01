@@ -2,9 +2,9 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { PlanCard } from "@/components/ui/plan-card";
-import Tabs from "@/components/ui/tabs";
+import { SegmentedControl } from "@/components/ui/segmented-control";
 import { theme } from "@/styles/theme";
-import { Foundation } from "@expo/vector-icons";
+import { Foundation, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
@@ -174,26 +174,28 @@ export default function ServicesScreen() {
         />
       </View>
 
-      <View style={styles.tabsContainer}>
-        <Tabs
-          tabs={[
+      <View style={styles.segmentedContainer}>
+        <SegmentedControl
+          segments={[
             {
               id: 'planes',
               label: 'Planes',
               content: <PlanesContent />,
+              icon: <Ionicons name="layers-outline" size={16} color={theme.colors.primary} />,
             },
             {
               id: 'servicios',
               label: 'Servicios',
               content: <ServiciosContent />,
+              icon: <Ionicons name="grid-outline" size={16} color={theme.colors.primary} />,
             },
           ]}
-          variant="default"
-          contentScrollable={true}
-          tabsScrollable={false}
-          testID="services-tabs"
-          onTabChange={(tabId, index) => {
-            console.log(`Tab cambiado a: ${tabId} (índice: ${index})`);
+          variant="ios"
+          animated={true}
+          size="md"
+          tintColor={theme.colors.primary}
+          onSegmentChange={(segmentId, index) => {
+            console.log(`Segmento cambiado a: ${segmentId} (índice: ${index})`);
           }}
         />
       </View>
@@ -280,7 +282,7 @@ const styles = StyleSheet.create({
   accountButtonTextActive: {
     color: theme.colors.text.inverse,
   },
-  tabsContainer: {
+  segmentedContainer: {
     flex: 1,
     margin: theme.spacing.md,
   },
