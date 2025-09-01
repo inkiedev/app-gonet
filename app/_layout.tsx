@@ -1,6 +1,7 @@
 import { CardExpansionProvider } from '@/contexts/card-expansion-container';
 import { NotificationProvider } from '@/contexts/notification-context';
 import { StoreProvider } from '@/providers/store-provider';
+import { AuthRouteProvider } from '@/providers/auth-route-provider';
 import { useFonts } from 'expo-font';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
@@ -32,37 +33,46 @@ export default function RootLayout() {
       <GestureHandlerRootView>
         <NotificationProvider>
           <CardExpansionProvider>
-            <View style={styles.container}>
-              <Stack 
-                screenOptions={{ 
-                  headerShown: false,
-                  animation: 'slide_from_right',
-                  animationDuration: 300,
-                }}
-              >
-                <Stack.Screen 
-                  name="index" 
-                  options={{
-                    animation: 'fade',
-                  }}
-                />
-                <Stack.Screen 
-                  name="(auth)" 
-                  options={{
-                    animation: 'slide_from_bottom',
-                    animationDuration: 350,
-                  }}
-                />
-                <Stack.Screen 
-                  name="(tabs)" 
-                  options={{
+            <AuthRouteProvider>
+              <View style={styles.container}>
+                <Stack 
+                  screenOptions={{ 
+                    headerShown: false,
                     animation: 'slide_from_right',
                     animationDuration: 300,
                   }}
-                />
-              </Stack>
-              <StatusBar style="auto" />
-            </View>
+                >
+                  <Stack.Screen 
+                    name="index" 
+                    options={{
+                      animation: 'fade',
+                    }}
+                  />
+                  <Stack.Screen 
+                    name="(auth)" 
+                    options={{
+                      animation: 'slide_from_bottom',
+                      animationDuration: 350,
+                    }}
+                  />
+                  <Stack.Screen 
+                    name="(protected)" 
+                    options={{
+                      animation: 'slide_from_right',
+                      animationDuration: 300,
+                    }}
+                  />
+                  <Stack.Screen 
+                    name="(tabs)" 
+                    options={{
+                      animation: 'slide_from_right',
+                      animationDuration: 300,
+                    }}
+                  />
+                </Stack>
+                <StatusBar style="auto" />
+              </View>
+            </AuthRouteProvider>
           </CardExpansionProvider>
         </NotificationProvider>
       </GestureHandlerRootView>

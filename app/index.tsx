@@ -1,18 +1,14 @@
-import { AuthGuest } from "@/components/auth/auth-guest";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
-import { useBiometricAuth } from "@/hooks/use-biometric-auth";
-import { authService } from "@/services/auth";
-import { secureStorageService } from "@/services/secure-storage";
+import { useAuthRoute } from "@/providers/auth-route-provider";
 import { RootState } from "@/store";
-import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from "@/store/slices/auth-slice";
 import { theme } from "@/styles/theme";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
+import { useRouter, Redirect } from "expo-router";
+import React from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 ``
 
 interface Plan {
@@ -94,97 +90,17 @@ const PlanesContent = () => (
 
 export default function PublicHomeScreen() {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(true);
-  const [biometricPending, setBiometricPending] = useState(false);
+  const { isInitialized } = useAuthRoute();
   const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
-  const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
 
-  useEffect(() => {
-    const checkStoredCredentials = async () => {
-      try {
-        const storedCredentials = await secureStorageService.getCredentials();
-        
-        if (storedCredentials) {
-          const result = await authService.login({
-            username: storedCredentials.username,
-            password: storedCredentials.password
-          });
+  // Wait for auth initialization
+  if (!isInitialized) {
+    return null; // AuthRouteProvider handles loading state
+  }
 
-          if (result.success && result.user) {
-            await dispatch(loadBiometricPreferences() as any);
-            dispatch(restoreSession({
-              uid: result.user.uid,
-              password: storedCredentials.password,
-              username: storedCredentials.username,
-              rememberMe: true
-            }));
-          }
-        }
-      } catch (error) {
-        console.error('Auto-login error:', error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (!isAuthenticated) {
-      checkStoredCredentials();
-    } else {
-      setIsLoading(false);
-    }
-  }, [dispatch, isAuthenticated]);
-
-  useEffect(() => {
-    const handleBiometricVerification = async () => {
-      if (needsBiometricVerification && !biometricPending) {
-        setBiometricPending(true);
-        
-        const storedPreferences = await secureStorageService.getBiometricPreferences();
-        const shouldUseBiometric = storedPreferences?.useBiometricForLogin || false;
-        
-        if (shouldUseBiometric) {
-          const isAvailable = await checkBiometricAvailability();
-          if (isAvailable) {
-            const result = await authenticateWithBiometrics();
-            if (result.success) {
-              dispatch(completeBiometricVerification());
-            } else {
-              setBiometricPending(false);
-              return;
-            }
-          } else {
-            dispatch(completeBiometricVerification());
-          }
-        } else {
-          dispatch(completeBiometricVerification());
-        }
-        
-        setBiometricPending(false);
-      }
-    };
-
-    if (isAuthenticated && needsBiometricVerification) {
-      handleBiometricVerification();
-    }
-  }, [isAuthenticated, needsBiometricVerification, biometricPending, checkBiometricAvailability, authenticateWithBiometrics, dispatch]);
-
-  useEffect(() => {
-    if (isAuthenticated && !isLoading && !needsBiometricVerification && !biometricPending) {
-      router.replace('/(tabs)/home');
-    }
-  }, [isAuthenticated, isLoading, needsBiometricVerification, biometricPending, router]);
-
-  if (isLoading || biometricPending) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>
-            {biometricPending ? 'Verificando identidad...' : 'Cargando...'}
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
+  // Redirect authenticated users to protected area
+  if (isAuthenticated && !needsBiometricVerification) {
+    return <Redirect href="/(protected)/home/" />;
   }
 
 
@@ -193,9 +109,8 @@ export default function PublicHomeScreen() {
   };
 
   return (
-    <AuthGuest>
-      <SafeAreaView style={styles.container} edges={["top"]}>
-        <ScrollView style={styles.scrollContainer}>
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ScrollView style={styles.scrollContainer}>
         {/* Banner */}
         <View style={styles.bannerContainer}>
           <Image
@@ -209,8 +124,6 @@ export default function PublicHomeScreen() {
               title="Iniciar Sesión" 
               onPress={handleLogin}
               style={styles.loginButton}
-
-              
             />
           </View>
         </View>
@@ -219,10 +132,9 @@ export default function PublicHomeScreen() {
         <PlanesContent />
       </ScrollView>
 
-        {/* Footer */}
-        <Footer />
-      </SafeAreaView>
-    </AuthGuest>
+      {/* Footer */}
+      <Footer />
+    </SafeAreaView>
   );
 }
 
@@ -311,14 +223,5 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing.xs,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  loadingText: {
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text.primary,
   },
 });
