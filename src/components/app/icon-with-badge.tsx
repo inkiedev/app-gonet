@@ -68,6 +68,5 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xs,
     color: theme.colors.primaryDark,
     textAlign: 'center',
-    fontStyle: 'italic',
   },
 });

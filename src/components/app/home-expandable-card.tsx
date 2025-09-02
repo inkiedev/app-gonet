@@ -134,7 +134,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   clientTitle: {
     color: theme.colors.primaryDark,
     textAlign: 'center',
-    fontStyle: 'italic'
   },
   card: {
     marginTop: theme.spacing.sm,
@@ -145,8 +144,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   planTitle: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.xxl,
-    fontStyle: 'italic',
+    fontSize: theme.fontSize.xl,
     fontWeight: theme.fontWeight.bold,
     textAlign: 'center',
   },
@@ -158,7 +156,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   featuresText: {
     color: theme.colors.primaryDark,
     fontSize: theme.fontSize.md,
-    fontStyle: 'italic',
     textAlign: 'center',
   },
   expandableCardContainer: {
@@ -177,8 +174,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   detailsLink: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.sm,
-    fontStyle: 'italic',
     textDecorationLine: 'underline',
   },
   detailRow: {
@@ -256,7 +251,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   planSpeed: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.xxl,
+    fontSize: theme.fontSize.xl,
     fontWeight: theme.fontWeight.bolder,
     textAlign: 'center',
   },
