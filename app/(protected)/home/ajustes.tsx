@@ -19,6 +19,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/custom-button';
+import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AjustesContent = () => {
@@ -75,7 +76,7 @@ const AjustesContent = () => {
   const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
-    <View style={styles.tabContent}>
+    <ScrollView style={styles.tabContent}>
       <Text style={dynamicStyles.tabTitle}>Configuración</Text>
       
       <View style={styles.sectionContainer}>
@@ -131,7 +132,7 @@ const AjustesContent = () => {
           </Text>
         </View>
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -198,7 +199,7 @@ const ActualizarDatosContent = () => {
 
   if (!isVerified) {
     return (
-      <View style={styles.tabContent}>
+      <ScrollView style={styles.tabContent}>
         <Text style={styles.tabTitle}>Perfil</Text>
         <View style={styles.verificationContainer}>
           <View style={styles.verificationCard}>
@@ -212,12 +213,12 @@ const ActualizarDatosContent = () => {
             />
           </View>
         </View>
-      </View>
+      </ScrollView>
     );
   }
 
   return (
-    <View style={styles.tabContent}>
+    <ScrollView style={styles.tabContent}>
       <Text style={styles.tabTitle}>Perfil</Text>
       <View style={styles.formContainer}>
         <Input placeholder="Contraseña actual" secureTextEntry />
@@ -227,7 +228,7 @@ const ActualizarDatosContent = () => {
         <Input placeholder="Dirección" value={userData?.street || ''} />
         <Input placeholder="Ciudad" value={userData?.city || ''} />
       </View>
-    </View>
+    </ScrollView>
   );
 };
 
@@ -386,7 +387,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     fontWeight: theme.fontWeight.bold, 
     color: theme.colors.text.primary,
     textAlign: "center",
-    marginBottom: theme.spacing.xl,
+    marginBottom: theme.spacing.md,
   },
   subTitle: { 
     fontSize: theme.fontSize.lg, 
@@ -547,11 +548,8 @@ const styles = StyleSheet.create({
   /* Segmented Container */
   segmentedContainer: {
     flex: 1,
-    marginVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.md,
   },
   segmentContent: {
-    paddingVertical: theme.spacing.lg,
   },
 
   content: {
@@ -563,10 +561,10 @@ const styles = StyleSheet.create({
   tabContent: {
     flex: 1,
     paddingTop: theme.spacing.md,
+    paddingHorizontal: theme.spacing.lg,
   },
   
   sectionContainer: {
-    marginBottom: theme.spacing.lg,
   },
   
   formContainer: {

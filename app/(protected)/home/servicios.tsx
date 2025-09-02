@@ -13,6 +13,7 @@ import {
   Text,
   View
 } from "react-native";
+import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from "react-native-safe-area-context";
  
 interface Account {
@@ -50,7 +51,7 @@ const PlanesContent = () => {
   const dynamicStyles = createDynamicStyles(theme);
   
   return (
-    <>
+    <ScrollView>
       <Text style={dynamicStyles.contentTitle}>Actualizar Plan</Text>
       {availablePlans.map((plan) => (
         <PlanCard title={plan.name} style={dynamicStyles.planCard} key={plan.id}>
@@ -68,7 +69,7 @@ const PlanesContent = () => {
           </View>
         </PlanCard>
       ))}
-    </>
+    </ScrollView>
   );
 };
 
@@ -259,6 +260,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   planFinalPrice: {
     fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
   },
   planDetails: {
     width: '100%',
@@ -269,6 +271,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   planDetail: {
     fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
   },
   accountSelector: {
     flexDirection: "row",
