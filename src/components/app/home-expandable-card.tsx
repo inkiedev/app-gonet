@@ -4,12 +4,13 @@ import Down from '@/assets/images/iconos gonet down.svg';
 import Gomax from '@/assets/images/iconos gonet gomax.svg';
 import Wifi from '@/assets/images/iconos gonet wifi.svg';
 import { Card } from '@/components/ui/card';
+import Text from '@/components/ui/custom-text';
 import { ExpandableCard } from '@/components/ui/expandable-card';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React, { ReactNode } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import Badge from './badge';
 
 interface HomeExpandableCardProps extends BaseComponentProps {
@@ -25,7 +26,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
   style,
   testID,
 }) => {
-  const { theme } = useTheme();
+  const { theme, isDark } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
   const { isExpanded } = useCardExpansion();
   
@@ -62,7 +63,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
         variant="elevated"
       >
         <View style={dynamicStyles.featuresContainer}>
-          <Notification width={35} height={35} />
+          <Notification width={35} height={35} fill={isDark ? theme.colors.primaryDark : theme.colors.shadow} />
           <Text style={dynamicStyles.clientTitle}>{"Juan Gonzales".split(" ").join("\n")}</Text>
           <Text style={dynamicStyles.planTitle}>{plan}</Text>
           <View style={dynamicStyles.planSpeedContainer}><Text style={dynamicStyles.planSpeed}>{speed}</Text><Text style={dynamicStyles.planMbps}> Mbps</Text></View>
@@ -131,6 +132,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     width: '100%',
   },
   clientTitle: {
+    color: theme.colors.primaryDark,
     textAlign: 'center',
     fontStyle: 'italic'
   },

@@ -1,12 +1,12 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { PlanCard } from "@/components/ui/plan-card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useTheme } from "@/contexts/theme-context";
-import { Foundation, Ionicons } from "@expo/vector-icons";
+import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
 import {
   StyleSheet,
@@ -182,7 +182,7 @@ export default function ServicesScreen() {
           }}
           variant="outline"
           size="md"
-          leftIcon={<Foundation name="info" size={24} color="black" />}
+          leftIcon={<Foundation name="info" size={24} color={theme.colors.primary} />}
         />
       </View>
 
@@ -193,22 +193,17 @@ export default function ServicesScreen() {
               id: 'planes',
               label: 'Planes',
               content: <PlanesContent />,
-              icon: <Ionicons name="layers-outline" size={16} color={theme.colors.primary} />,
             },
             {
               id: 'servicios',
               label: 'Servicios',
               content: <ServiciosContent />,
-              icon: <Ionicons name="grid-outline" size={16} color={theme.colors.primary} />,
             },
           ]}
-          variant="ios"
+          variant="material"
           animated={true}
           size="md"
           tintColor={theme.colors.primary}
-          onSegmentChange={(segmentId, index) => {
-            console.log(`Segmento cambiado a: ${segmentId} (índice: ${index})`);
-          }}
         />
       </View>
       
@@ -234,8 +229,9 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   currentSpeed: {
     textAlign: "center",
     fontSize: theme.fontSize.xxl,
+    color: theme.colors.primaryDark,
     fontWeight: theme.fontWeight.semibold,
-    marginBottom: theme.spacing.sm,
+    marginBottom: theme.spacing.md,
   },
   contentTitle: {
     textAlign: "center",

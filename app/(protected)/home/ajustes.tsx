@@ -1,6 +1,7 @@
 import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
+import Text from '@/components/ui/custom-text';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
@@ -13,7 +14,6 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   Switch,
-  Text,
   View
 } from "react-native";
 import { useDispatch, useSelector } from 'react-redux';
@@ -102,7 +102,7 @@ const AjustesContent = () => {
         <Text style={dynamicStyles.subTitle}>Seguridad</Text>
         
         {!rememberMe && (
-          <Text style={[styles.disabledNotice, { color: currentTheme.colors.text.secondary, fontFamily: currentTheme.fontFamily.regular }]}>
+          <Text style={[styles.disabledNotice, { color: currentTheme.colors.text.secondary }]}>
             Active "Recuérdame" en el login para habilitar las opciones biométricas
           </Text>
         )}
@@ -387,15 +387,13 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.text.primary,
     textAlign: "center",
     marginBottom: theme.spacing.xl,
-    fontFamily: theme.fontFamily.bold,
   },
   subTitle: { 
     fontSize: theme.fontSize.lg, 
     fontWeight: theme.fontWeight.bold, 
     marginTop: theme.spacing.lg, 
     marginBottom: theme.spacing.md,
-    color: theme.colors.primary,
-    fontFamily: theme.fontFamily.semiBold,
+    color: theme.colors.primaryDark,
   },
   centerText: { 
     textAlign: "center", 
@@ -403,7 +401,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.text.secondary,
     fontSize: theme.fontSize.sm,
     fontStyle: "italic",
-    fontFamily: theme.fontFamily.regular,
   },
   switchRow: {
     flexDirection: "row", 
@@ -422,7 +419,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     marginLeft: theme.spacing.md, 
     color: theme.colors.text.primary,
     lineHeight: 20,
-    fontFamily: theme.fontFamily.regular,
   },
 });
 

@@ -1,3 +1,4 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/custom-button";
@@ -6,7 +7,6 @@ import { ExpandableCard } from "@/components/ui/expandable-card";
 import { useTheme } from "@/contexts/theme-context";
 import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
 import {
   ScrollView,
@@ -175,7 +175,7 @@ export default function PaymentsScreen() {
           }}
           variant="default"
           size="md"
-          leftIcon={<Foundation name="info" size={24} />}
+          leftIcon={<Foundation name="info" size={24} color={theme.colors.text.primary} />}
           placeholder="Selecciona una cuenta"
         />
       </View>

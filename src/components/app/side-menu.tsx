@@ -6,13 +6,13 @@ import Perfil from '@/assets/images/iconos gonet profile.svg';
 import Security from '@/assets/images/iconos gonet security.svg';
 import Settings from '@/assets/images/iconos gonet settings.svg';
 import Wallet from '@/assets/images/iconos gonet wallet.svg';
+import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
 import {
   Dimensions,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,

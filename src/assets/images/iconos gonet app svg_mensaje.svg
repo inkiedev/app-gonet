@@ -11,7 +11,7 @@
       }
 
       .cls-3 {
-        fill: url(#Degradado_sin_nombre_4);
+        fill: currentColor;
       }
 
       .cls-4 {
@@ -22,10 +22,6 @@
         clip-path: url(#clippath);
       }
     </style>
-    <linearGradient id="Degradado_sin_nombre_4" data-name="Degradado sin nombre 4" x1="5.3" y1="19.22" x2="38.35" y2="19.22" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#464b4d"/>
-      <stop offset="1" stop-color="#1a1d1e"/>
-    </linearGradient>
     <clipPath id="clippath">
       <rect class="cls-2" x="-442.6" y="-337.18" width="360" height="591.18"/>
     </clipPath>

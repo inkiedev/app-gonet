@@ -1,9 +1,10 @@
 import Back from '@/assets/images/iconos gonet back.svg';
 import Cross from '@/assets/images/iconos gonet cross.svg';
+import Text from '@/components/ui/custom-text';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Animated, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -23,7 +24,7 @@ interface UserField {
 
 interface ToastProps {
   message: string;
-  type: 'success' | 'info' | 'error';
+  type: 'success' | 'info' | 'error' | 'warning';
   visible: boolean;
   onHide: () => void;
 }
@@ -55,14 +56,29 @@ const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) => {
 
   if (!visible) return null;
 
+  const getToastStyle = () => {
+    switch (type) {
+      case 'success':
+        return dynamicStyles.toastSuccess;
+      case 'error':
+        return dynamicStyles.toastError;
+      case 'warning':
+        return dynamicStyles.toastWarning;
+      case 'info':
+        return dynamicStyles.toastInfo;
+      default:
+        return dynamicStyles.toastInfo;
+    }
+  };
+
   return (
     <Animated.View style={[
       dynamicStyles.toastContainer,
-      dynamicStyles[`toast${type.charAt(0).toUpperCase() + type.slice(1)}`],
+      getToastStyle(),
       { opacity }
     ]}>
       <Ionicons
-        name={type === 'success' ? 'checkmark-circle' : type === 'error' ? 'close-circle' : 'information-circle'}
+        name={type === 'success' ? 'checkmark-circle' : type === 'error' ? 'close-circle' : type === 'warning' ? 'warning' : 'information-circle'}
         size={20}
         color={theme.colors.text.inverse}
         style={{ marginRight: theme.spacing.xs }}
@@ -77,7 +93,7 @@ export default function AjustesScreen() {
   const dispatch = useDispatch();
   const { isSmall, isTablet } = useResponsive();
   const [isEditing, setIsEditing] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error'; visible: boolean }>({
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning'; visible: boolean }>({
     message: '',
     type: 'success',
     visible: false
@@ -435,6 +451,9 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   toastError: {
     backgroundColor: theme.colors.error || '#ff4444',
+  },
+  toastWarning: {
+    backgroundColor: theme.colors.warning || '#ff9900',
   },
   toastInfo: {
     backgroundColor: theme.colors.info || theme.colors.secondary,

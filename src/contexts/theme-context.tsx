@@ -1,8 +1,8 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Appearance, ColorSchemeName } from 'react-native';
-import { useDispatch, useSelector } from 'react-redux';
 import { RootState } from '@/store';
 import { loadThemePreferences, saveThemePreferences, updateThemePreferences } from '@/store/slices/ui-slice';
+import React, { createContext, useContext, useEffect, useState } from 'react';
+import { Appearance, ColorSchemeName } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
 export interface ThemeColors {
   primary: string;
@@ -22,6 +22,7 @@ export interface ThemeColors {
     secondary: string;
     inverse: string;
     disabled: string;
+    inactive: string;
   };
   border: {
     light: string;
@@ -62,6 +63,7 @@ export interface ThemeType {
     medium: string;
     semiBold: string;
     bold: string;
+    extraBold: string;
   };
   fontWeight: {
     normal: '400';
@@ -95,6 +97,7 @@ const lightColors: ThemeColors = {
     secondary: '#666666',
     inverse: '#ffffff',
     disabled: '#999999',
+    inactive: '#666666'
   },
   border: {
     light: '#e0e0e0',
@@ -121,6 +124,7 @@ const darkColors: ThemeColors = {
     secondary: '#cccccc',
     inverse: '#333333',
     disabled: '#777777',
+    inactive: '#cccccc'
   },
   border: {
     light: '#333333',
@@ -160,6 +164,7 @@ const baseTheme = {
     medium: 'Montserrat_500Medium',
     semiBold: 'Montserrat_600SemiBold',
     bold: 'Montserrat_700Bold',
+    extraBold: 'Montserrat_800ExtraBold',
   },
   fontWeight: {
     normal: '400' as const,

@@ -1,15 +1,14 @@
+import { ThemedStatusBar } from '@/components/ui/themed-status-bar';
 import { CardExpansionProvider } from '@/contexts/card-expansion-container';
 import { NotificationProvider } from '@/contexts/notification-context';
+import { ThemeProvider } from '@/contexts/theme-context';
 import { AuthRouteProvider } from '@/providers/auth-route-provider';
 import { StoreProvider } from '@/providers/store-provider';
-import { ThemeProvider } from '@/contexts/theme-context';
-import { TextOverrideProvider } from '@/components/providers/text-override-provider';
-import { ThemedStatusBar } from '@/components/ui/themed-status-bar';
-import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, useFonts } from '@expo-google-fonts/montserrat';
+import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, Montserrat_800ExtraBold, useFonts } from '@expo-google-fonts/montserrat';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
-import { StyleSheet, Text, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 
@@ -21,6 +20,7 @@ export default function RootLayout() {
     Montserrat_500Medium,
     Montserrat_600SemiBold,
     Montserrat_700Bold,
+    Montserrat_800ExtraBold,
   });
 
   useEffect(() => {
@@ -36,54 +36,45 @@ export default function RootLayout() {
   return (
     <StoreProvider>
       <ThemeProvider>
-        <TextOverrideProvider>
-          <GestureHandlerRootView>
-            <NotificationProvider>
-              <CardExpansionProvider>
-                <AuthRouteProvider>
-                  <View style={styles.container}>
-                    <Stack 
-                      screenOptions={{ 
-                        headerShown: false,
+        <GestureHandlerRootView>
+          <NotificationProvider>
+            <CardExpansionProvider>
+              <AuthRouteProvider>
+                <View style={styles.container}>
+                  <Stack 
+                    screenOptions={{ 
+                      headerShown: false,
+                      animation: 'slide_from_right',
+                      animationDuration: 300,
+                    }}
+                  >
+                    <Stack.Screen 
+                      name="index" 
+                      options={{
+                        animation: 'fade',
+                      }}
+                    />
+                    <Stack.Screen 
+                      name="(auth)" 
+                      options={{
+                        animation: 'slide_from_bottom',
+                        animationDuration: 350,
+                      }}
+                    />
+                    <Stack.Screen 
+                      name="(protected)" 
+                      options={{
                         animation: 'slide_from_right',
                         animationDuration: 300,
                       }}
-                    >
-                      <Stack.Screen 
-                        name="index" 
-                        options={{
-                          animation: 'fade',
-                        }}
-                      />
-                      <Stack.Screen 
-                        name="(auth)" 
-                        options={{
-                          animation: 'slide_from_bottom',
-                          animationDuration: 350,
-                        }}
-                      />
-                      <Stack.Screen 
-                        name="(protected)" 
-                        options={{
-                          animation: 'slide_from_right',
-                          animationDuration: 300,
-                        }}
-                      />
-                      <Stack.Screen 
-                        name="(tabs)" 
-                        options={{
-                          animation: 'slide_from_right',
-                          animationDuration: 300,
-                        }}
-                      />
-                    </Stack>
-                    <ThemedStatusBar />
-                  </View>
-                </AuthRouteProvider>
-              </CardExpansionProvider>
-            </NotificationProvider>
-          </GestureHandlerRootView>
-        </TextOverrideProvider>
+                    />
+                  </Stack>
+                  <ThemedStatusBar />
+                </View>
+              </AuthRouteProvider>
+            </CardExpansionProvider>
+          </NotificationProvider>
+        </GestureHandlerRootView>
       </ThemeProvider>
     </StoreProvider>
   );

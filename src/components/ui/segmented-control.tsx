@@ -1,3 +1,5 @@
+import Text from '@/components/ui/custom-text';
+import { useTheme } from '@/contexts/theme-context';
 import { theme } from '@/styles/theme';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -5,7 +7,6 @@ import React, { useCallback, useState } from 'react';
 import {
   Dimensions,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View,
   ViewStyle
@@ -62,8 +63,6 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   // Animations
   const selectorPosition = useSharedValue(0);
   const contentOpacity = useSharedValue(1);
-  const contentTranslateX = useSharedValue(0);
-  const contentScale = useSharedValue(1);
 
   const segmentWidth = (screenWidth - (theme.spacing.lg * 2) - 8) / segments.length;
 
@@ -139,6 +138,10 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     }
   };
 
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
+
+
   // Render segment button
   const renderSegment = (segment: Segment, index: number) => {
     const isActive = index === activeIndex;
@@ -146,7 +149,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     const textStyle = [
       styles.segmentText,
       styles[`segmentText_${size}`],
-      isActive ? styles.activeSegmentText : styles.inactiveSegmentText,
+      isActive ? styles.activeSegmentText : dynamicStyles.inactiveSegmentText,
       variant === 'minimal' && isActive && { color: tintColor },
     ];
 
@@ -250,6 +253,12 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     </View>
   );
 };
+
+const createDynamicStyles = (theme: any) => StyleSheet.create({
+  inactiveSegmentText: {
+    color: theme.colors.text.inactive,
+  },
+})
 
 const styles = StyleSheet.create({
   wrapper: {

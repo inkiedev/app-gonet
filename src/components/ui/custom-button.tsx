@@ -126,10 +126,9 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   text: {
     fontWeight: theme.fontWeight.semibold,
     textAlign: 'center',
-    
   },
   primaryText: {
-    color: theme.colors.primaryDark,
+    color: theme.colors.text.inverse,
   },
   secondaryText: {
     color: theme.colors.text.inverse,

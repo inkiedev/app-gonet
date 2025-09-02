@@ -139,7 +139,7 @@ const createDynamicStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   },
   versionText: {
     color: isDark ? '#f0f0f0' : theme.colors.text.inverse,
-    fontSize: theme.fontSize.xs,
+    fontSize: theme.fontSize.xs * 0.6,
     marginTop: theme.spacing.xs,
     fontWeight: theme.fontWeight.medium,
   },
