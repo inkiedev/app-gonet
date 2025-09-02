@@ -1,5 +1,8 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
+import { RootState } from '@/store';
+import { loadThemePreferences, saveThemePreferences, updateThemePreferences } from '@/store/slices/ui-slice';
 
 export interface ThemeColors {
   primary: string;
@@ -217,15 +220,19 @@ const darkTheme: ThemeType = {
 interface ThemeContextType {
   theme: ThemeType;
   isDark: boolean;
+  followSystem: boolean;
   toggleTheme: () => void;
   setTheme: (isDark: boolean) => void;
+  setFollowSystem: (followSystem: boolean) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
   theme: lightTheme,
   isDark: false,
+  followSystem: true,
   toggleTheme: () => {},
   setTheme: () => {},
+  setFollowSystem: () => {},
 });
 
 export const useTheme = () => {
@@ -241,33 +248,65 @@ interface ThemeProviderProps {
 }
 
 export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
-  const [isDark, setIsDark] = useState(false);
+  const dispatch = useDispatch();
+  const { themePreferences } = useSelector((state: RootState) => state.ui);
+  const [systemColorScheme, setSystemColorScheme] = useState<ColorSchemeName>(null);
 
   useEffect(() => {
+    // Load saved theme preferences
+    dispatch(loadThemePreferences() as any);
+    
     // Get initial color scheme from system
     const colorScheme = Appearance.getColorScheme();
-    setIsDark(colorScheme === 'dark');
+    setSystemColorScheme(colorScheme);
 
     // Listen for system color scheme changes
     const subscription = Appearance.addChangeListener(({ colorScheme }) => {
-      setIsDark(colorScheme === 'dark');
+      setSystemColorScheme(colorScheme);
     });
 
     return () => subscription?.remove();
-  }, []);
+  }, [dispatch]);
+
+  // Determine the actual theme to use
+  const isDark = themePreferences.followSystem 
+    ? systemColorScheme === 'dark' 
+    : themePreferences.isDark;
 
   const toggleTheme = () => {
-    setIsDark(!isDark);
+    const newIsDark = !isDark;
+    dispatch(updateThemePreferences({ isDark: newIsDark, followSystem: false }));
+    dispatch(saveThemePreferences({ isDark: newIsDark, followSystem: false }) as any);
   };
 
   const setTheme = (dark: boolean) => {
-    setIsDark(dark);
+    dispatch(updateThemePreferences({ isDark: dark, followSystem: false }));
+    dispatch(saveThemePreferences({ isDark: dark, followSystem: false }) as any);
+  };
+
+  const setFollowSystem = (followSystem: boolean) => {
+    const currentSystemDark = systemColorScheme === 'dark';
+    dispatch(updateThemePreferences({ 
+      followSystem, 
+      isDark: followSystem ? currentSystemDark : themePreferences.isDark 
+    }));
+    dispatch(saveThemePreferences({ 
+      followSystem, 
+      isDark: followSystem ? currentSystemDark : themePreferences.isDark 
+    }) as any);
   };
 
   const theme = isDark ? darkTheme : lightTheme;
 
   return (
-    <ThemeContext.Provider value={{ theme, isDark, toggleTheme, setTheme }}>
+    <ThemeContext.Provider value={{ 
+      theme, 
+      isDark, 
+      followSystem: themePreferences.followSystem,
+      toggleTheme, 
+      setTheme, 
+      setFollowSystem 
+    }}>
       {children}
     </ThemeContext.Provider>
   );

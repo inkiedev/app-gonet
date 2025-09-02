@@ -2,7 +2,7 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { theme } from "@/styles/theme";
+import { useTheme } from "@/contexts/theme-context";
 import { FontAwesome5, Ionicons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import Back from '@/assets/images/iconos gonet back.svg';
@@ -27,7 +27,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
   const totalStars = 5;
 
   return (
-    <View style={styles.starsContainer}>
+    <View style={dynamicStyles.starsContainer}>
       {Array.from({ length: totalStars }).map((_, index) => {
         const starNumber = index + 1;
         return (
@@ -37,7 +37,7 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
               name={starNumber <= rating ? "star" : "star-outline"}
               size={32}
               color={theme.colors.text.contrast}
-              style={styles.starIcon}
+              style={dynamicStyles.starIcon}
             />
           </TouchableOpacity>
         );
@@ -47,9 +47,9 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
 };
 
 const EncuestasContent = () => (
-  <View style={styles.card}>
-    <Text style={styles.cardTitle}>Encuestas</Text>
-    <Text style={styles.cardText}>No hay encuestas en este momento</Text>
+  <View style={dynamicStyles.card}>
+    <Text style={dynamicStyles.cardTitle}>Encuestas</Text>
+    <Text style={dynamicStyles.cardText}>No hay encuestas en este momento</Text>
   </View>
 );
 
@@ -67,15 +67,15 @@ const SugerenciasContent = () => {
 
   return (
     <View  testID="card_sugerencias">
-      <Text style={styles.cardTitle} >Sugerencias</Text>
+      <Text style={dynamicStyles.cardTitle} >Sugerencias</Text>
       <Input
         value={texto}
         onChangeText={setTexto}
         placeholder="Tu sugerencia aquí..."
         multiline
         numberOfLines={4}
-        style={styles.inputWrapper}
-        inputStyle={styles.inputArea}
+        style={dynamicStyles.inputWrapper}
+        inputStyle={dynamicStyles.inputArea}
       />
       <Button title="Enviar" onPress={enviarSugerencia} />
     </View>
@@ -83,9 +83,9 @@ const SugerenciasContent = () => {
 };
 
 const SiguenosContent = () => (
-  <View style={[styles.card, { alignItems: "center" }]}>
-    <Text style={styles.cardTitle}>Contáctanos</Text>
-    <View style={styles.socialContainer}>
+  <View style={[dynamicStyles.card, { alignItems: "center" }]}>
+    <Text style={dynamicStyles.cardTitle}>Contáctanos</Text>
+    <View style={dynamicStyles.socialContainer}>
       <TouchableOpacity testID="social-icon">
         <FontAwesome5 name="whatsapp" size={theme.fontSize.xl*2} color={theme.colors.text.primary} />
       </TouchableOpacity  >
@@ -103,6 +103,8 @@ const SiguenosContent = () => (
 );
 
 export default function CalificanosScreen(): React.ReactElement {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [puntuacion, setPuntuacion] = useState<number>(0);
 
   useEffect(() => {
@@ -116,9 +118,9 @@ export default function CalificanosScreen(): React.ReactElement {
 
    
 
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={dynamicStyles.container} edges={['top']}>
 
-<Header style={styles.header} 
+<Header style={dynamicStyles.header} 
         leftAction={{
           icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: () => router.back(),
@@ -127,12 +129,12 @@ export default function CalificanosScreen(): React.ReactElement {
       />
       
       
-      <Text style={styles.title}>Califica Nuestra App</Text>
-      <Text style={styles.subtitle}>Puntuación actual: {puntuacion}</Text>
+      <Text style={dynamicStyles.title}>Califica Nuestra App</Text>
+      <Text style={dynamicStyles.subtitle}>Puntuación actual: {puntuacion}</Text>
 
       <StarRating rating={puntuacion} onChange={setPuntuacion} />
 
-      <View style={styles.segmentedContainer}>
+      <View style={dynamicStyles.segmentedContainer}>
         <SegmentedControl
           segments={[
             {
@@ -166,7 +168,7 @@ export default function CalificanosScreen(): React.ReactElement {
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     

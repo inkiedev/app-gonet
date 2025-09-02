@@ -1,23 +1,21 @@
-import React, { useState, useCallback } from 'react';
+import { theme } from '@/styles/theme';
+import { BlurView } from 'expo-blur';
+import { LinearGradient } from 'expo-linear-gradient';
+import React, { useCallback, useState } from 'react';
 import {
-  View,
+  Dimensions,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  ViewStyle,
-  TextStyle,
+  View,
+  ViewStyle
 } from 'react-native';
 import Animated, {
   useAnimatedStyle,
   useSharedValue,
-  withSpring,
-  withTiming,
-  interpolate,
+  withSpring
 } from 'react-native-reanimated';
-import { LinearGradient } from 'expo-linear-gradient';
-import { BlurView } from 'expo-blur';
-import { theme } from '@/styles/theme';
+
 
 export interface Segment {
   id: string;

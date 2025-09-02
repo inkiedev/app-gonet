@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { PlanCard } from "@/components/ui/plan-card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
-import { theme } from "@/styles/theme";
+import { useTheme } from "@/contexts/theme-context";
 import { Foundation, Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Back from '@/assets/images/iconos gonet back.svg';
@@ -45,42 +45,52 @@ const currentPlan = {
   speedMbps: 250,
 };
 
-const PlanesContent = () => (
-  <>
-    <Text style={styles.contentTitle}>Actualizar Plan</Text>
-    {availablePlans.map((plan) => (
-      <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
-        <View style={styles.planContainer}>
-          <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
-          <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
-          <View style={styles.planDetails}>
-            {plan.details.map((detail, index) => (
-              <Text key={index} style={styles.planDetail}>
-                {`\u2022 ${detail}`}
-              </Text>
-            ))}
+const PlanesContent = () => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
+  return (
+    <>
+      <Text style={dynamicStyles.contentTitle}>Actualizar Plan</Text>
+      {availablePlans.map((plan) => (
+        <PlanCard title={plan.name} style={dynamicStyles.planCard} key={plan.id}>
+          <View style={dynamicStyles.planContainer}>
+            <Text style={dynamicStyles.planPrice}>Precio: ${plan.price}+imp</Text>
+            <Text style={dynamicStyles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
+            <View style={dynamicStyles.planDetails}>
+              {plan.details.map((detail, index) => (
+                <Text key={index} style={dynamicStyles.planDetail}>
+                  {`\u2022 ${detail}`}
+                </Text>
+              ))}
+            </View>
+            <Button title="Actualizar" onPress={() => {}} />
           </View>
-          <Button title="Actualizar" onPress={() => {}} />
-        </View>
-      </PlanCard>
-    ))}
-  </>
-);
+        </PlanCard>
+      ))}
+    </>
+  );
+};
 
-const ServiciosContent = () => (
-  <>
-    <Text style={styles.contentTitle}>Servicios Adicionales</Text>
-    <View style={styles.serviceContainer}>
-      <Text style={styles.serviceText}>Próximamente dispondremos de servicios adicionales:</Text>
-      <View style={styles.serviceList}>
-        <Text style={styles.serviceItem}>• Telefonía fija</Text>
-        <Text style={styles.serviceItem}>• TV por cable</Text>
-        <Text style={styles.serviceItem}>• Soporte técnico premium</Text>
-        <Text style={styles.serviceItem}>• Instalaciones especiales</Text>
+const ServiciosContent = () => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
+  return (
+    <>
+      <Text style={dynamicStyles.contentTitle}>Servicios Adicionales</Text>
+      <View style={dynamicStyles.serviceContainer}>
+        <Text style={dynamicStyles.serviceText}>Próximamente dispondremos de servicios adicionales:</Text>
+        <View style={dynamicStyles.serviceList}>
+          <Text style={dynamicStyles.serviceItem}>• Telefonía fija</Text>
+          <Text style={dynamicStyles.serviceItem}>• TV por cable</Text>
+          <Text style={dynamicStyles.serviceItem}>• Soporte técnico premium</Text>
+          <Text style={dynamicStyles.serviceItem}>• Instalaciones especiales</Text>
+        </View>
       </View>
-    </View>
-  </>
-);
+    </>
+  );
+};
 
 
 const availablePlans: Plan[] = [
@@ -132,6 +142,8 @@ const availablePlans: Plan[] = [
 
 
 export default function ServicesScreen() {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [selectedAccount, setSelectedAccount] = useState<Account>();
   const router = useRouter();
 
@@ -140,7 +152,7 @@ export default function ServicesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <Header
         title="Mi Plan"
         leftAction={{
@@ -150,8 +162,8 @@ export default function ServicesScreen() {
         variant="default"
       />
 
-      <View style={styles.header}>
-        <Text style={styles.currentSpeed}>
+      <View style={dynamicStyles.header}>
+        <Text style={dynamicStyles.currentSpeed}>
           Velocidad: {currentPlan.speedMbps} Mbps
         </Text>
 
@@ -162,9 +174,9 @@ export default function ServicesScreen() {
           renderItem={(option, index, isSelected) => {
             return (
               <View>
-                <Text style={styles.selectText}># {option.value.id}</Text>
-                <Text style={styles.selectText}>{option.value.name}</Text>
-                <Text style={styles.selectText}>{option.value.address}</Text>
+                <Text style={dynamicStyles.selectText}># {option.value.id}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.name}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.address}</Text>
               </View>
             );
           }}
@@ -174,7 +186,7 @@ export default function ServicesScreen() {
         />
       </View>
 
-      <View style={styles.segmentedContainer}>
+      <View style={dynamicStyles.segmentedContainer}>
         <SegmentedControl
           segments={[
             {
@@ -204,7 +216,7 @@ export default function ServicesScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   planCard: {
     marginVertical: theme.spacing.md,
   },

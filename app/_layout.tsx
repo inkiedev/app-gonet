@@ -34,9 +34,9 @@ export default function RootLayout() {
   }
 
   return (
-    <ThemeProvider>
-      <TextOverrideProvider>
-        <StoreProvider>
+    <StoreProvider>
+      <ThemeProvider>
+        <TextOverrideProvider>
           <GestureHandlerRootView>
             <NotificationProvider>
               <CardExpansionProvider>
@@ -83,9 +83,9 @@ export default function RootLayout() {
               </CardExpansionProvider>
             </NotificationProvider>
           </GestureHandlerRootView>
-        </StoreProvider>
-      </TextOverrideProvider>
-    </ThemeProvider>
+        </TextOverrideProvider>
+      </ThemeProvider>
+    </StoreProvider>
   );
 }
 

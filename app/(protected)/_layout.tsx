@@ -2,7 +2,7 @@ import { Footer } from '@/components/layout/footer';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useAuthRoute } from '@/providers/auth-route-provider';
 import { RootState } from '@/store';
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, Slot } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
@@ -13,6 +13,8 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 const ProtectedLayoutContent: React.FC = () => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const { showFooter } = useCardExpansion();
   const { isInitialized } = useAuthRoute();
   const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
@@ -20,9 +22,9 @@ const ProtectedLayoutContent: React.FC = () => {
   // Show loading while auth is initializing
   if (!isInitialized) {
     return (
-      <View style={styles.loadingContainer}>
+      <View style={dynamicStyles.loadingContainer}>
         <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>Cargando...</Text>
+        <Text style={dynamicStyles.loadingText}>Cargando...</Text>
       </View>
     );
   }
@@ -38,9 +40,9 @@ const ProtectedLayoutContent: React.FC = () => {
       locations={[0.1, 0.5, 0.9]}
       start={{ x: 0, y: 0 }}
       end={{ x: 1, y: 1 }}
-      style={styles.content}
+      style={dynamicStyles.content}
     >
-      <View style={styles.container}>
+      <View style={dynamicStyles.container}>
         <StatusBar style="dark" />
 
         <Slot />
@@ -63,7 +65,7 @@ export default function ProtectedLayout() {
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },

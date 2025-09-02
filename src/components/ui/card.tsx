@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
 import { StyleSheet, View, ViewStyle } from 'react-native';
@@ -6,7 +6,7 @@ import { StyleSheet, View, ViewStyle } from 'react-native';
 interface CardProps extends BaseComponentProps {
   children: React.ReactNode;
   variant?: 'elevated' | 'outlined' | 'flat';
-  padding?: keyof typeof theme.spacing;
+  padding?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -16,9 +16,12 @@ export const Card: React.FC<CardProps> = ({
                                             style,
                                             testID,
                                           }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
   const cardStyle: ViewStyle[] = [
-    styles.base,
-    styles[variant],
+    dynamicStyles.base,
+    dynamicStyles[variant],
     { padding: theme.spacing[padding] },
     style as ViewStyle,
   ];
@@ -30,7 +33,7 @@ export const Card: React.FC<CardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   base: {
     borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.surface,

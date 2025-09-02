@@ -4,7 +4,7 @@ import Location from '@/assets/images/iconos gonet app svg_ubicacion.svg';
 import Web from '@/assets/images/iconos gonet app svg_web.svg';
 import Whatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
@@ -22,40 +22,44 @@ interface FooterProps extends BaseComponentProps {
   version?: string;
 }
 
-const socialMediaItems: SocialMediaItem[] = [
-  {
-    icon: <Facebook width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse}/>,
-    url: 'https://www.facebook.com',
-    name: 'Facebook',
-  },
-  {
-    icon: <Instagram width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
-    url: 'https://www.instagram.com',
-    name: 'Instagram',
-  },
-  {
-    icon: <Web width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
-    url: 'https://www.gonet.com',
-    name: 'Website',
-  },
-  {
-    icon: <Whatsapp width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
-    url: 'https://www.whatsapp.com',
-    name: 'WhatsApp',
-  },
-  {
-    icon: <Location width={SVG_SIZE} height={SVG_SIZE} fill={theme.colors.text.inverse} />,
-    url: 'https://www.google.com',
-    name: 'Location',
-  },
-];
-
 export const Footer: React.FC<FooterProps> = ({
                                                 version = 'Ver 2.00.00.01',
                                                 style,
                                                 testID,
                                               }) => {
+  const { theme, isDark} = useTheme();
+  const dynamicStyles = createDynamicStyles(theme, isDark);
   const { showFooter } = useCardExpansion();
+  
+  const iconColor = isDark ? '#f0f0f0' : theme.colors.text.inverse;
+  
+  const socialMediaItems: SocialMediaItem[] = [
+    {
+      icon: <Facebook width={SVG_SIZE} height={SVG_SIZE} fill={iconColor}/>,
+      url: 'https://www.facebook.com',
+      name: 'Facebook',
+    },
+    {
+      icon: <Instagram width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
+      url: 'https://www.instagram.com',
+      name: 'Instagram',
+    },
+    {
+      icon: <Web width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
+      url: 'https://www.gonet.com',
+      name: 'Website',
+    },
+    {
+      icon: <Whatsapp width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
+      url: 'https://www.whatsapp.com',
+      name: 'WhatsApp',
+    },
+    {
+      icon: <Location width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
+      url: 'https://www.google.com',
+      name: 'Location',
+    },
+  ];
 
   if (!showFooter) {
     return null;
@@ -75,16 +79,16 @@ export const Footer: React.FC<FooterProps> = ({
   };
 
   return (
-    <View style={[styles.container, style]} testID={testID}>
+    <View style={[dynamicStyles.container, style]} testID={testID}>
       <LinearGradient
-        colors={['#919191','#919191', '#b3b3b3']}
+        colors={isDark ? ['#2c2c2e', '#3a3a3c', '#1c1c1e'] : ['#919191','#919191', '#b3b3b3']}
         locations={[0, 0.1, 1]}
         start={{ x: 0.5, y: 0 }}
         end={{ x: 0.5, y: 1 }}
-        style={styles.gradient}
+        style={dynamicStyles.gradient}
       >
-        <View style={styles.content}>
-          <View style={styles.socialContainer}>
+        <View style={dynamicStyles.content}>
+          <View style={dynamicStyles.socialContainer}>
             {socialMediaItems.map((item, index) => (
               <TouchableOpacity
                 key={index}
@@ -98,14 +102,14 @@ export const Footer: React.FC<FooterProps> = ({
             ))}
           </View>
 
-          <Text style={styles.versionText}>{version}</Text>
+          <Text style={dynamicStyles.versionText}>{version}</Text>
         </View>
       </LinearGradient>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any, isDark: boolean) => StyleSheet.create({
   container: {
     height: 80,
   },
@@ -134,7 +138,7 @@ const styles = StyleSheet.create({
     borderRadius: theme.borderRadius.md,
   },
   versionText: {
-    color: theme.colors.text.inverse,
+    color: isDark ? '#f0f0f0' : theme.colors.text.inverse,
     fontSize: theme.fontSize.xs,
     marginTop: theme.spacing.xs,
     fontWeight: theme.fontWeight.medium,

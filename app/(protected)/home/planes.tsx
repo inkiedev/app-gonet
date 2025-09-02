@@ -2,7 +2,7 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { PlanCard } from "@/components/ui/plan-card";
-import { theme } from "@/styles/theme";
+import { useTheme } from "@/contexts/theme-context";
 import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import Back from '@/assets/images/iconos gonet back.svg';
@@ -99,6 +99,8 @@ export const availablePlans: Plan[] = [
 
 
 export default function InternetPlans() {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [selectedAccount, setSelectedAccount] = useState<Account>();
   const router = useRouter();
 
@@ -107,7 +109,7 @@ export default function InternetPlans() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <Header
         title="Mi Plan"
         leftAction={{
@@ -117,9 +119,9 @@ export default function InternetPlans() {
         variant="default"
       />
 
-      <View style={styles.header}>
-        <Text style={styles.contentTitle}>Plan actual</Text>
-        <Text style={styles.currentSpeed}>
+      <View style={dynamicStyles.header}>
+        <Text style={dynamicStyles.contentTitle}>Plan actual</Text>
+        <Text style={dynamicStyles.currentSpeed}>
           Velocidad: {currentPlan.speedMbps} Mbps
         </Text>
 
@@ -130,9 +132,9 @@ export default function InternetPlans() {
           renderItem={(option, index, isSelected) => {
             return (
               <View>
-                <Text style={styles.selectText}># {option.value.id}</Text>
-                <Text style={styles.selectText}>{option.value.name}</Text>
-                <Text style={styles.selectText}>{option.value.address}</Text>
+                <Text style={dynamicStyles.selectText}># {option.value.id}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.name}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.address}</Text>
               </View>
             );
           }}
@@ -143,19 +145,19 @@ export default function InternetPlans() {
       </View>
 
       <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        style={styles.scrollView}
+        contentContainerStyle={dynamicStyles.scrollContent}
+        style={dynamicStyles.scrollView}
       >
-        <Text style={styles.contentTitle}>Actualizar Plan</Text>
+        <Text style={dynamicStyles.contentTitle}>Actualizar Plan</Text>
         {availablePlans.map((plan) => (
           <PlanCard title={plan.name} key={plan.id}>
-            <View style={styles.planContainer}>
-              <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
-              <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
-              <View style={styles.planDetails}>
+            <View style={dynamicStyles.planContainer}>
+              <Text style={dynamicStyles.planPrice}>Precio: ${plan.price}+imp</Text>
+              <Text style={dynamicStyles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
+              <View style={dynamicStyles.planDetails}>
                 {
                   plan.details.map((detail, index) => (
-                    <Text key={index} style={styles.planDetail}>{`\u2022 ${detail}`}</Text>
+                    <Text key={index} style={dynamicStyles.planDetail}>{`\u2022 ${detail}`}</Text>
                   ))
                 }
               </View>
@@ -168,7 +170,7 @@ export default function InternetPlans() {
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

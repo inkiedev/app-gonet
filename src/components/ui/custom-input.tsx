@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { FontAwesome } from '@expo/vector-icons';
 import React, { forwardRef, useState } from 'react';
@@ -37,22 +37,24 @@ export const Input = forwardRef<TextInput, InputProps>(({
                                                           testID,
                                                           ...textInputProps
                                                         }, ref) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [isPasswordVisible, setIsPasswordVisible] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
 
   const hasError = Boolean(error);
   const isSecure = secureTextEntry && !isPasswordVisible;
 
-  const containerStyle: ViewStyle[] = [styles.inputContainer];
+  const containerStyle: ViewStyle[] = [dynamicStyles.inputContainer];
 
   if (hasError) {
-    containerStyle.push(styles.error);
+    containerStyle.push(dynamicStyles.error);
   } else if (isFocused) {
-    containerStyle.push(styles.focused);
+    containerStyle.push(dynamicStyles.focused);
   }
 
   // Renombrar variable local para evitar conflicto
-  const combinedInputStyle: TextStyle[] = [styles.input];
+  const combinedInputStyle: TextStyle[] = [dynamicStyles.input];
 
   if (inputStyle) {
     // Permitir array o objeto
@@ -64,24 +66,24 @@ export const Input = forwardRef<TextInput, InputProps>(({
   }
 
   if (leftIcon) {
-    combinedInputStyle.push(styles.inputWithLeftIcon);
+    combinedInputStyle.push(dynamicStyles.inputWithLeftIcon);
   }
 
   if (rightIcon || showPasswordToggle) {
-    combinedInputStyle.push(styles.inputWithRightIcon);
+    combinedInputStyle.push(dynamicStyles.inputWithRightIcon);
   }
 
-  const mainContainerStyle: ViewStyle[] = [styles.container];
+  const mainContainerStyle: ViewStyle[] = [dynamicStyles.container];
   if (style) {
     mainContainerStyle.push(style);
   }
 
   return (
     <View style={mainContainerStyle} testID={testID}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={dynamicStyles.label}>{label}</Text>}
 
       <View style={containerStyle}>
-        {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
+        {leftIcon && <View style={dynamicStyles.leftIcon}>{leftIcon}</View>}
 
         <TextInput
           ref={ref}
@@ -102,7 +104,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
         {showPasswordToggle && (
           <TouchableOpacity
             testID="password-toggle"
-            style={styles.rightIcon}
+            style={dynamicStyles.rightIcon}
             onPress={() => setIsPasswordVisible(!isPasswordVisible)}
           >
             <FontAwesome
@@ -114,12 +116,12 @@ export const Input = forwardRef<TextInput, InputProps>(({
         )}
 
         {rightIcon && !showPasswordToggle && (
-          <View style={styles.rightIcon}>{rightIcon}</View>
+          <View style={dynamicStyles.rightIcon}>{rightIcon}</View>
         )}
       </View>
 
       {(error || helperText) && (
-        <Text style={[styles.helperText, hasError && styles.errorText]}>
+        <Text style={[dynamicStyles.helperText, hasError && dynamicStyles.errorText]}>
           {error || helperText}
         </Text>
       )}
@@ -129,7 +131,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
 
 Input.displayName = 'Input';
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     marginBottom: theme.spacing.md,
   },

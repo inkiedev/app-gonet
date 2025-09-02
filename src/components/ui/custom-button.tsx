@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps, Size, Variant } from '@/types/common';
 import React from 'react';
 import {
@@ -33,15 +33,17 @@ export const Button: React.FC<ButtonProps> = ({
                                                 style,
                                                 testID,
                                               }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
 
-  const buttonStyle: ViewStyle[] = [styles.base, styles[variant], styles[size]];
+  const buttonStyle: ViewStyle[] = [dynamicStyles.base, dynamicStyles[variant], dynamicStyles[size]];
 
   if (fullWidth) {
-    buttonStyle.push(styles.fullWidth);
+    buttonStyle.push(dynamicStyles.fullWidth);
   }
 
   if (disabled || loading) {
-    buttonStyle.push(styles.disabled);
+    buttonStyle.push(dynamicStyles.disabled);
   }
 
   if (style) {
@@ -49,9 +51,9 @@ export const Button: React.FC<ButtonProps> = ({
   }
 
   const textStyle: TextStyle[] = [
-    styles.text,
-    styles[`${variant}Text`],
-    styles[`${size}Text`],
+    dynamicStyles.text,
+    dynamicStyles[`${variant}Text`],
+    dynamicStyles[`${size}Text`],
   ];
   
   return (
@@ -77,7 +79,7 @@ export const Button: React.FC<ButtonProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   base: {
     borderRadius: theme.borderRadius.md,
     alignItems: 'center',

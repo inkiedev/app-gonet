@@ -4,7 +4,7 @@ import { PlanCard } from "@/components/ui/plan-card";
 import { useAuthRoute } from "@/providers/auth-route-provider";
 import { RootState } from "@/store";
 import { theme } from "@/styles/theme";
-import { useRouter, Redirect } from "expo-router";
+import { Redirect, useRouter } from "expo-router";
 import React from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -100,7 +100,7 @@ export default function PublicHomeScreen() {
 
   // Redirect authenticated users to protected area
   if (isAuthenticated && !needsBiometricVerification) {
-    return <Redirect href="/(protected)/home/" />;
+    return <Redirect href="/(protected)/home" />;
   }
 
 
