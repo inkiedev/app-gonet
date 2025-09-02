@@ -24,7 +24,6 @@ export default function AppText({ style, children, ...props }: AppTextProps) {
   const weight = flattened?.fontWeight ?? '400';
   const fontFamily = fontMap[weight] || fontMap['400'];
 
-  // 🔑 eliminamos fontWeight para Android, ya que ya resolvimos la variante
   const { fontWeight, ...restStyle } = flattened || {};
 
   return (

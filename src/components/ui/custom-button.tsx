@@ -128,7 +128,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     textAlign: 'center',
   },
   primaryText: {
-    color: theme.colors.text.inverse,
+    color: theme.colors.text.button,
   },
   secondaryText: {
     color: theme.colors.text.inverse,

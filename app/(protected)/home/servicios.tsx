@@ -238,6 +238,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.primaryDark,
+    marginBottom: theme.spacing.md,
   },
   planContainer: {
     paddingHorizontal: theme.spacing.sm,
@@ -296,7 +297,8 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   selectText: {
     fontSize: theme.fontSize.sm,
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    color: theme.colors.text.primary,
   },
   serviceContainer: {
     backgroundColor: theme.colors.surface,

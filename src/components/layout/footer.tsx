@@ -3,12 +3,13 @@ import Instagram from '@/assets/images/iconos gonet app svg_instagram.svg';
 import Location from '@/assets/images/iconos gonet app svg_ubicacion.svg';
 import Web from '@/assets/images/iconos gonet app svg_web.svg';
 import Whatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
+import Text from '@/components/ui/custom-text';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { LinearGradient } from 'expo-linear-gradient';
 import React from 'react';
-import { Linking, StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { Linking, StyleSheet, TouchableOpacity, View } from 'react-native';
 
 const SVG_SIZE = 26
 

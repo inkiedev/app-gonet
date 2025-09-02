@@ -23,6 +23,7 @@ export interface ThemeColors {
     inverse: string;
     disabled: string;
     inactive: string;
+    button: string;
   };
   border: {
     light: string;
@@ -97,12 +98,13 @@ const lightColors: ThemeColors = {
     secondary: '#666666',
     inverse: '#ffffff',
     disabled: '#999999',
-    inactive: '#666666'
+    inactive: '#666666',
+    button: '#009a94'
   },
   border: {
     light: '#e0e0e0',
     medium: '#cccccc',
-    dark: '#999999',
+    dark: '#009a94',
   },
 };
 
@@ -124,7 +126,8 @@ const darkColors: ThemeColors = {
     secondary: '#cccccc',
     inverse: '#333333',
     disabled: '#777777',
-    inactive: '#cccccc'
+    inactive: '#cccccc',
+    button: '#ffffff'
   },
   border: {
     light: '#333333',

@@ -1,4 +1,4 @@
-import { ThemedStatusBar } from '@/components/ui/themed-status-bar';
+import { ThemedStatusBar as StatusBar, ThemedStatusBar } from '@/components/ui/themed-status-bar';
 import { CardExpansionProvider } from '@/contexts/card-expansion-container';
 import { NotificationProvider } from '@/contexts/notification-context';
 import { ThemeProvider } from '@/contexts/theme-context';
@@ -34,49 +34,52 @@ export default function RootLayout() {
   }
 
   return (
-    <StoreProvider>
-      <ThemeProvider>
-        <GestureHandlerRootView>
-          <NotificationProvider>
-            <CardExpansionProvider>
-              <AuthRouteProvider>
-                <View style={styles.container}>
-                  <Stack 
-                    screenOptions={{ 
-                      headerShown: false,
-                      animation: 'slide_from_right',
-                      animationDuration: 300,
-                    }}
-                  >
-                    <Stack.Screen 
-                      name="index" 
-                      options={{
-                        animation: 'fade',
-                      }}
-                    />
-                    <Stack.Screen 
-                      name="(auth)" 
-                      options={{
-                        animation: 'slide_from_bottom',
-                        animationDuration: 350,
-                      }}
-                    />
-                    <Stack.Screen 
-                      name="(protected)" 
-                      options={{
+    <>
+      <StoreProvider>
+        <ThemeProvider>
+          <GestureHandlerRootView>
+            <NotificationProvider>
+              <CardExpansionProvider>
+                <AuthRouteProvider>
+                  <View style={styles.container}>
+                    <Stack 
+                      screenOptions={{ 
+                        headerShown: false,
                         animation: 'slide_from_right',
                         animationDuration: 300,
                       }}
-                    />
-                  </Stack>
-                  <ThemedStatusBar />
-                </View>
-              </AuthRouteProvider>
-            </CardExpansionProvider>
-          </NotificationProvider>
-        </GestureHandlerRootView>
-      </ThemeProvider>
-    </StoreProvider>
+                    >
+                      <Stack.Screen 
+                        name="index" 
+                        options={{
+                          animation: 'fade',
+                        }}
+                      />
+                      <Stack.Screen 
+                        name="(auth)" 
+                        options={{
+                          animation: 'slide_from_bottom',
+                          animationDuration: 350,
+                        }}
+                      />
+                      <Stack.Screen 
+                        name="(protected)" 
+                        options={{
+                          animation: 'slide_from_right',
+                          animationDuration: 300,
+                        }}
+                      />
+                    </Stack>
+                    <ThemedStatusBar />
+                  </View>
+                </AuthRouteProvider>
+              </CardExpansionProvider>
+            </NotificationProvider>
+          </GestureHandlerRootView>
+        </ThemeProvider>
+      </StoreProvider>
+      <StatusBar />
+    </>
   );
 }
 

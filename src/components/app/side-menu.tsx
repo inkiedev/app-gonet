@@ -52,7 +52,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPres
     { icon: <Logout color={MENU_COLOR} />, label: 'Cerrar Sesión' },
   ];
   
-  const slideAnim = useSharedValue(screenWidth * 0.6);
+  const slideAnim = useSharedValue(screenWidth * 0.7);
   const opacityAnim = useSharedValue(0);
   const [shouldRender, setShouldRender] = React.useState(visible);
 
@@ -63,7 +63,7 @@ export const SideMenu: React.FC<SideMenuProps> = ({ visible, onClose, onItemPres
       slideAnim.value = withTiming(0, { duration: 300 });
     } else {
       opacityAnim.value = withTiming(0, { duration: 300 });
-      slideAnim.value = withTiming(screenWidth * 0.6, { duration: 300 }, (finished) => {
+      slideAnim.value = withTiming(screenWidth * 0.7, { duration: 300 }, (finished) => {
         if (finished) {
           runOnJS(setShouldRender)(false);
         }
@@ -127,7 +127,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   container: { flex: 1, flexDirection: 'row', justifyContent: 'flex-end' },
   menu: {
-    width: screenWidth * 0.65,
+    width: screenWidth * 0.7,
     height: screenHeight,
     backgroundColor: theme.colors.text.inverse,
     paddingTop: theme.spacing.xxl,
