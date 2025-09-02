@@ -1,128 +1,209 @@
 import { AuthGuest } from "@/components/auth/auth-guest";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
+import LogoLoader from "@/components/ui/loading";
 import { PlanCard } from "@/components/ui/plan-card";
 import { useBiometricAuth } from "@/hooks/use-biometric-auth";
 import { authService } from "@/services/auth";
+import {
+  getPromotions,
+  getPromotionById,
+  Promotion,
+  PromotionDetail,
+} from "@/services/public-api";
 import { secureStorageService } from "@/services/secure-storage";
 import { RootState } from "@/store";
-import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from "@/store/slices/auth-slice";
+import {
+  completeBiometricVerification,
+  loadBiometricPreferences,
+  restoreSession,
+} from "@/store/slices/auth-slice";
 import { theme } from "@/styles/theme";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import {
+  Image,
+  ScrollView,
+  StyleSheet,
+  Text,
+  View,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useDispatch, useSelector } from "react-redux";
-``
 
-interface Plan {
-  id: string;
-  name: string;
-  price: number;
-  finalPrice: number;
-  details: string[];
-}
-
-const availablePlans: Plan[] = [
-  { 
-    id: "p1", 
-    name: "GoEssencial 300 Mbps", 
-    price: 19.90, 
-    finalPrice: 22.89, 
-    details: [
-      'Hasta 300 Mbps de velocidad',
-      'Instalación gratuita',
-      'Router Wi-Fi incluido'
-    ]
-  },
-  {
-    id: "p2",
-    name: "GoPlus 450 Mbps",
-    price: 29.90,
-    finalPrice: 34.89,
-    details: [
-      'Hasta 450 Mbps de velocidad',
-      'Instalación gratuita',
-      'Router Wi-Fi incluido'
-    ]
-  },
-  {
-    id: "p3",
-    name: "GoPlus 500 Mbps",
-    price: 39.90,
-    finalPrice: 45.89,
-    details: [
-      'Hasta 500 Mbps de velocidad',
-      'Instalación gratuita',
-      'Router Wi-Fi incluido'
-    ]
-  },
-  {
-    id: "p4",
-    name: "GoConnect 700 Mbps",
-    price: 59.90,
-    finalPrice: 69.89,
-    details: [
-      'Hasta 700 Mbps de velocidad',
-      'Instalación gratuita',
-      'Router Wi-Fi incluido'
-    ]
-  }
-];
-
-const PlanesContent = () => (
+const PlanesContent = ({
+  promotions,
+  isLoading,
+  onSelectPromotion,
+}: {
+  promotions: Promotion[];
+  isLoading: boolean;
+  onSelectPromotion: (id: number) => void;
+}) => (
   <View style={styles.planesSection}>
     <Text style={styles.sectionTitle}>Nuestros Planes</Text>
-    {availablePlans.map((plan) => (
-      <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
-        <View style={styles.planContainer}>
-          <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
-          <Text style={styles.planFinalPrice}>Precio final: ${plan.finalPrice}</Text>
-          <View style={styles.planDetails}>
-            {plan.details.map((detail, index) => (
-              <Text key={index} style={styles.planDetail}>
-                {`• ${detail}`}
-              </Text>
-            ))}
+    {isLoading ? (
+      <LogoLoader />
+    ) : promotions.length > 0 ? (
+      promotions.map((plan) => (
+        <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
+          <View style={styles.planContainer}>
+            <Text style={styles.planFinalPrice}>
+              Precio final: ${plan.total.toFixed(2)}
+            </Text>
+            <View style={styles.planDetails}>
+              {plan.extras.map((detail, index) => (
+                <Text key={index} style={styles.planDetail}>
+                  {`• ${detail.name}`}
+                </Text>
+              ))}
+            </View>
+            <Button
+              title="Ver detalle"
+              onPress={() => onSelectPromotion(plan.id)}
+            />
           </View>
-          <Button title="Contratar" onPress={() => {}} />
-        </View>
-      </PlanCard>
-    ))}
+        </PlanCard>
+      ))
+    ) : (
+      <Text style={styles.noPromotionsText}>
+        No hay promociones disponibles en este momento.
+      </Text>
+    )}
   </View>
 );
+
+const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number, onBack: () => void }) => {
+  const [promotion, setPromotion] = useState<PromotionDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPromotionDetails = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedPromotion = await getPromotionById(promotionId);
+        setPromotion(fetchedPromotion);
+      } catch (error) {
+        console.error("Failed to fetch promotion details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPromotionDetails();
+  }, [promotionId]);
+
+  const renderDiscountMessage = (extra: any) => {
+    if (extra.apply_method === "monthly" && extra.months_discount > 0) {
+      return `Por ${extra.months_discount} meses tienes un descuento de ${extra.discount}%.`;
+    }
+    if (extra.apply_method === "indefinite" && extra.discount > 0) {
+      return `Descuento de ${extra.discount}% para siempre.`;
+    }
+    return null;
+  };
+
+  const kbpsToMbps = (kbps: string) => {
+    return (parseInt(kbps) / 1000).toFixed(2);
+  };
+
+  return (
+    <View style={styles.planesSection}>
+        <Button title="Volver a la lista" onPress={onBack} />
+      {isLoading ? (
+        <LogoLoader />
+      ) : promotion ? (
+        <PlanCard title={promotion.name} style={styles.planCard}>
+            <Text style={styles.planFinalPrice}>Precio Total: ${promotion.total.toFixed(2)}</Text>
+            <Text style={styles.planDetail}>Tipo de Enlace: {promotion.link_type}</Text>
+            <Text style={styles.planDetail}>Nivel de Compartición: {promotion.sharing_level}</Text>
+            <Text style={styles.planDetail}>Tipo de Conexión: {promotion.connection_type}</Text>
+            <Text style={styles.planDetail}>
+              Velocidad de Subida: {kbpsToMbps(promotion["speed:_upload"])} Mbps ({promotion["speed:_upload"]} kbps)
+            </Text>
+            <Text style={styles.planDetail}>
+              Velocidad de Bajada: {kbpsToMbps(promotion["speed:_download"])} Mbps ({promotion["speed:_download"]} kbps)
+            </Text>
+
+            <View style={styles.extrasContainer}>
+              <Text style={styles.extrasTitle}>Extras:</Text>
+              {promotion.extras.map((extra, index) => (
+                <View key={index} style={styles.extraItem}>
+                  <Text style={styles.extraName}>{extra.name}</Text>
+                  <Text style={styles.extraPrice}>Precio: ${extra.price_unit.toFixed(2)}</Text>
+                  {renderDiscountMessage(extra) && (
+                    <Text style={styles.discountText}>{renderDiscountMessage(extra)}</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+        </PlanCard>
+      ) : (
+        <Text style={styles.noPromotionsText}>No se encontraron detalles de la promoción.</Text>
+      )}
+    </View>
+  );
+};
 
 export default function PublicHomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const [isLoading, setIsLoading] = useState(true);
   const [biometricPending, setBiometricPending] = useState(false);
-  const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
-  const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
+  const [promotions, setPromotions] = useState<Promotion[]>([]);
+  const [promotionsLoading, setPromotionsLoading] = useState(true);
+  const [selectedPromotionId, setSelectedPromotionId] = useState<number | null>(
+    null
+  );
+
+  const { isAuthenticated, needsBiometricVerification } = useSelector(
+    (state: RootState) => state.auth
+  );
+  const { authenticateWithBiometrics, checkBiometricAvailability } =
+    useBiometricAuth();
+
+  useEffect(() => {
+    const fetchPromotions = async () => {
+      try {
+        setPromotionsLoading(true);
+        const fetchedPromotions = await getPromotions();
+        setPromotions(fetchedPromotions);
+      } catch (error) {
+        console.error("Failed to fetch promotions:", error);
+      } finally {
+        setPromotionsLoading(false);
+      }
+    };
+
+    fetchPromotions();
+  }, []);
 
   useEffect(() => {
     const checkStoredCredentials = async () => {
       try {
         const storedCredentials = await secureStorageService.getCredentials();
-        
+
         if (storedCredentials) {
           const result = await authService.login({
             username: storedCredentials.username,
-            password: storedCredentials.password
+            password: storedCredentials.password,
           });
 
           if (result.success && result.user) {
             await dispatch(loadBiometricPreferences() as any);
-            dispatch(restoreSession({
-              uid: result.user.uid,
-              password: storedCredentials.password,
-              username: storedCredentials.username,
-              rememberMe: true
-            }));
+            dispatch(
+              restoreSession({
+                uid: result.user.uid,
+                password: storedCredentials.password,
+                username: storedCredentials.username,
+                rememberMe: true,
+              })
+            );
           }
         }
       } catch (error) {
-        console.error('Auto-login error:', error);
+        console.error("Auto-login error:", error);
       } finally {
         setIsLoading(false);
       }
@@ -139,10 +220,12 @@ export default function PublicHomeScreen() {
     const handleBiometricVerification = async () => {
       if (needsBiometricVerification && !biometricPending) {
         setBiometricPending(true);
-        
-        const storedPreferences = await secureStorageService.getBiometricPreferences();
-        const shouldUseBiometric = storedPreferences?.useBiometricForLogin || false;
-        
+
+        const storedPreferences =
+          await secureStorageService.getBiometricPreferences();
+        const shouldUseBiometric =
+          storedPreferences?.useBiometricForLogin || false;
+
         if (shouldUseBiometric) {
           const isAvailable = await checkBiometricAvailability();
           if (isAvailable) {
@@ -159,7 +242,7 @@ export default function PublicHomeScreen() {
         } else {
           dispatch(completeBiometricVerification());
         }
-        
+
         setBiometricPending(false);
       }
     };
@@ -167,57 +250,90 @@ export default function PublicHomeScreen() {
     if (isAuthenticated && needsBiometricVerification) {
       handleBiometricVerification();
     }
-  }, [isAuthenticated, needsBiometricVerification, biometricPending, checkBiometricAvailability, authenticateWithBiometrics, dispatch]);
+  }, [
+    isAuthenticated,
+    needsBiometricVerification,
+    biometricPending,
+    checkBiometricAvailability,
+    authenticateWithBiometrics,
+    dispatch,
+  ]);
 
   useEffect(() => {
-    if (isAuthenticated && !isLoading && !needsBiometricVerification && !biometricPending) {
-      router.replace('/(tabs)/home');
+    if (
+      isAuthenticated &&
+      !isLoading &&
+      !needsBiometricVerification &&
+      !biometricPending
+    ) {
+      router.replace("/(tabs)/home");
     }
-  }, [isAuthenticated, isLoading, needsBiometricVerification, biometricPending, router]);
+  }, [
+    isAuthenticated,
+    isLoading,
+    needsBiometricVerification,
+    biometricPending,
+    router,
+  ]);
 
   if (isLoading || biometricPending) {
     return (
       <SafeAreaView style={styles.container}>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>
-            {biometricPending ? 'Verificando identidad...' : 'Cargando...'}
+            {biometricPending ? "Verificando identidad..." : "Cargando..."}
           </Text>
         </View>
       </SafeAreaView>
     );
   }
 
-
   const handleLogin = () => {
     router.push("/(auth)/login");
+  };
+
+  const handleSelectPromotion = (id: number) => {
+    setSelectedPromotionId(id);
+  };
+
+  const handleBackToList = () => {
+    setSelectedPromotionId(null);
   };
 
   return (
     <AuthGuest>
       <SafeAreaView style={styles.container} edges={["top"]}>
         <ScrollView style={styles.scrollContainer}>
-        {/* Banner */}
-        <View style={styles.bannerContainer}>
-          <Image
-            source={{ uri: "https://picsum.photos/800/400" }}
-            style={styles.bannerImage}
-          />
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerTitle}>Bienvenido a GoNet</Text>
-            <Text style={styles.bannerSubtitle}>Internet de alta velocidad para tu hogar</Text>
-            <Button 
-              title="Iniciar Sesión" 
-              onPress={handleLogin}
-              style={styles.loginButton}
-
-              
+          {/* Banner */}
+          <View style={styles.bannerContainer}>
+            <Image
+              source={{ uri: "https://picsum.photos/800/400" }}
+              style={styles.bannerImage}
             />
+            <View style={styles.bannerOverlay}>
+              <Text style={styles.bannerTitle}>Bienvenido a GoNet</Text>
+              <Text style={styles.bannerSubtitle}>
+                Internet de alta velocidad para tu hogar
+              </Text>
+              <Button
+                title="Iniciar Sesión"
+                onPress={handleLogin}
+                style={styles.loginButton}
+              />
+            </View>
           </View>
-        </View>
 
-        {/* Planes Content */}
-        <PlanesContent />
-      </ScrollView>
+          {/* Planes Content */}
+          {selectedPromotionId ? (
+            <PromotionDetailsContent promotionId={selectedPromotionId} onBack={handleBackToList} />
+          ) : (
+            <PlanesContent
+              promotions={promotions}
+              isLoading={promotionsLoading}
+              onSelectPromotion={handleSelectPromotion}
+            />
+          )}
+        </ScrollView>
 
         {/* Footer */}
         <Footer />
@@ -227,8 +343,8 @@ export default function PublicHomeScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { 
-    flex: 1, 
+  container: {
+    flex: 1,
     backgroundColor: theme.colors.background,
   },
   scrollContainer: {
@@ -236,7 +352,7 @@ const styles = StyleSheet.create({
   },
   bannerContainer: {
     height: 300,
-    position: 'relative',
+    position: "relative",
   },
   bannerImage: {
     width: "100%",
@@ -244,27 +360,27 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   bannerOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: theme.spacing.lg,
   },
   bannerTitle: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text.inverse,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.sm,
   },
   bannerSubtitle: {
     fontSize: theme.fontSize.lg,
     color: theme.colors.text.inverse,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.lg,
   },
   loginButton: {
@@ -278,7 +394,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.primaryDark,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.lg,
   },
   planCard: {
@@ -289,7 +405,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing.sm,
-    alignItems: 'center',
+    alignItems: "center",
   },
   planPrice: {
     fontSize: theme.fontSize.xl,
@@ -301,11 +417,11 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
   },
   planDetails: {
-    width: '100%',
+    width: "100%",
     marginVertical: theme.spacing.xs,
     display: "flex",
     justifyContent: "space-between",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   planDetail: {
     fontSize: theme.fontSize.md,
@@ -314,11 +430,46 @@ const styles = StyleSheet.create({
   },
   loadingContainer: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
   },
   loadingText: {
     fontSize: theme.fontSize.lg,
     color: theme.colors.text.primary,
+  },
+  noPromotionsText: {
+    textAlign: "center",
+    fontSize: theme.fontSize.lg,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing.lg,
+  },
+  extrasContainer: {
+    marginTop: theme.spacing.md,
+  },
+  extrasTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  extraItem: {
+    backgroundColor: theme.colors.background,
+    borderRadius: theme.borderRadius.sm,
+    padding: theme.spacing.sm,
+    marginBottom: theme.spacing.sm,
+  },
+  extraName: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+  },
+  extraPrice: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.secondary,
+  },
+  discountText: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.primary,
+    marginTop: theme.spacing.xs,
   },
 });
