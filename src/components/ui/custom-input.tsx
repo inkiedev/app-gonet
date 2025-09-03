@@ -1,3 +1,4 @@
+import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { FontAwesome } from '@expo/vector-icons';
@@ -5,7 +6,6 @@ import React, { forwardRef, useState } from 'react';
 import {
   Platform,
   StyleSheet,
-  Text,
   TextInput,
   TextInputProps,
   TextStyle,

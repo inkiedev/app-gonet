@@ -120,13 +120,7 @@ export default function HomeScreen() {
   };
 
   const handleLogout = async () => {
-    try {
-      showInfo(
-        'Cerrando sesión...',
-        'Un momento, estamos cerrando tu sesión de forma segura.',
-        2000
-      );
-      
+    try {      
       await authService.logout();
       dispatch(logout());
       

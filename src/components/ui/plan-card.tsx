@@ -1,7 +1,8 @@
+import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
-import { StyleSheet, Text, View, ViewStyle } from 'react-native';
+import { StyleSheet, View, ViewStyle } from 'react-native';
 
 interface PlanCardProps extends BaseComponentProps {
   title: string;

@@ -2,6 +2,7 @@ import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
+import Text from '@/components/ui/custom-text';
 import { PlanCard } from "@/components/ui/plan-card";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { useTheme } from "@/contexts/theme-context";
@@ -10,7 +11,6 @@ import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
   StyleSheet,
-  Text,
   View
 } from "react-native";
 import { ScrollView } from 'react-native-gesture-handler';

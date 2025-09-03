@@ -14,11 +14,13 @@ import React, { useEffect, useMemo, useState } from "react";
 import {
   StyleSheet,
   Switch,
+  TouchableOpacity,
   View
 } from "react-native";
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/custom-button';
+import Checkbox from 'expo-checkbox';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -27,7 +29,8 @@ const AjustesContent = () => {
   const { rememberMe, biometricPreferences } = useSelector((state: RootState) => state.auth);
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { showSuccess, showError } = useNotificationContext();
-  const { theme: currentTheme, isDark, toggleTheme } = useTheme();
+  const { theme: currentTheme, isDark, toggleTheme, setFollowSystem } = useTheme();
+  const [ systemTheme, setSystemTheme ] = useState(true);
   
   useEffect(() => {
     if (rememberMe) {
@@ -73,6 +76,11 @@ const AjustesContent = () => {
     }
   };
 
+  const handleSystemThemeChange = () => {
+    setFollowSystem(!systemTheme);
+    setSystemTheme(!systemTheme);
+  }
+
   const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
@@ -87,14 +95,21 @@ const AjustesContent = () => {
       <View style={styles.sectionContainer}>
         <Text style={dynamicStyles.subTitle}>Apariencia</Text>
         <View style={dynamicStyles.switchRow}>
+          <TouchableOpacity onPress={handleSystemThemeChange} style={styles.themeChangeContainer}>
+            <Checkbox value={systemTheme} onValueChange={handleSystemThemeChange} />
+            <Text style={dynamicStyles.switchLabel}>Usar tema del sistema</Text>
+          </TouchableOpacity>
+        </View>
+        <View style={dynamicStyles.switchRow}>
           <Switch 
+            disabled={systemTheme}
             value={isDark} 
             onValueChange={toggleTheme}
             trackColor={{ false: currentTheme.colors.border.medium, true: currentTheme.colors.primary }}
             thumbColor={isDark ? currentTheme.colors.surface : currentTheme.colors.surface}
           />
           <Text style={dynamicStyles.switchLabel}>
-            {isDark ? '🌙 Tema Oscuro' : '🌞 Tema Claro'}
+            {isDark ? 'Tema Oscuro' : 'Tema Claro'}
           </Text>
         </View>
       </View>
@@ -622,4 +637,9 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
     textAlign: 'center',
   },
+
+  themeChangeContainer: {
+    flexDirection: "row", 
+    alignItems: "center", 
+  }
 });

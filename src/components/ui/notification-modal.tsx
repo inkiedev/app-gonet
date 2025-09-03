@@ -120,6 +120,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   };
 
   const handleClose = () => {
+    if (isClosing) return;
     animateOut(() => {
       notification?.onClose?.();
       onClose();

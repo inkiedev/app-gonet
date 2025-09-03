@@ -1,3 +1,4 @@
+import Text from '@/components/ui/custom-text';
 import { zodResolver } from '@hookform/resolvers/zod';
 import Checkbox from 'expo-checkbox';
 import { useRouter } from 'expo-router';
@@ -9,7 +10,6 @@ import {
   Platform,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View
 } from 'react-native';

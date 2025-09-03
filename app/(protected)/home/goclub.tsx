@@ -1,12 +1,13 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/custom-button";
+import Text from '@/components/ui/custom-text';
 import { useTheme } from "@/contexts/theme-context";
 import { FontAwesome5 } from "@expo/vector-icons";
 import { router } from "expo-router";
-import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
-import { ImageBackground, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { ImageBackground, StyleSheet, TouchableOpacity, View } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
 import { SafeAreaView } from "react-native-safe-area-context";

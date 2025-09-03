@@ -1,10 +1,10 @@
+import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps, Size, Variant } from '@/types/common';
 import React from 'react';
 import {
   ActivityIndicator,
   StyleSheet,
-  Text,
   TextStyle,
   TouchableOpacity,
   ViewStyle,

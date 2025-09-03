@@ -1,16 +1,16 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
+import Text from '@/components/ui/custom-text';
 import { PlanCard } from "@/components/ui/plan-card";
 import { useTheme } from "@/contexts/theme-context";
 import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
 import {
   ScrollView,
   StyleSheet,
-  Text,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";

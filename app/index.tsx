@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
+import Text from "@/components/ui/custom-text";
 import LogoLoader from "@/components/ui/loading";
 import { PlanCard } from "@/components/ui/plan-card";
 import { useTheme } from "@/contexts/theme-context";
@@ -9,7 +10,7 @@ import { RootState } from "@/store";
 import { theme } from "@/styles/theme";
 import { Redirect, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
+import { Image, ScrollView, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 

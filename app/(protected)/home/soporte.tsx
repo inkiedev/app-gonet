@@ -1,18 +1,18 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Input } from "@/components/ui/custom-input";
-import { supportService } from "@/services/support";
+import Text from '@/components/ui/custom-text';
 import { useTheme } from "@/contexts/theme-context";
+import { supportService } from "@/services/support";
 import { BaseComponentProps } from "@/types/common";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
-import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
   KeyboardAvoidingView,
   Platform,
   StyleSheet,
-  Text,
   TouchableOpacity,
   View
 } from "react-native";

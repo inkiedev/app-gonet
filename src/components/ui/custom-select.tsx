@@ -1,3 +1,4 @@
+import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { Ionicons } from '@expo/vector-icons';
@@ -7,7 +8,6 @@ import {
   Modal,
   ScrollView,
   StyleSheet,
-  Text,
   TouchableOpacity,
   TouchableWithoutFeedback,
   View,
