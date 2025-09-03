@@ -192,7 +192,11 @@ export default function HomeScreen() {
               SvgComponent={option.SvgComponent}
               label={option.label}
               badgeCount={option.badgeCount}
-              onPress={() => console.log(`press ${option.label}`)}
+              onPress={() => showSuccess(
+                '¡Bienvenido!',
+                'lol',
+                3000
+              )}
             />
           ))}
         </Animated.View>

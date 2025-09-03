@@ -1,13 +1,12 @@
 import { Footer } from '@/components/layout/footer';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
+import { useTheme } from '@/contexts/theme-context';
 import { useAuthRoute } from '@/providers/auth-route-provider';
 import { RootState } from '@/store';
-import { useTheme } from '@/contexts/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, Slot } from 'expo-router';
-import { StatusBar } from 'expo-status-bar';
 import React from 'react';
-import { StyleSheet, View, ActivityIndicator, Text } from 'react-native';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
@@ -43,8 +42,6 @@ const ProtectedLayoutContent: React.FC = () => {
       style={dynamicStyles.content}
     >
       <View style={dynamicStyles.container}>
-        <StatusBar style="dark" />
-
         <Slot />
 
         {showFooter && 
@@ -68,6 +65,7 @@ export default function ProtectedLayout() {
 const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background
   },
   content: {
     flex: 1,

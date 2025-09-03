@@ -1,13 +1,10 @@
 import { theme } from '@/styles/theme';
 import { NotificationModalProps, NotificationType } from '@/types/notification';
 import { Ionicons } from '@expo/vector-icons';
-import { BlurView } from 'expo-blur';
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {
   Animated,
   Dimensions,
-  Modal,
-  Platform,
   StyleSheet,
   Text,
   TouchableOpacity,
@@ -57,12 +54,17 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   notification,
   onClose,
 }) => {
+  const [isClosing, setIsClosing] = useState(false);
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
 
   useEffect(() => {
     if (notification) {
+      slideAnim.setValue(-100);
+      opacityAnim.setValue(0);
+      scaleAnim.setValue(0.8);
+      
       Animated.parallel([
         Animated.timing(slideAnim, {
           toValue: 0,
@@ -88,30 +90,40 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
 
         return () => clearTimeout(timer);
       }
-    } else {
-      Animated.parallel([
-        Animated.timing(slideAnim, {
-          toValue: -100,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(opacityAnim, {
-          toValue: 0,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-        Animated.timing(scaleAnim, {
-          toValue: 0.8,
-          duration: 250,
-          useNativeDriver: true,
-        }),
-      ]).start();
     }
   }, [notification]);
 
+  const animateOut = (callback: () => void) => {
+    if (isClosing) return;
+    setIsClosing(true);
+    
+    Animated.parallel([
+      Animated.timing(slideAnim, {
+        toValue: -100,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(opacityAnim, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleAnim, {
+        toValue: 0.8,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsClosing(false);
+      callback();
+    });
+  };
+
   const handleClose = () => {
-    notification?.onClose?.();
-    onClose();
+    animateOut(() => {
+      notification?.onClose?.();
+      onClose();
+    });
   };
 
   if (!notification) {
@@ -121,34 +133,21 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   const config = getNotificationConfig(notification.type);
 
   return (
-    <Modal
-      visible={!!notification}
-      transparent
-      animationType="none"
-      statusBarTranslucent={false}
-      presentationStyle="overFullScreen"
-    >
-      <View style={styles.overlay}>
-        {Platform.OS === 'ios' ? (
-          <BlurView intensity={20} style={StyleSheet.absoluteFill} />
-        ) : (
-          <View style={[StyleSheet.absoluteFill, styles.androidOverlay]} />
-        )}
-        
-        <SafeAreaView style={styles.safeAreaContainer} edges={['top']}>
-          <Animated.View
-            style={[
-              styles.container,
-              {
-                transform: [
-                  { translateY: slideAnim },
-                  { scale: scaleAnim },
-                ],
-                opacity: opacityAnim,
-              },
-            ]}
-          >
-            <View style={[styles.content, { backgroundColor: config.backgroundColor }]}>
+    <View style={styles.absoluteContainer} pointerEvents="box-none">
+      <SafeAreaView style={styles.safeAreaContainer} edges={['top']} pointerEvents="box-none">
+        <Animated.View
+          style={[
+            styles.container,
+            {
+              transform: [
+                { translateY: slideAnim },
+                { scale: scaleAnim },
+              ],
+              opacity: opacityAnim,
+            },
+          ]}
+        >
+          <View style={[styles.content, { backgroundColor: config.backgroundColor }]}>
               <View style={styles.header}>
                 <View style={styles.iconTitleRow}>
                   <View style={styles.iconContainer}>
@@ -166,6 +165,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                 <TouchableOpacity
                   style={styles.closeButton}
                   onPress={handleClose}
+                  disabled={isClosing}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
                 >
                   <Ionicons name="close" size={20} color={config.color} />
@@ -194,32 +194,29 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
               )}
             </View>
           </Animated.View>
-        </SafeAreaView>
-      </View>
-    </Modal>
+      </SafeAreaView>
+    </View>
   );
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'transparent',
-  },
-  androidOverlay: {
-    backgroundColor: 'rgba(0, 0, 0, 0.3)',
+  absoluteContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
   safeAreaContainer: {
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    paddingTop: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
   },
   container: {
     width: SCREEN_WIDTH - (theme.spacing.md * 2),
     maxWidth: 400,
-    position: 'absolute',
-    top: 0,
+    marginTop: theme.spacing.md,
   },
   content: {
     borderRadius: theme.borderRadius.lg,
