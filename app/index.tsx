@@ -1,5 +1,6 @@
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
+import LogoLoader from "@/components/ui/loading";
 import { PlanCard } from "@/components/ui/plan-card";
 import { useTheme } from "@/contexts/theme-context";
 import { useAuthRoute } from "@/providers/auth-route-provider";
@@ -10,7 +11,6 @@ import React from "react";
 import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
-``
 
 interface Plan {
   id: string;
@@ -94,6 +94,78 @@ const PlanesContent = () => {
   </>
 };
 
+const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number, onBack: () => void }) => {
+  const [promotion, setPromotion] = useState<PromotionDetail | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPromotionDetails = async () => {
+      try {
+        setIsLoading(true);
+        const fetchedPromotion = await getPromotionById(promotionId);
+        setPromotion(fetchedPromotion);
+      } catch (error) {
+        console.error("Failed to fetch promotion details:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPromotionDetails();
+  }, [promotionId]);
+
+  const renderDiscountMessage = (extra: any) => {
+    if (extra.apply_method === "monthly" && extra.months_discount > 0) {
+      return `Por ${extra.months_discount} meses tienes un descuento de ${extra.discount}%.`;
+    }
+    if (extra.apply_method === "indefinite" && extra.discount > 0) {
+      return `Descuento de ${extra.discount}% para siempre.`;
+    }
+    return null;
+  };
+
+  const kbpsToMbps = (kbps: string) => {
+    return (parseInt(kbps) / 1000).toFixed(2);
+  };
+
+  return (
+    <View style={styles.planesSection}>
+        <Button title="Volver a la lista" onPress={onBack} />
+      {isLoading ? (
+        <LogoLoader />
+      ) : promotion ? (
+        <PlanCard title={promotion.name} style={styles.planCard}>
+            <Text style={styles.planFinalPrice}>Precio Total: ${promotion.total.toFixed(2)}</Text>
+            <Text style={styles.planDetail}>Tipo de Enlace: {promotion.link_type}</Text>
+            <Text style={styles.planDetail}>Nivel de Compartición: {promotion.sharing_level}</Text>
+            <Text style={styles.planDetail}>Tipo de Conexión: {promotion.connection_type}</Text>
+            <Text style={styles.planDetail}>
+              Velocidad de Subida: {kbpsToMbps(promotion["speed:_upload"])} Mbps ({promotion["speed:_upload"]} kbps)
+            </Text>
+            <Text style={styles.planDetail}>
+              Velocidad de Bajada: {kbpsToMbps(promotion["speed:_download"])} Mbps ({promotion["speed:_download"]} kbps)
+            </Text>
+
+            <View style={styles.extrasContainer}>
+              <Text style={styles.extrasTitle}>Extras:</Text>
+              {promotion.extras.map((extra, index) => (
+                <View key={index} style={styles.extraItem}>
+                  <Text style={styles.extraName}>{extra.name}</Text>
+                  <Text style={styles.extraPrice}>Precio: ${extra.price_unit.toFixed(2)}</Text>
+                  {renderDiscountMessage(extra) && (
+                    <Text style={styles.discountText}>{renderDiscountMessage(extra)}</Text>
+                  )}
+                </View>
+              ))}
+            </View>
+        </PlanCard>
+      ) : (
+        <Text style={styles.noPromotionsText}>No se encontraron detalles de la promoción.</Text>
+      )}
+    </View>
+  );
+};
+
 export default function PublicHomeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
@@ -111,9 +183,16 @@ export default function PublicHomeScreen() {
     return <Redirect href="/(protected)/home" />;
   }
 
-
   const handleLogin = () => {
     router.push("/(auth)/login");
+  };
+
+  const handleSelectPromotion = (id: number) => {
+    setSelectedPromotionId(id);
+  };
+
+  const handleBackToList = () => {
+    setSelectedPromotionId(null);
   };
 
   return (
@@ -133,12 +212,30 @@ export default function PublicHomeScreen() {
               onPress={handleLogin}
               style={styles.loginButton}
             />
+            <View style={styles.bannerOverlay}>
+              <Text style={styles.bannerTitle}>Bienvenido a GoNet</Text>
+              <Text style={styles.bannerSubtitle}>
+                Internet de alta velocidad para tu hogar
+              </Text>
+              <Button
+                title="Iniciar Sesión"
+                onPress={handleLogin}
+                style={styles.loginButton}
+              />
+            </View>
           </View>
-        </View>
 
-        {/* Planes Content */}
-        <PlanesContent />
-      </ScrollView>
+          {/* Planes Content */}
+          {selectedPromotionId ? (
+            <PromotionDetailsContent promotionId={selectedPromotionId} onBack={handleBackToList} />
+          ) : (
+            <PlanesContent
+              promotions={promotions}
+              isLoading={promotionsLoading}
+              onSelectPromotion={handleSelectPromotion}
+            />
+          )}
+        </ScrollView>
 
       {/* Footer */}
       <Footer />
@@ -168,7 +265,7 @@ const styles = StyleSheet.create({
   },
   bannerContainer: {
     height: 300,
-    position: 'relative',
+    position: "relative",
   },
   bannerImage: {
     width: "100%",
@@ -176,27 +273,27 @@ const styles = StyleSheet.create({
     resizeMode: "cover",
   },
   bannerOverlay: {
-    position: 'absolute',
+    position: "absolute",
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
+    backgroundColor: "rgba(0, 0, 0, 0.4)",
+    justifyContent: "center",
+    alignItems: "center",
     padding: theme.spacing.lg,
   },
   bannerTitle: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.text.inverse,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.sm,
   },
   bannerSubtitle: {
     fontSize: theme.fontSize.lg,
     color: theme.colors.text.inverse,
-    textAlign: 'center',
+    textAlign: "center",
     marginBottom: theme.spacing.lg,
   },
   loginButton: {
@@ -221,7 +318,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing.sm,
-    alignItems: 'center',
+    alignItems: "center",
   },
   planPrice: {
     fontSize: theme.fontSize.xl,
@@ -233,11 +330,11 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
   },
   planDetails: {
-    width: '100%',
+    width: "100%",
     marginVertical: theme.spacing.xs,
     display: "flex",
     justifyContent: "space-between",
-    flexDirection: "column"
+    flexDirection: "column",
   },
   planDetail: {
     fontSize: theme.fontSize.md,
