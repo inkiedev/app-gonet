@@ -1,7 +1,6 @@
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import Text from "@/components/ui/custom-text";
-import LogoLoader from "@/components/ui/loading";
 import { PlanCard } from "@/components/ui/plan-card";
 import { useTheme } from "@/contexts/theme-context";
 import { useAuthRoute } from "@/providers/auth-route-provider";
@@ -30,7 +29,7 @@ const PlanesContent = ({
   <View style={styles.planesSection}>
     <Text style={styles.sectionTitle}>Nuestros Planes</Text>
     {isLoading ? (
-      <LogoLoader />
+      <Text>Cargando...</Text>
     ) : promotions.length > 0 ? (
       promotions.map((plan) => (
         <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
@@ -101,7 +100,7 @@ const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number,
     <View style={styles.planesSection}>
         <Button title="Volver a la lista" onPress={onBack} />
       {isLoading ? (
-        <LogoLoader />
+        <Text>Cargando...</Text>
       ) : promotion ? (
         <PlanCard title={promotion.name} style={styles.planCard}>
             <Text style={dynamicStyles.planFinalPrice}>Precio Total: ${promotion.total.toFixed(2)}</Text>

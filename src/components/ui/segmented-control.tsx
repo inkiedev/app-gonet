@@ -6,6 +6,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useState } from 'react';
 import {
   Dimensions,
+  Platform,
   StyleSheet,
   TouchableOpacity,
   View,
@@ -186,9 +187,11 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
               {segment.icon}
             </View>
           )}
+
           <Text style={textStyle} numberOfLines={1}>
             {segment.label}
           </Text>
+
           {segment.badge && (
             <View style={styles.badge}>
               <Text style={styles.badgeText}>
@@ -279,6 +282,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    width: '100%',
     maxWidth: 1000
   },
 
@@ -419,7 +423,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     top: 4,
     left: 4,
-    height: '100%',
+    height: Platform.OS === 'web' ? 'calc(100% - 8px)' : '100%',
     borderRadius: theme.borderRadius.md,
     shadowColor: theme.colors.shadow,
     shadowOffset: { width: 0, height: 1 },
@@ -427,27 +431,39 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
     zIndex: 1,
-  },
+    ...(Platform.OS === 'web' && {
+      boxSizing: 'border-box',
+      maxHeight: 'calc(100% - 8px)'
+    }),
+  } as any,
 
   materialSelector: {
     position: 'absolute',
     top: 4,
     left: 4,
-    height: '100%',
+    height: Platform.OS === 'web' ? 'calc(100% - 8px)' : '100%',
     borderRadius: theme.borderRadius.md,
     overflow: 'hidden',
     zIndex: 1,
-  },
+    ...(Platform.OS === 'web' && {
+      boxSizing: 'border-box',
+      maxHeight: 'calc(100% - 8px)'
+    }),
+  } as any,
 
   glassSelector: {
     position: 'absolute',
     top: 4,
     left: 4,
-    height: '100%',
+    height: Platform.OS === 'web' ? 'calc(100% - 8px)' : '100%',
     borderRadius: theme.borderRadius.md,
     overflow: 'hidden',
     zIndex: 1,
-  },
+    ...(Platform.OS === 'web' && {
+      boxSizing: 'border-box',
+      maxHeight: 'calc(100% - 8px)'
+    }),
+  } as any,
 
   minimalSelector: {
     position: 'absolute',

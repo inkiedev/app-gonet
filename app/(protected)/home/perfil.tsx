@@ -188,70 +188,72 @@ export default function AjustesScreen() {
         showsVerticalScrollIndicator={false}
         contentContainerStyle={dynamicStyles.scrollContent}
       >
-        <View style={dynamicStyles.profileHeader}>
-          <View style={dynamicStyles.avatarContainer}>
-            <Ionicons
-              name="person-circle"
-              size={isSmall ? 80 : 100}
-              color={theme.colors.primary}
-            />
-          </View>
-          <Text style={[
-            dynamicStyles.userName,
-            { fontSize: isSmall ? theme.fontSize.xl : theme.fontSize.xxl }
-          ]}>
-            {userData?.name || 'Usuario'}
-          </Text>
-        </View>
-
-        <View style={dynamicStyles.dividerContainer}>
-          <View style={dynamicStyles.dividerLine} />
-          <Text style={dynamicStyles.dividerText}>Información Personal</Text>
-          <View style={dynamicStyles.dividerLine} />
-        </View>
-
-        <Card
-          style={dynamicStyles.infoCard}
-          padding={isSmall ? "sm" : "md"}
-          variant="elevated"
-        >
-          {userFields.map((field, index) => (
-            <UserInfoRow
-              key={index}
-              field={field}
-              isLast={index === userFields.length - 1}
-              isEditing={isEditing}
-              isSmall={isSmall}
-            />
-          ))}
-        </Card>
-
-        <View style={dynamicStyles.buttonContainer}>
-          <Button
-            title={isEditing ? "Guardar Cambios" : "Editar Perfil"}
-            onPress={handleEdit}
-            variant="primary"
-            size={isSmall ? "md" : "lg"}
-            fullWidth
-            icon={
+        <View style={dynamicStyles.editProfileContent}>
+          <View style={dynamicStyles.profileHeader}>
+            <View style={dynamicStyles.avatarContainer}>
               <Ionicons
-                name={isEditing ? "save-outline" : "create-outline"}
-                size={20}
-                color={theme.colors.text.inverse}
-                style={{ marginRight: theme.spacing.xs }}
+                name="person-circle"
+                size={isSmall ? 80 : 100}
+                color={theme.colors.primary}
               />
-            }
-          />
+            </View>
+            <Text style={[
+              dynamicStyles.userName,
+              { fontSize: isSmall ? theme.fontSize.xl : theme.fontSize.xxl }
+            ]}>
+              {userData?.name || 'Usuario'}
+            </Text>
+          </View>
 
-          {isEditing && (
+          <View style={dynamicStyles.dividerContainer}>
+            <View style={dynamicStyles.dividerLine} />
+            <Text style={dynamicStyles.dividerText}>Información Personal</Text>
+            <View style={dynamicStyles.dividerLine} />
+          </View>
+
+          <Card
+            style={dynamicStyles.infoCard}
+            padding={isSmall ? "sm" : "md"}
+            variant="elevated"
+          >
+            {userFields.map((field, index) => (
+              <UserInfoRow
+                key={index}
+                field={field}
+                isLast={index === userFields.length - 1}
+                isEditing={isEditing}
+                isSmall={isSmall}
+              />
+            ))}
+          </Card>
+
+          <View style={dynamicStyles.buttonContainer}>
             <Button
-              title="Cancelar"
-              onPress={handleCancel}
-              variant="secondary"
+              title={isEditing ? "Guardar Cambios" : "Editar Perfil"}
+              onPress={handleEdit}
+              variant="primary"
               size={isSmall ? "md" : "lg"}
               fullWidth
+              icon={
+                <Ionicons
+                  name={isEditing ? "save-outline" : "create-outline"}
+                  size={20}
+                  color={theme.colors.text.inverse}
+                  style={{ marginRight: theme.spacing.xs }}
+                />
+              }
             />
-          )}
+
+            {isEditing && (
+              <Button
+                title="Cancelar"
+                onPress={handleCancel}
+                variant="secondary"
+                size={isSmall ? "md" : "lg"}
+                fullWidth
+              />
+            )}
+          </View>
         </View>
       </ScrollView>
       
@@ -326,6 +328,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   scrollContent: {
     paddingBottom: theme.spacing.xl,
+    alignItems: 'center'
   },
   profileHeader: {
     alignItems: 'center',
@@ -344,6 +347,11 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center',
     marginVertical: theme.spacing.xl,
     paddingHorizontal: theme.spacing.lg,
+    width: '100%'
+  },
+  editProfileContent: {
+    width: '100%',
+    maxWidth: 1000
   },
   dividerLine: {
     flex: 1,

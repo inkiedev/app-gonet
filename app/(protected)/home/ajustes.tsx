@@ -20,6 +20,7 @@ import {
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/custom-button';
+import { useResponsive } from '@/hooks/use-responsive';
 import Checkbox from 'expo-checkbox';
 import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -85,8 +86,6 @@ const AjustesContent = () => {
 
   return (
     <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <Text style={dynamicStyles.tabTitle}>Configuración</Text>
-      
       <View style={styles.sectionContainer}>
         <Text style={dynamicStyles.subTitle}>Sesión</Text>
         <Text style={dynamicStyles.centerText}>Administrar dispositivos activos</Text>
@@ -237,14 +236,16 @@ const ActualizarDatosContent = () => {
 
   return (
     <ScrollView style={styles.tabContent}>
-      <Text style={dynamicStyles.tabTitle}>Perfil</Text>
-      <View style={styles.formContainer}>
-        <Input placeholder="Contraseña actual" secureTextEntry />
-        <Input placeholder="Correo" value={userData?.email || ''} />
-        <Input placeholder="Teléfono móvil" value={userData?.mobile || ''} />
-        <Input placeholder="Teléfono fijo" value={userData?.phone || ''} />
-        <Input placeholder="Dirección" value={userData?.street || ''} />
-        <Input placeholder="Ciudad" value={userData?.city || ''} />
+      <View style={styles.sectionContainer}>
+        <Text style={dynamicStyles.subTitle}>Actualizar Datos</Text>
+        <View style={styles.formContainer}>
+          <Input placeholder="Contraseña actual" secureTextEntry />
+          <Input placeholder="Correo" value={userData?.email || ''} />
+          <Input placeholder="Teléfono móvil" value={userData?.mobile || ''} />
+          <Input placeholder="Teléfono fijo" value={userData?.phone || ''} />
+          <Input placeholder="Dirección" value={userData?.street || ''} />
+          <Input placeholder="Ciudad" value={userData?.city || ''} />
+        </View>
       </View>
     </ScrollView>
   );
@@ -323,27 +324,29 @@ const CambiarContrasenaContent = () => {
 
   return (
     <View style={styles.tabContent}>
-      <Text style={dynamicStyles.tabTitle}>Seguridad</Text>
-      <View style={styles.formContainer}>
-        <Input
-          placeholder="Contraseña actual"
-          secureTextEntry
-          value={currentPassword}
-          onChangeText={setCurrentPassword}
-        />
-        <Input
-          placeholder="Contraseña nueva"
-          secureTextEntry
-          value={newPassword}
-          onChangeText={setNewPassword}
-        />
-        <Input
-          placeholder="Confirmar nueva contraseña"
-          secureTextEntry
-          value={confirmPassword}
-          onChangeText={setConfirmPassword}
-        />
-        <Button title='Actualizar contraseña' onPress={handleChangePassword} />
+      <View style={styles.sectionContainer}>
+        <Text style={dynamicStyles.subTitle}>Cambiar contraseña</Text>
+        <View style={styles.formContainer}>
+          <Input
+            placeholder="Contraseña actual"
+            secureTextEntry
+            value={currentPassword}
+            onChangeText={setCurrentPassword}
+          />
+          <Input
+            placeholder="Contraseña nueva"
+            secureTextEntry
+            value={newPassword}
+            onChangeText={setNewPassword}
+          />
+          <Input
+            placeholder="Confirmar nueva contraseña"
+            secureTextEntry
+            value={confirmPassword}
+            onChangeText={setConfirmPassword}
+          />
+          <Button title='Actualizar contraseña' onPress={handleChangePassword} />
+        </View>
       </View>
     </View>
   );
@@ -353,6 +356,7 @@ const CambiarContrasenaContent = () => {
 export default function PerfilScreen() {
   const router = useRouter();
   const { theme: currentTheme } = useTheme();
+  const { isTablet } = useResponsive()
   
   const handleGoBack = () => {
     router.back();
@@ -371,7 +375,7 @@ export default function PerfilScreen() {
         variant="default"
       />
 
-      <View style={styles.segmentedContainer}>
+      <View style={[styles.segmentedContainer, isTablet && { marginTop: 10 } ]}>
         <SegmentedControl
           segments={[
             {
@@ -570,7 +574,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: theme.spacing.md,
     flexDirection: 'column',
-    alignItems: 'center'
+    alignItems: 'center',
   },
   
   segmentContent: {

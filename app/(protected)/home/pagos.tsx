@@ -155,129 +155,133 @@ export default function PaymentsScreen() {
       />
 
       <View style={dynamicStyles.header}>
-        <Text style={dynamicStyles.contentTitle}>Valor Pendiente</Text>
-        <Text style={dynamicStyles.pendingAmount}>
-          ${selectedAccount ? selectedAccount.pendingAmount.toFixed(2) : "0.00"}
-        </Text>
+        <View style={dynamicStyles.headerContent}>
+          <Text style={dynamicStyles.contentTitle}>Valor Pendiente</Text>
+          <Text style={dynamicStyles.pendingAmount}>
+            ${selectedAccount ? selectedAccount.pendingAmount.toFixed(2) : "0.00"}
+          </Text>
 
-        <Select
-          options={accounts}
-          value={selectedAccount}
-          onValueChange={(value, index) => setSelectedAccount(value)}
-          renderItem={(option, index, isSelected) => {
-            return (
-              <View>
-                <Text style={dynamicStyles.selectText}># {option.value.id}</Text>
-                <Text style={dynamicStyles.selectText}>{option.value.name}</Text>
-                <Text style={dynamicStyles.selectText}>{option.value.address}</Text>
-              </View>
-            );
-          }}
-          variant="default"
-          size="md"
-          leftIcon={<Foundation name="info" size={24} color={theme.colors.text.primary} />}
-          placeholder="Selecciona una cuenta"
-        />
+          <Select
+            options={accounts}
+            value={selectedAccount}
+            onValueChange={(value, index) => setSelectedAccount(value)}
+            renderItem={(option, index, isSelected) => {
+              return (
+                <View>
+                  <Text style={dynamicStyles.selectText}># {option.value.id}</Text>
+                  <Text style={dynamicStyles.selectText}>{option.value.name}</Text>
+                  <Text style={dynamicStyles.selectText}>{option.value.address}</Text>
+                </View>
+              );
+            }}
+            variant="default"
+            size="md"
+            leftIcon={<Foundation name="info" size={24} color={theme.colors.text.primary} />}
+            placeholder="Selecciona una cuenta"
+          />
+        </View>
       </View>
 
       <ScrollView
         contentContainerStyle={dynamicStyles.scrollContent}
         style={dynamicStyles.scrollView}
       >
-        <ExpandableCard
-          title="Métodos de Pago"
-          style={dynamicStyles.expandableCard}
-          icon={
-            <MaterialIcons 
-              name="payment" 
-              size={24} 
-              color={theme.colors.primary} 
-            />
-          }
-        >
-          {paymentMethods.map((method) => (
-            <View key={method.id} style={dynamicStyles.paymentMethodItem}>
-              <View style={dynamicStyles.paymentMethodInfo}>
-                <Text style={dynamicStyles.paymentMethodType}>{method.type}</Text>
-                <Text style={dynamicStyles.paymentMethodDetails}>{method.details}</Text>
-              </View>
-              {method.isDefault && (
-                <View style={dynamicStyles.defaultBadge}>
-                  <Text style={dynamicStyles.defaultBadgeText}>Por defecto</Text>
+        <View style={dynamicStyles.paymentsContent}>
+          <ExpandableCard
+            title="Métodos de Pago"
+            style={dynamicStyles.expandableCard}
+            icon={
+              <MaterialIcons 
+                name="payment" 
+                size={24} 
+                color={theme.colors.primary} 
+              />
+            }
+          >
+            {paymentMethods.map((method) => (
+              <View key={method.id} style={dynamicStyles.paymentMethodItem}>
+                <View style={dynamicStyles.paymentMethodInfo}>
+                  <Text style={dynamicStyles.paymentMethodType}>{method.type}</Text>
+                  <Text style={dynamicStyles.paymentMethodDetails}>{method.details}</Text>
                 </View>
-              )}
-            </View>
-          ))}
-          <View style={dynamicStyles.cardActions}>
-            <Button
-              title="Agregar Método"
-              onPress={() => console.log('Agregar método')}
-              size="sm"
-            />
-          </View>
-        </ExpandableCard>
-
-        <ExpandableCard
-          title="Historial de Pagos"
-          style={dynamicStyles.expandableCard}
-          icon={
-            <Ionicons 
-              name="time-outline" 
-              size={24} 
-              color={theme.colors.primary} 
-            />
-          }
-        >
-          {paymentHistory.map((payment) => (
-            <View key={payment.id} style={dynamicStyles.historyItem}>
-              <View style={dynamicStyles.historyInfo}>
-                <Text style={dynamicStyles.historyDate}>{payment.date}</Text>
-                <Text style={dynamicStyles.historyMethod}>{payment.method}</Text>
+                {method.isDefault && (
+                  <View style={dynamicStyles.defaultBadge}>
+                    <Text style={dynamicStyles.defaultBadgeText}>Por defecto</Text>
+                  </View>
+                )}
               </View>
-              <View style={dynamicStyles.historyAmountContainer}>
-                <Text style={dynamicStyles.historyAmount}>${payment.amount.toFixed(2)}</Text>
-                <View style={[dynamicStyles.statusBadge, { backgroundColor: getStatusColor(payment.status) + '20' }]}>
-                  <Text style={[dynamicStyles.statusText, { color: getStatusColor(payment.status) }]}>
-                    {getStatusText(payment.status)}
-                  </Text>
-                </View>
-              </View>
-            </View>
-          ))}
-          <View style={dynamicStyles.cardActions}>
-            <Button
-              title="Ver Todo el Historial"
-              onPress={() => console.log('Ver historial completo')}
-              size="sm"
-            />
-          </View>
-        </ExpandableCard>
-
-        <TouchableOpacity
-          onPress={handleInvoiceConsultation}
-          activeOpacity={0.8}
-        >
-          <Card>
-            <View style={dynamicStyles.cardHeader}>
-              <View style={dynamicStyles.cardTitleContainer}>
-                <AntDesign 
-                  name="filetext1" 
-                  size={24} 
-                  color={theme.colors.primary} 
-                />
-                <Text style={dynamicStyles.cardTitle}>Consulta de Facturas</Text>
-              </View>
-              <Ionicons
-                name="chevron-forward"
-                size={20}
-                color={theme.colors.text.secondary}
+            ))}
+            <View style={dynamicStyles.cardActions}>
+              <Button
+                title="Agregar Método"
+                onPress={() => console.log('Agregar método')}
+                size="sm"
               />
             </View>
-            <Text style={dynamicStyles.invoiceDescription}>
-              Consulta y descarga tus facturas pendientes y pagadas
-            </Text>
-          </Card>
-        </TouchableOpacity>
+          </ExpandableCard>
+
+          <ExpandableCard
+            title="Historial de Pagos"
+            style={dynamicStyles.expandableCard}
+            icon={
+              <Ionicons 
+                name="time-outline" 
+                size={24} 
+                color={theme.colors.primary} 
+              />
+            }
+          >
+            {paymentHistory.map((payment) => (
+              <View key={payment.id} style={dynamicStyles.historyItem}>
+                <View style={dynamicStyles.historyInfo}>
+                  <Text style={dynamicStyles.historyDate}>{payment.date}</Text>
+                  <Text style={dynamicStyles.historyMethod}>{payment.method}</Text>
+                </View>
+                <View style={dynamicStyles.historyAmountContainer}>
+                  <Text style={dynamicStyles.historyAmount}>${payment.amount.toFixed(2)}</Text>
+                  <View style={[dynamicStyles.statusBadge, { backgroundColor: getStatusColor(payment.status) + '20' }]}>
+                    <Text style={[dynamicStyles.statusText, { color: getStatusColor(payment.status) }]}>
+                      {getStatusText(payment.status)}
+                    </Text>
+                  </View>
+                </View>
+              </View>
+            ))}
+            <View style={dynamicStyles.cardActions}>
+              <Button
+                title="Ver Todo el Historial"
+                onPress={() => console.log('Ver historial completo')}
+                size="sm"
+              />
+            </View>
+          </ExpandableCard>
+
+          <TouchableOpacity
+            onPress={handleInvoiceConsultation}
+            activeOpacity={0.8}
+          >
+            <Card>
+              <View style={dynamicStyles.cardHeader}>
+                <View style={dynamicStyles.cardTitleContainer}>
+                  <AntDesign 
+                    name="filetext1" 
+                    size={24} 
+                    color={theme.colors.primary} 
+                  />
+                  <Text style={dynamicStyles.cardTitle}>Consulta de Facturas</Text>
+                </View>
+                <Ionicons
+                  name="chevron-forward"
+                  size={20}
+                  color={theme.colors.text.secondary}
+                />
+              </View>
+              <Text style={dynamicStyles.invoiceDescription}>
+                Consulta y descarga tus facturas pendientes y pagadas
+              </Text>
+            </Card>
+          </TouchableOpacity>
+        </View>
       </ScrollView>
     </SafeAreaView>
   );
@@ -296,7 +300,13 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     padding: theme.spacing.md,
     borderBottomWidth: 1,
     borderBottomColor: theme.colors.border.light,
-    ...theme.shadows.sm,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    ...theme.shadows.sm
+  },
+  headerContent: {
+    width: '100%',
+    maxWidth: 1000
   },
   pendingAmount: {
     textAlign: "center",
@@ -321,8 +331,13 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     flex: 1,
   },
   scrollContent: {
+    alignItems: 'center'
+  },
+  paymentsContent: {
     padding: theme.spacing.md,
     gap: theme.spacing.md,
+    width: '100%',
+    maxWidth: 1000,
   },
   cardHeader: {
     flexDirection: 'row',
