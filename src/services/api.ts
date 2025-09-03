@@ -198,7 +198,7 @@ class ApiService {
 }
 
 export const apiService = new ApiService(
-  process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8069'
+  process.env.EXPO_PUBLIC_API_URL || 'http://192.168.70.123:8069'
 );
 
 export type { OdooAuthResult, OdooJsonRegisterRpcRequest, OdooJsonRpcResponse, OdooUserData };

@@ -39,13 +39,12 @@ export interface ApiResponse {
     data: Promotion[];
   };
 }
-const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://localhost:8069";
+const API_URL = process.env.EXPO_PUBLIC_API_URL || "http://192.168.70.123:8069";
 export const getPromotions = async (): Promise<Promotion[]> => {
   const response = await fetch(`${API_URL}/app/promotions`, {
     method: "GET",
     headers: {},
   });
-  console.log("res", response);
   if (!response.ok) {
     throw new Error(`Network error: ${response.statusText}`);
   }
