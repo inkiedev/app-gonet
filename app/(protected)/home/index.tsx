@@ -220,16 +220,20 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-evenly',
+    alignItems: 'center',
     paddingHorizontal: 16,
     gap: 16,
   },
   planCard: {
     alignSelf: 'center',
-    width: '100%'
+    width: '100%',
+    maxWidth: 700,
   },
   iconsGrid: {
+    width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
+    maxWidth: 700
   },
 });

@@ -22,7 +22,11 @@ const PlanesContent = ({
   promotions: Promotion[];
   isLoading: boolean;
   onSelectPromotion: (id: number) => void;
-}) => (
+}) => {
+  const { theme } = useTheme();  
+  const dynamicStyles = createDynamicStyles(theme);
+
+  return (
   <View style={styles.planesSection}>
     <Text style={styles.sectionTitle}>Nuestros Planes</Text>
     {isLoading ? (
@@ -31,12 +35,12 @@ const PlanesContent = ({
       promotions.map((plan) => (
         <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
           <View style={styles.planContainer}>
-            <Text style={styles.planFinalPrice}>
+            <Text style={dynamicStyles.planFinalPrice}>
               Precio final: ${plan.total.toFixed(2)}
             </Text>
             <View style={styles.planDetails}>
               {plan.extras.map((detail, index) => (
-                <Text key={index} style={styles.planDetail}>
+                <Text key={index} style={dynamicStyles.planDetail}>
                   {`• ${detail.name}`}
                 </Text>
               ))}
@@ -53,13 +57,15 @@ const PlanesContent = ({
         No hay promociones disponibles en este momento.
       </Text>
     )}
-  </View>
-);
+  </View>)
+};
 
 
 const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number, onBack: () => void }) => {
   const [promotion, setPromotion] = useState<PromotionDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const { theme } = useTheme()
+  const dynamicStyles = createDynamicStyles(theme);
 
   useEffect(() => {
     const fetchPromotionDetails = async () => {
@@ -98,11 +104,11 @@ const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number,
         <LogoLoader />
       ) : promotion ? (
         <PlanCard title={promotion.name} style={styles.planCard}>
-            <Text style={styles.planFinalPrice}>Precio Total: ${promotion.total.toFixed(2)}</Text>
-            <Text style={styles.planDetail}>Tipo de Enlace: {promotion.link_type}</Text>
-            <Text style={styles.planDetail}>Nivel de Compartición: {promotion.sharing_level}</Text>
-            <Text style={styles.planDetail}>Tipo de Conexión: {promotion.connection_type}</Text>
-            <Text style={styles.planDetail}>
+            <Text style={dynamicStyles.planFinalPrice}>Precio Total: ${promotion.total.toFixed(2)}</Text>
+            <Text style={dynamicStyles.planDetail}>Tipo de Enlace: {promotion.link_type}</Text>
+            <Text style={dynamicStyles.planDetail}>Nivel de Compartición: {promotion.sharing_level}</Text>
+            <Text style={dynamicStyles.planDetail}>Tipo de Conexión: {promotion.connection_type}</Text>
+            <Text style={dynamicStyles.planDetail}>
               Velocidad de Subida: {kbpsToMbps(promotion["speed:_upload"])} Mbps ({promotion["speed:_upload"]} kbps)
             </Text>
             <Text style={styles.planDetail}>
@@ -229,7 +235,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   planDetail: {
     fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
-  },
+  }
 })
 
 
@@ -276,6 +282,7 @@ const styles = StyleSheet.create({
   },
   planesSection: {
     padding: theme.spacing.lg,
+    alignItems: 'center'
   },
   sectionTitle: {
     fontSize: theme.fontSize.xxl,
@@ -298,10 +305,6 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xl,
     fontWeight: theme.fontWeight.semibold,
     color: theme.colors.primaryDark,
-  },
-  planFinalPrice: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
   },
   planDetails: {
     width: '100%',

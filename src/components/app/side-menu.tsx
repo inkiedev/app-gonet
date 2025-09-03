@@ -135,6 +135,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     borderTopLeftRadius: theme.borderRadius.xl,
     borderBottomLeftRadius: theme.borderRadius.xl,
     ...theme.shadows.lg,
+    maxWidth: 400
   },
   menuContent: { flex: 1 },
   menuItem: {

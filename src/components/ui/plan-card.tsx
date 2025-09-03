@@ -43,6 +43,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.surface,
     overflow: 'hidden',
+    maxWidth: 400
   },
   elevated: {
     ...theme.shadows.md,

@@ -448,9 +448,8 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
-    backgroundColor: theme.colors.background 
+    backgroundColor: theme.colors.background,
   },
-
   title: { 
     fontSize: theme.fontSize.xxl, 
     fontWeight: theme.fontWeight.bold, 
@@ -570,8 +569,12 @@ const styles = StyleSheet.create({
   segmentedContainer: {
     flex: 1,
     paddingHorizontal: theme.spacing.md,
+    flexDirection: 'column',
+    alignItems: 'center'
   },
+  
   segmentContent: {
+    width: '100%'
   },
 
   content: {

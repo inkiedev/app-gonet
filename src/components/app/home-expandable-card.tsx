@@ -8,6 +8,7 @@ import Text from '@/components/ui/custom-text';
 import { ExpandableCard } from '@/components/ui/expandable-card';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useTheme } from '@/contexts/theme-context';
+import { useResponsive } from '@/hooks/use-responsive';
 import { BaseComponentProps } from '@/types/common';
 import React, { ReactNode } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
@@ -29,6 +30,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
   const { theme, isDark } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
   const { isExpanded } = useCardExpansion();
+  const { isTablet } = useResponsive();
   
   const features = [
     {
@@ -62,7 +64,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
         }} 
         variant="elevated"
       >
-        <View style={dynamicStyles.featuresContainer}>
+        <View style={[dynamicStyles.featuresContainer, isTablet && { justifyContent: 'space-around' } ]}>
           <Notification width={35} height={35} fill={isDark ? theme.colors.primaryDark : theme.colors.shadow} />
           <Text style={dynamicStyles.clientTitle}>{"Juan Gonzales".split(" ").join("\n")}</Text>
           <Text style={dynamicStyles.planTitle}>{plan}</Text>
@@ -159,6 +161,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     textAlign: 'center',
   },
   expandableCardContainer: {
+    width: '100%',
     backgroundColor: 'transparent',
     shadowColor: 'transparent',
     elevation: 0,

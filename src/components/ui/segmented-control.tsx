@@ -279,6 +279,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
 const styles = StyleSheet.create({
   wrapper: {
     flex: 1,
+    maxWidth: 1000
   },
 
   // Container variants
