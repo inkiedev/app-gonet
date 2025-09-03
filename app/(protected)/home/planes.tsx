@@ -2,18 +2,24 @@ import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { PlanCard } from "@/components/ui/plan-card";
-import Tabs from "@/components/ui/tabs";
-import { theme } from "@/styles/theme";
+import { useTheme } from "@/contexts/theme-context";
 import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useState } from "react";
 import {
+  ScrollView,
   StyleSheet,
   Text,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
  
+interface Account {
+  id: string;
+  name: string;
+}
+
 interface Account {
   id: string;
   name: string;
@@ -44,45 +50,7 @@ const currentPlan = {
   speedMbps: 250,
 };
 
-const PlanesContent = () => (
-  <>
-    <Text style={styles.contentTitle}>Actualizar Plan</Text>
-    {availablePlans.map((plan) => (
-      <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
-        <View style={styles.planContainer}>
-          <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
-          <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
-          <View style={styles.planDetails}>
-            {plan.details.map((detail, index) => (
-              <Text key={index} style={styles.planDetail}>
-                {`\u2022 ${detail}`}
-              </Text>
-            ))}
-          </View>
-          <Button title="Actualizar" onPress={() => {}} />
-        </View>
-      </PlanCard>
-    ))}
-  </>
-);
-
-const ServiciosContent = () => (
-  <>
-    <Text style={styles.contentTitle}>Servicios Adicionales</Text>
-    <View style={styles.serviceContainer}>
-      <Text style={styles.serviceText}>Próximamente dispondremos de servicios adicionales:</Text>
-      <View style={styles.serviceList}>
-        <Text style={styles.serviceItem}>• Telefonía fija</Text>
-        <Text style={styles.serviceItem}>• TV por cable</Text>
-        <Text style={styles.serviceItem}>• Soporte técnico premium</Text>
-        <Text style={styles.serviceItem}>• Instalaciones especiales</Text>
-      </View>
-    </View>
-  </>
-);
-
-
-const availablePlans: Plan[] = [
+export const availablePlans: Plan[] = [
   { 
     id: "p1", 
     name: "GoEssencial 300 Mbps", 
@@ -130,7 +98,9 @@ const availablePlans: Plan[] = [
 ];
 
 
-export default function ServicesScreen() {
+export default function InternetPlans() {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [selectedAccount, setSelectedAccount] = useState<Account>();
   const router = useRouter();
 
@@ -139,18 +109,19 @@ export default function ServicesScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <Header
         title="Mi Plan"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"
       />
 
-      <View style={styles.header}>
-        <Text style={styles.currentSpeed}>
+      <View style={dynamicStyles.header}>
+        <Text style={dynamicStyles.contentTitle}>Plan actual</Text>
+        <Text style={dynamicStyles.currentSpeed}>
           Velocidad: {currentPlan.speedMbps} Mbps
         </Text>
 
@@ -161,9 +132,9 @@ export default function ServicesScreen() {
           renderItem={(option, index, isSelected) => {
             return (
               <View>
-                <Text style={styles.selectText}># {option.value.id}</Text>
-                <Text style={styles.selectText}>{option.value.name}</Text>
-                <Text style={styles.selectText}>{option.value.address}</Text>
+                <Text style={dynamicStyles.selectText}># {option.value.id}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.name}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.address}</Text>
               </View>
             );
           }}
@@ -173,38 +144,33 @@ export default function ServicesScreen() {
         />
       </View>
 
-      <View style={styles.tabsContainer}>
-        <Tabs
-          tabs={[
-            {
-              id: 'planes',
-              label: 'Planes',
-              content: <PlanesContent />,
-            },
-            {
-              id: 'servicios',
-              label: 'Servicios',
-              content: <ServiciosContent />,
-            },
-          ]}
-          variant="default"
-          contentScrollable={true}
-          tabsScrollable={false}
-          testID="services-tabs"
-          onTabChange={(tabId, index) => {
-            console.log(`Tab cambiado a: ${tabId} (índice: ${index})`);
-          }}
-        />
-      </View>
-      
+      <ScrollView
+        contentContainerStyle={dynamicStyles.scrollContent}
+        style={dynamicStyles.scrollView}
+      >
+        <Text style={dynamicStyles.contentTitle}>Actualizar Plan</Text>
+        {availablePlans.map((plan) => (
+          <PlanCard title={plan.name} key={plan.id}>
+            <View style={dynamicStyles.planContainer}>
+              <Text style={dynamicStyles.planPrice}>Precio: ${plan.price}+imp</Text>
+              <Text style={dynamicStyles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
+              <View style={dynamicStyles.planDetails}>
+                {
+                  plan.details.map((detail, index) => (
+                    <Text key={index} style={dynamicStyles.planDetail}>{`\u2022 ${detail}`}</Text>
+                  ))
+                }
+              </View>
+              <Button title="Actualizar" onPress={() => {}} />
+            </View>
+          </PlanCard>
+        ))}
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  planCard: {
-    marginVertical: theme.spacing.md,
-  },
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -218,8 +184,7 @@ const styles = StyleSheet.create({
   },
   currentSpeed: {
     textAlign: "center",
-    fontSize: theme.fontSize.xxl,
-    fontWeight: theme.fontWeight.semibold,
+    fontSize: theme.fontSize.lg,
     marginBottom: theme.spacing.sm,
   },
   contentTitle: {
@@ -233,7 +198,7 @@ const styles = StyleSheet.create({
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing.sm,
-    alignItems: 'center',
+    alignItems: 'center'
   },
   planName: {
     fontSize: theme.fontSize.md,
@@ -279,33 +244,18 @@ const styles = StyleSheet.create({
   accountButtonTextActive: {
     color: theme.colors.text.inverse,
   },
-  tabsContainer: {
+  scrollView: {
     flex: 1,
-    margin: theme.spacing.md,
+  },
+  scrollContent: {
+    padding: theme.spacing.md,
+    gap: theme.spacing.md,
   },
   selectText: {
     fontSize: theme.fontSize.sm,
     textTransform: 'uppercase'
   },
-  serviceContainer: {
-    backgroundColor: theme.colors.surface,
-    padding: theme.spacing.lg,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border.light,
-  },
-  serviceText: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
-    textAlign: 'center',
-    marginBottom: theme.spacing.md,
-  },
-  serviceList: {
-    alignItems: 'center',
-    gap: theme.spacing.xs,
-  },
-  serviceItem: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
+  updateButton: {
+
   }
 });

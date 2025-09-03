@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
@@ -33,6 +33,8 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   style,
   testID,
 }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [isExpanded, setIsExpanded] = useState(initialExpanded);
   const animatedHeight = useRef(new Animated.Value(initialExpanded ? 1 : 0)).current;
   const animatedOpacity = useRef(new Animated.Value(initialExpanded ? 1 : 0)).current;
@@ -92,14 +94,14 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
     outputRange: ['0deg', '180deg'],
   });
 
-  const cardStyle: ViewStyle[] = [styles.card];
+  const cardStyle: ViewStyle[] = [dynamicStyles.card];
   if (style) cardStyle.push(style);
 
   const renderDefaultHeader = () => (
-    <View style={[styles.cardHeader, headerStyle]}>
-      <View style={styles.cardTitleContainer}>
+    <View style={[dynamicStyles.cardHeader, headerStyle]}>
+      <View style={dynamicStyles.cardTitleContainer}>
         {icon}
-        <Text style={styles.cardTitle}>{title}</Text>
+        <Text style={dynamicStyles.cardTitle}>{title}</Text>
       </View>
       <Animated.View style={{ transform: [{ rotate: rotation }] }}>
         <Ionicons
@@ -140,7 +142,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
           },
         ]}
       >
-        <View style={styles.cardContent}>
+        <View style={dynamicStyles.cardContent}>
           {children}
         </View>
       </Animated.View>
@@ -148,7 +150,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   card: {
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,

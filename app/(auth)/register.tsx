@@ -21,7 +21,7 @@ import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { authService } from '@/services/auth';
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { FontAwesome } from '@expo/vector-icons';
 
 /* --- Custom cedula validation function --- */
@@ -58,6 +58,8 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [registerError, setRegisterError] = useState<string>('');
   const [acceptedTerms, setAcceptedTerms] = useState(false);
   const [emailsended, setEmailSent] = useState(false);
@@ -163,23 +165,23 @@ export default function RegisterScreen() {
   return (
     <ImageBackground
       source={require('@/assets/images/iconos gonet app svg_backing.png')}
-      style={styles.background}
+      style={dynamicStyles.background}
     >
-      <SafeAreaView style={styles.container}>
+      <SafeAreaView style={dynamicStyles.container}>
         <KeyboardAvoidingView
-          style={styles.keyboardView}
+          style={dynamicStyles.keyboardView}
           behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={dynamicStyles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
-            <View style={styles.content}>
-              <Text style={styles.welcomeText}>REGISTER</Text>
+            <View style={dynamicStyles.content}>
+              <Text style={dynamicStyles.welcomeText}>REGISTER</Text>
               <AppLogo variant="small" />
-              <FontAwesome name={'user-plus'} style={styles.iconFP} />
+              <FontAwesome name={'user-plus'} style={dynamicStyles.iconFP} />
 
-              <View style={styles.form}>
+              <View style={dynamicStyles.form}>
                 {/* Cedula */}
                 <Controller
                   control={control}
@@ -198,21 +200,21 @@ export default function RegisterScreen() {
                 />
 
                 {/* Checkbox de Términos */}
-                <View style={styles.checkboxContainer}>
+                <View style={dynamicStyles.checkboxContainer}>
                   <Checkbox
                     value={acceptedTerms}
                     onValueChange={setAcceptedTerms}
                     color={acceptedTerms ? theme.colors.primary : undefined}
                   />
                   <TouchableOpacity onPress={() => setAcceptedTerms(!acceptedTerms)}>
-                    <Text style={styles.checkboxText}>
+                    <Text style={dynamicStyles.checkboxText}>
                       Aceptar términos y condiciones
                     </Text>
                   </TouchableOpacity>
                 </View>
 
                 {registerError ? (
-                  <Text style={styles.errorText}>{registerError}</Text>
+                  <Text style={dynamicStyles.errorText}>{registerError}</Text>
                 ) : null}
 
                 {/* Botón */}
@@ -225,7 +227,7 @@ export default function RegisterScreen() {
                 />
                   {
                     emailsended &&
-                    <Text style={styles.infotext} > Email Enviado {emailsended}</Text>
+                    <Text style={dynamicStyles.infotext} > Email Enviado {emailsended}</Text>
                   }
                 
 
@@ -237,7 +239,7 @@ export default function RegisterScreen() {
     </ImageBackground>
   );
 }
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   background: { flex: 1 },
   container: { flex: 1 },
   keyboardView: { flex: 1 },

@@ -2,9 +2,10 @@ import { Header } from "@/components/layout/header";
 import { Button as CustomButton } from "@/components/ui/custom-button";
 import { Map } from "@/components/ui/map";
 import { agencies, cities, neighborhoods, polygons, regionCoordinates } from "@/data/agencies";
-import { theme } from "@/styles/theme";
+import { useTheme } from "@/contexts/theme-context";
 import * as Location from 'expo-location';
 import { Router, useRouter } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -96,22 +97,25 @@ const useUserLocation = () => {
 // --- UI Components ---
 
 const CitySelector = ({ onCitySelect, router }: { onCitySelect: (city: City) => void, router: Router }) => {
+    const { theme } = useTheme();
+    const dynamicStyles = createDynamicStyles(theme);
+    
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
+        <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
             <Header
                 leftAction={{
-                    icon: "arrow-back",
+                    icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
                     onPress: () => router.back(),
                 }}
                 title="Seleccionar Ciudad"
             />
-            <View style={styles.citySelectionContainer}>
+            <View style={dynamicStyles.citySelectionContainer}>
                 {cities.map(city => (
                     <CustomButton 
                         key={city.value} 
                         title={city.label} 
                         onPress={() => onCitySelect(city)} 
-                        style={styles.cityButton}
+                        style={dynamicStyles.cityButton}
                     />
                 ))}
             </View>
@@ -120,6 +124,8 @@ const CitySelector = ({ onCitySelect, router }: { onCitySelect: (city: City) => 
 };
 
 const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect }: { city: City, selectedNeighborhood: Neighborhood | null, onNeighborhoodSelect: (neighborhood: Neighborhood | null) => void }) => {
+    const { theme } = useTheme();
+    const dynamicStyles = createDynamicStyles(theme);
     const availableNeighborhoods = neighborhoods[city.value] || [];
     const [showRightArrow, setShowRightArrow] = useState(false);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
@@ -158,16 +164,16 @@ const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect
     }
 
     return (
-        <View style={styles.neighborhoodSelectorContainer}>
-            <Text style={styles.neighborhoodSelectorTitle}>Seleccionar Barrio</Text>
+        <View style={dynamicStyles.neighborhoodSelectorContainer}>
+            <Text style={dynamicStyles.neighborhoodSelectorTitle}>Seleccionar Barrio</Text>
             <View 
-                style={styles.scrollViewContainer}
+                style={dynamicStyles.scrollViewContainer}
                 onLayout={(event) => setContainerWidth(event.nativeEvent.layout.width)}
             >
                 {showLeftArrow && (
-                    <View style={styles.arrowContainerLeft}>
+                    <View style={dynamicStyles.arrowContainerLeft}>
                     <TouchableOpacity onPress={handleLeftArrowPress} activeOpacity={0.7}>
-                        <Text style={styles.arrowText}>‹</Text>
+                        <Text style={dynamicStyles.arrowText}>‹</Text>
                     </TouchableOpacity>
                     
                     </View>
@@ -184,7 +190,7 @@ const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect
                     onContentSizeChange={setContentWidth}
                     onScroll={handleScroll}
                     scrollEventThrottle={16}
-                    contentContainerStyle={styles.neighborhoodButtonsContainer}
+                    contentContainerStyle={dynamicStyles.neighborhoodButtonsContainer}
                 >
                     {availableNeighborhoods.map(neighborhood => (
                         <CustomButton
@@ -192,19 +198,19 @@ const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect
                             title={neighborhood.label}
                             onPress={() => onNeighborhoodSelect(neighborhood)}
                             variant={selectedNeighborhood?.value === neighborhood.value ? 'pressed' : 'primary'}
-                            style={styles.neighborhoodButton}
+                            style={dynamicStyles.neighborhoodButton}
                         />
                     ))}
                     <CustomButton
                         title="Limpiar"
                         onPress={() => onNeighborhoodSelect(null)}
                         variant="secondary"
-                        style={styles.neighborhoodButton}
+                        style={dynamicStyles.neighborhoodButton}
                     />
                 </ScrollView>
                 {showRightArrow && (
-                    <TouchableOpacity onPress={handleRightArrowPress} style={styles.arrowContainerRight} activeOpacity={0.7}>
-                        <Text style={styles.arrowText}>›</Text>
+                    <TouchableOpacity onPress={handleRightArrowPress} style={dynamicStyles.arrowContainerRight} activeOpacity={0.7}>
+                        <Text style={dynamicStyles.arrowText}>›</Text>
                     </TouchableOpacity>
                 )}
             </View>
@@ -212,19 +218,26 @@ const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect
     );
 };
 
-const AgencyInfo = ({ agency, onClose }: { agency: Agency; onClose: () => void }) => (
-    <View style={styles.agencyInfoContainer}>
-        <Text style={styles.agencyTitle}>{agency.name}</Text>
-        <Text>{agency.address}</Text>
-        <Text>{agency.phone}</Text>
-        <Button title="Cerrar" onPress={onClose} />
-    </View>
-);
+const AgencyInfo = ({ agency, onClose }: { agency: Agency; onClose: () => void }) => {
+    const { theme } = useTheme();
+    const dynamicStyles = createDynamicStyles(theme);
+    
+    return (
+        <View style={dynamicStyles.agencyInfoContainer}>
+            <Text style={dynamicStyles.agencyTitle}>{agency.name}</Text>
+            <Text>{agency.address}</Text>
+            <Text>{agency.phone}</Text>
+            <Button title="Cerrar" onPress={onClose} />
+        </View>
+    );
+};
 
 
 // --- Main Screen Component ---
 
 export default function AgenciesScreen() {
+    const { theme } = useTheme();
+    const dynamicStyles = createDynamicStyles(theme);
     const [selectedCity, setSelectedCity] = useState<City | null>(null);
     const [selectedNeighborhood, setSelectedNeighborhood] = useState<Neighborhood | null>(null);
     const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
@@ -290,7 +303,7 @@ export default function AgenciesScreen() {
 
     if (errorMsg) {
         // Optionally, render an error message to the user
-        return <View style={styles.container}><Text>{errorMsg}</Text></View>;
+        return <View style={dynamicStyles.container}><Text>{errorMsg}</Text></View>;
     }
 
     if (!selectedCity) {
@@ -298,10 +311,10 @@ export default function AgenciesScreen() {
     }
 
     return (
-        <SafeAreaView style={styles.container} edges={["top"]}>
+        <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
             <Header
                 leftAction={{
-                    icon: "arrow-back",
+                    icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
                     onPress: () => setSelectedCity(null),
                 }}
                 title={`Agencias en ${selectedCity.label}`}
@@ -316,7 +329,7 @@ export default function AgenciesScreen() {
             <Map
                 key={`${selectedCity.value}-${selectedNeighborhood?.value}`}
                 initialRegion={mapRegion}
-                style={styles.map}
+                style={dynamicStyles.map}
                 markers={markers}
                 polygons={displayPolygon}
                 userLocation={userLocation}
@@ -332,7 +345,7 @@ export default function AgenciesScreen() {
 
 // --- Styles ---
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
     container: {
         flex: 1,
         backgroundColor: '#fff',

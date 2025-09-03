@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
@@ -50,6 +50,8 @@ export const Select = <T,>({
   style,
   testID,
 }: SelectProps<T>) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const MAX_MODAL_HEIGHT = 300;
   const [isOpen, setIsOpen] = useState(false);
   const [isFocused, setIsFocused] = useState(false);
@@ -111,16 +113,16 @@ export const Select = <T,>({
   }, [isOpen, dropdownHeight]);
 
   const containerStyle: ViewStyle[] = [
-    styles.selectContainer,
-    styles[variant],
-    styles[`${size}Container`],
+    dynamicStyles.selectContainer,
+    dynamicStyles[variant],
+    dynamicStyles[`${size}Container`],
   ];
 
-  if (isFocused) containerStyle.push(styles.focused);
-  if (hasError) containerStyle.push(styles.error);
-  if (disabled) containerStyle.push(styles.disabled);
+  if (isFocused) containerStyle.push(dynamicStyles.focused);
+  if (hasError) containerStyle.push(dynamicStyles.error);
+  if (disabled) containerStyle.push(dynamicStyles.disabled);
 
-  const mainContainerStyle: ViewStyle[] = [styles.container];
+  const mainContainerStyle: ViewStyle[] = [dynamicStyles.container];
   if (style) mainContainerStyle.push(style);
 
   const getSizeStyles = () => {
@@ -171,9 +173,9 @@ export const Select = <T,>({
 
   return (
     <View style={mainContainerStyle} testID={testID}>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={dynamicStyles.label}>{label}</Text>}
 
-      <View style={styles.dropdownContainer}>
+      <View style={dynamicStyles.dropdownContainer}>
         <TouchableOpacity
           ref={selectRef}
           style={containerStyle}
@@ -181,23 +183,23 @@ export const Select = <T,>({
           disabled={disabled}
           activeOpacity={0.8}
         >
-          {leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
+          {leftIcon && <View style={dynamicStyles.leftIcon}>{leftIcon}</View>}
 
-          <View style={styles.inputContainer}>
+          <View style={dynamicStyles.inputContainer}>
             {selectedOption ? (
               renderItem(selectedOption, options.findIndex(opt => opt.value === value), true)
             ) : (
               <Text style={[
-                styles.inputText,
+                dynamicStyles.inputText,
                 { fontSize: sizeStyles.fontSize },
-                styles.placeholderText
+                dynamicStyles.placeholderText
               ]}>
                 {placeholder}
               </Text>
             )}
           </View>
 
-          <Animated.View style={[styles.iconContainer, { transform: [{ rotate: rotation }] }]}>
+          <Animated.View style={[dynamicStyles.iconContainer, { transform: [{ rotate: rotation }] }]}>
             <Ionicons
               name="chevron-down"
               size={size === 'sm' ? 16 : size === 'md' ? 18 : 20}
@@ -209,11 +211,11 @@ export const Select = <T,>({
         {isOpen && (
           <Modal transparent visible={isOpen} animationType="none">
             <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
-              <View style={styles.modalOverlay}>
+              <View style={dynamicStyles.modalOverlay}>
                 <TouchableWithoutFeedback>
                   <View
                     style={[
-                      styles.dropdownWrapper,
+                      dynamicStyles.dropdownWrapper,
                       {
                         position: 'absolute',
                         top: dropdownPos.top,
@@ -224,7 +226,7 @@ export const Select = <T,>({
                   >
                     <Animated.View
                       style={[
-                        styles.dropdown,
+                        dynamicStyles.dropdown,
                         {
                           height: animatedHeight,
                           opacity: animatedOpacity,
@@ -243,9 +245,9 @@ export const Select = <T,>({
                               key={index}
                               onLayout={e => handleItemLayout(index, e.nativeEvent.layout.height)}
                               style={[
-                                styles.option,
-                                option.disabled && styles.optionDisabled,
-                                isSelected && styles.selectedOption,
+                                dynamicStyles.option,
+                                option.disabled && dynamicStyles.optionDisabled,
+                                isSelected && dynamicStyles.selectedOption,
                               ]}
                               onPress={() => handleOptionSelect(option, index)}
                               disabled={option.disabled}
@@ -265,7 +267,7 @@ export const Select = <T,>({
       </View>
 
       {(error || helperText) && (
-        <Text style={[styles.helperText, hasError && styles.errorText]}>
+        <Text style={[dynamicStyles.helperText, hasError && dynamicStyles.errorText]}>
           {error || helperText}
         </Text>
       )}
@@ -273,7 +275,7 @@ export const Select = <T,>({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {},
   label: {
     fontSize: theme.fontSize.sm,

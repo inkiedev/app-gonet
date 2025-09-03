@@ -7,16 +7,15 @@ import Soporte from '@/assets/images/iconos gonet app svg_Soporte.svg';
 import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
-import { AuthGuard } from '@/components/auth/auth-guard';
 import { Header } from '@/components/layout/header';
 import { ImageCarousel } from '@/components/ui/image-carousel';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useNotificationContext } from '@/contexts/notification-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
 import { authService } from '@/services/auth';
 import { RootState } from '@/store';
 import { loadUserData, logout } from '@/store/slices/auth-slice';
-import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
@@ -60,6 +59,7 @@ export default function HomeScreen() {
   const { showSuccess, showError, showInfo } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
   const { height } = useResponsive();
+  const { theme } = useTheme();
 
   useEffect(() => {
     const backAction = () => {
@@ -89,10 +89,6 @@ export default function HomeScreen() {
     setMenuVisible(false);
   };
 
-  const handleProfilePress = () => {
-    router.push('/home/perfil');
-  };
-
   const handleCardToggle = (expanded: boolean) => {
     toggleExpansion();
     opacity.value = withTiming(expanded ? 0 : 1, { duration: 500 });
@@ -108,15 +104,13 @@ export default function HomeScreen() {
 
   const handleMenuNavigation = (item: string) => {
     const routeMap: { [key: string]: string } = {
-      'Ajustes': '/home/ajustes',
-      'Agencias': '/home/agencias',
-      'Pagos': '/home/pagos',
-      'Soporte': '/home/soporte',
-      'Servicios': '/home/servicios',
-      'Promociones': '/home/promociones',
-      'Go Club': '/home/goclub',
-      'Calificanos': '/home/calificanos',
-      'Mi Plan': '/home/planes',
+      'Perfil': '/(protected)/home/perfil',
+      'Configuracion App': '/(protected)/home/ajustes',
+      'Agencias': '/(protected)/home/agencias',
+      'Consulta Pagos': '/(protected)/home/pagos',
+      'Seguridad': '/(protected)/home/soporte',
+      'Adquiere mas': '/(protected)/home/servicios',
+      'Beneficios GoNet': '/(protected)/home/goclub',
     };
 
     const route = routeMap[item];
@@ -142,7 +136,6 @@ export default function HomeScreen() {
         3000
       );
       
-      // Now should redirect properly to main index
       router.replace('/');
     } catch (error) {
       console.error('Logout failed:', error);
@@ -157,57 +150,54 @@ export default function HomeScreen() {
 
 
   return (
-    <AuthGuard>
-      <SafeAreaView style={styles.container}>
-        <View style={styles.bannerContainer}>
-          <ImageCarousel
-            style={styles.banner}
-            height={height * 0.55}
-          />
-          <Header
-            rightAction={{
-              icon: <Menu width={24} height={24} fill={theme.colors.primary} />,
-              onPress: toggleMenu,
-            }}
-            variant="transparent"
-            style={styles.fixedHeader}
-          />
-        </View>
-
-        <SideMenu
-          visible={menuVisible}
-          onClose={closeMenu}
-          onItemPress={(item: string) => {
-            console.log(`Menu item pressed: ${item}`);
-            handleMenuNavigation(item);
-            closeMenu();
+    <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
+      <View style={styles.bannerContainer}>
+        <ImageCarousel
+          style={styles.banner}
+          height={height * 0.55}
+        />
+        <Header
+          rightAction={{
+            icon: <Menu width={24} height={24} fill={theme.colors.primary} />,
+            onPress: toggleMenu,
           }}
-          onLogout={handleLogout}
+          variant="transparent"
+          style={styles.fixedHeader}
+        />
+      </View>
+
+      <SideMenu
+        visible={menuVisible}
+        onClose={closeMenu}
+        onItemPress={(item: string) => {
+          handleMenuNavigation(item);
+          closeMenu();
+        }}
+        onLogout={handleLogout}
+      />
+
+      <View style={styles.content}>
+        <HomeExpandableCard
+          plan="GoNet"
+          speed={750}
+          style={styles.planCard}
+          onToggle={handleCardToggle}
         />
 
-        <View style={styles.content}>
-          <HomeExpandableCard
-            plan="GoNet"
-            speed={750}
-            style={styles.planCard}
-            onToggle={handleCardToggle}
-          />
-
-          <Animated.View style={[styles.iconsGrid, animatedStyle]}>
-            {iconOptions.map((option, index) => (
-              <IconWithBadge
-                key={index}
-                size={60}
-                SvgComponent={option.SvgComponent}
-                label={option.label}
-                badgeCount={option.badgeCount}
-                onPress={() => console.log(`press ${option.label}`)}
-              />
-            ))}
-          </Animated.View>
-        </View>
-      </SafeAreaView>
-    </AuthGuard>
+        <Animated.View style={[styles.iconsGrid, animatedStyle]}>
+          {iconOptions.map((option, index) => (
+            <IconWithBadge
+              key={index}
+              size={60}
+              SvgComponent={option.SvgComponent}
+              label={option.label}
+              badgeCount={option.badgeCount}
+              onPress={() => console.log(`press ${option.label}`)}
+            />
+          ))}
+        </Animated.View>
+      </View>
+    </SafeAreaView>
   );
 }
 
@@ -232,8 +222,8 @@ const styles = StyleSheet.create({
     display: 'flex',
     flexDirection: 'column',
     justifyContent: 'space-evenly',
-    paddingHorizontal: theme.spacing.sm + theme.spacing.xs,
-    gap: theme.spacing.md,
+    paddingHorizontal: 16,
+    gap: 16,
   },
   planCard: {
     alignSelf: 'center',

@@ -1,7 +1,9 @@
+import Text from '@/components/ui/custom-text';
+import { useTheme } from '@/contexts/theme-context';
 import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
 import Badge from './badge';
 
 interface IconWithBadgeProps extends BaseComponentProps {
@@ -24,6 +26,7 @@ export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
                                                               testID,
                                                             }) => {
   const showBadge = badgeCount !== undefined && badgeCount !== 0;
+  const { isDark } = useTheme();
 
   const Container = onPress ? TouchableOpacity : View;
 
@@ -35,7 +38,7 @@ export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
       testID={testID}
     >
       <View style={styles.iconContainer}>
-        <SvgComponent width={size} height={size} color={color} />
+        <SvgComponent width={size} height={size} fill={isDark ? 'white' : color} color={isDark ? 'rgba(219, 219, 219, 1)' : color} />
         {showBadge && <Badge count={badgeCount} style={styles.badge} />}
       </View>
       {label && <Text style={styles.label}>{label}</Text>}
@@ -65,6 +68,5 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xs,
     color: theme.colors.primaryDark,
     textAlign: 'center',
-    fontStyle: 'italic',
   },
 });

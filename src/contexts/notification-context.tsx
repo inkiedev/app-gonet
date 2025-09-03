@@ -1,5 +1,5 @@
 import { NotificationModal } from '@/components/ui/notification-modal';
-import { useNotification } from '@/hooks/useNotification';
+import { useNotification } from '@/hooks/use-notification';
 import { NotificationConfig } from '@/types/notification';
 import React, { createContext, useContext } from 'react';
 

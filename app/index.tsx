@@ -1,78 +1,98 @@
-import { AuthGuest } from "@/components/auth/auth-guest";
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import LogoLoader from "@/components/ui/loading";
 import { PlanCard } from "@/components/ui/plan-card";
-import { useBiometricAuth } from "@/hooks/use-biometric-auth";
-import { authService } from "@/services/auth";
-import {
-  getPromotions,
-  getPromotionById,
-  Promotion,
-  PromotionDetail,
-} from "@/services/public-api";
-import { secureStorageService } from "@/services/secure-storage";
+import { useTheme } from "@/contexts/theme-context";
+import { useAuthRoute } from "@/providers/auth-route-provider";
 import { RootState } from "@/store";
-import {
-  completeBiometricVerification,
-  loadBiometricPreferences,
-  restoreSession,
-} from "@/store/slices/auth-slice";
 import { theme } from "@/styles/theme";
-import { useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import {
-  Image,
-  ScrollView,
-  StyleSheet,
-  Text,
-  View,
-  ActivityIndicator,
-} from "react-native";
+import { Redirect, useRouter } from "expo-router";
+import React from "react";
+import { Image, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 
-const PlanesContent = ({
-  promotions,
-  isLoading,
-  onSelectPromotion,
-}: {
-  promotions: Promotion[];
-  isLoading: boolean;
-  onSelectPromotion: (id: number) => void;
-}) => (
-  <View style={styles.planesSection}>
-    <Text style={styles.sectionTitle}>Nuestros Planes</Text>
-    {isLoading ? (
-      <LogoLoader />
-    ) : promotions.length > 0 ? (
-      promotions.map((plan) => (
+interface Plan {
+  id: string;
+  name: string;
+  price: number;
+  finalPrice: number;
+  details: string[];
+}
+
+const availablePlans: Plan[] = [
+  { 
+    id: "p1", 
+    name: "GoEssencial 300 Mbps", 
+    price: 19.90, 
+    finalPrice: 22.89, 
+    details: [
+      'Hasta 300 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p2",
+    name: "GoPlus 450 Mbps",
+    price: 29.90,
+    finalPrice: 34.89,
+    details: [
+      'Hasta 450 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p3",
+    name: "GoPlus 500 Mbps",
+    price: 39.90,
+    finalPrice: 45.89,
+    details: [
+      'Hasta 500 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  },
+  {
+    id: "p4",
+    name: "GoConnect 700 Mbps",
+    price: 59.90,
+    finalPrice: 69.89,
+    details: [
+      'Hasta 700 Mbps de velocidad',
+      'Instalación gratuita',
+      'Router Wi-Fi incluido'
+    ]
+  }
+];
+
+const PlanesContent = () => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+
+  return  <>
+    <View style={styles.planesSection}>
+      <Text style={styles.sectionTitle}>Nuestros Planes</Text>
+      {availablePlans.map((plan) => (
         <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
           <View style={styles.planContainer}>
-            <Text style={styles.planFinalPrice}>
-              Precio final: ${plan.total.toFixed(2)}
-            </Text>
+            <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
+            <Text style={dynamicStyles.planFinalPrice}>Precio final: ${plan.finalPrice}</Text>
             <View style={styles.planDetails}>
-              {plan.extras.map((detail, index) => (
-                <Text key={index} style={styles.planDetail}>
-                  {`• ${detail.name}`}
+              {plan.details.map((detail, index) => (
+                <Text key={index} style={dynamicStyles.planDetail}>
+                  {`• ${detail}`}
                 </Text>
               ))}
             </View>
-            <Button
-              title="Ver detalle"
-              onPress={() => onSelectPromotion(plan.id)}
-            />
+            <Button title="Contratar" onPress={() => {}} />
           </View>
         </PlanCard>
-      ))
-    ) : (
-      <Text style={styles.noPromotionsText}>
-        No hay promociones disponibles en este momento.
-      </Text>
-    )}
-  </View>
-);
+      ))}
+    </View>
+  </>
+};
 
 const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number, onBack: () => void }) => {
   const [promotion, setPromotion] = useState<PromotionDetail | null>(null);
@@ -148,144 +168,19 @@ const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number,
 
 export default function PublicHomeScreen() {
   const router = useRouter();
-  const dispatch = useDispatch();
-  const [isLoading, setIsLoading] = useState(true);
-  const [biometricPending, setBiometricPending] = useState(false);
-  const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [promotionsLoading, setPromotionsLoading] = useState(true);
-  const [selectedPromotionId, setSelectedPromotionId] = useState<number | null>(
-    null
-  );
+  const { theme } = useTheme();
+  const { isInitialized } = useAuthRoute();
+  const dynamicStyles = createDynamicStyles(theme);
+  const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
 
-  const { isAuthenticated, needsBiometricVerification } = useSelector(
-    (state: RootState) => state.auth
-  );
-  const { authenticateWithBiometrics, checkBiometricAvailability } =
-    useBiometricAuth();
+  // Wait for auth initialization
+  if (!isInitialized) {
+    return null; // AuthRouteProvider handles loading state
+  }
 
-  useEffect(() => {
-    const fetchPromotions = async () => {
-      try {
-        setPromotionsLoading(true);
-        const fetchedPromotions = await getPromotions();
-        setPromotions(fetchedPromotions);
-      } catch (error) {
-        console.error("Failed to fetch promotions:", error);
-      } finally {
-        setPromotionsLoading(false);
-      }
-    };
-
-    fetchPromotions();
-  }, []);
-
-  useEffect(() => {
-    const checkStoredCredentials = async () => {
-      try {
-        const storedCredentials = await secureStorageService.getCredentials();
-
-        if (storedCredentials) {
-          const result = await authService.login({
-            username: storedCredentials.username,
-            password: storedCredentials.password,
-          });
-
-          if (result.success && result.user) {
-            await dispatch(loadBiometricPreferences() as any);
-            dispatch(
-              restoreSession({
-                uid: result.user.uid,
-                password: storedCredentials.password,
-                username: storedCredentials.username,
-                rememberMe: true,
-              })
-            );
-          }
-        }
-      } catch (error) {
-        console.error("Auto-login error:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    if (!isAuthenticated) {
-      checkStoredCredentials();
-    } else {
-      setIsLoading(false);
-    }
-  }, [dispatch, isAuthenticated]);
-
-  useEffect(() => {
-    const handleBiometricVerification = async () => {
-      if (needsBiometricVerification && !biometricPending) {
-        setBiometricPending(true);
-
-        const storedPreferences =
-          await secureStorageService.getBiometricPreferences();
-        const shouldUseBiometric =
-          storedPreferences?.useBiometricForLogin || false;
-
-        if (shouldUseBiometric) {
-          const isAvailable = await checkBiometricAvailability();
-          if (isAvailable) {
-            const result = await authenticateWithBiometrics();
-            if (result.success) {
-              dispatch(completeBiometricVerification());
-            } else {
-              setBiometricPending(false);
-              return;
-            }
-          } else {
-            dispatch(completeBiometricVerification());
-          }
-        } else {
-          dispatch(completeBiometricVerification());
-        }
-
-        setBiometricPending(false);
-      }
-    };
-
-    if (isAuthenticated && needsBiometricVerification) {
-      handleBiometricVerification();
-    }
-  }, [
-    isAuthenticated,
-    needsBiometricVerification,
-    biometricPending,
-    checkBiometricAvailability,
-    authenticateWithBiometrics,
-    dispatch,
-  ]);
-
-  useEffect(() => {
-    if (
-      isAuthenticated &&
-      !isLoading &&
-      !needsBiometricVerification &&
-      !biometricPending
-    ) {
-      router.replace("/(tabs)/home");
-    }
-  }, [
-    isAuthenticated,
-    isLoading,
-    needsBiometricVerification,
-    biometricPending,
-    router,
-  ]);
-
-  if (isLoading || biometricPending) {
-    return (
-      <SafeAreaView style={styles.container}>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>
-            {biometricPending ? "Verificando identidad..." : "Cargando..."}
-          </Text>
-        </View>
-      </SafeAreaView>
-    );
+  // Redirect authenticated users to protected area
+  if (isAuthenticated && !needsBiometricVerification) {
+    return <Redirect href="/(protected)/home" />;
   }
 
   const handleLogin = () => {
@@ -301,14 +196,21 @@ export default function PublicHomeScreen() {
   };
 
   return (
-    <AuthGuest>
-      <SafeAreaView style={styles.container} edges={["top"]}>
-        <ScrollView style={styles.scrollContainer}>
-          {/* Banner */}
-          <View style={styles.bannerContainer}>
-            <Image
-              source={{ uri: "https://picsum.photos/800/400" }}
-              style={styles.bannerImage}
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
+      <ScrollView style={styles.scrollContainer}>
+        {/* Banner */}
+        <View style={styles.bannerContainer}>
+          <Image
+            source={{ uri: "https://picsum.photos/800/400" }}
+            style={styles.bannerImage}
+          />
+          <View style={styles.bannerOverlay}>
+            <Text style={styles.bannerTitle}>Bienvenido a GoNet</Text>
+            <Text style={styles.bannerSubtitle}>Internet de alta velocidad para tu hogar</Text>
+            <Button 
+              title="Iniciar Sesión" 
+              onPress={handleLogin}
+              style={styles.loginButton}
             />
             <View style={styles.bannerOverlay}>
               <Text style={styles.bannerTitle}>Bienvenido a GoNet</Text>
@@ -335,18 +237,29 @@ export default function PublicHomeScreen() {
           )}
         </ScrollView>
 
-        {/* Footer */}
-        <Footer />
-      </SafeAreaView>
-    </AuthGuest>
+      {/* Footer */}
+      <Footer />
+    </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
+const createDynamicStyles = (theme: any) => StyleSheet.create({
+  container: { 
+    flex: 1, 
     backgroundColor: theme.colors.background,
   },
+  planFinalPrice: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+  },
+  planDetail: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+  },
+})
+
+
+const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
   },
@@ -394,8 +307,8 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.primaryDark,
-    textAlign: "center",
-    marginBottom: theme.spacing.lg,
+    textAlign: 'center',
+    marginBottom: theme.spacing.xs,
   },
   planCard: {
     marginVertical: theme.spacing.md,
@@ -427,49 +340,5 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
     marginBottom: theme.spacing.xs,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: "center",
-    alignItems: "center",
-  },
-  loadingText: {
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text.primary,
-  },
-  noPromotionsText: {
-    textAlign: "center",
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.lg,
-  },
-  extrasContainer: {
-    marginTop: theme.spacing.md,
-  },
-  extrasTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
-  },
-  extraItem: {
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.sm,
-    padding: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  extraName: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-  },
-  extraPrice: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
-  },
-  discountText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    marginTop: theme.spacing.xs,
   },
 });

@@ -4,37 +4,14 @@ import Down from '@/assets/images/iconos gonet down.svg';
 import Gomax from '@/assets/images/iconos gonet gomax.svg';
 import Wifi from '@/assets/images/iconos gonet wifi.svg';
 import { Card } from '@/components/ui/card';
+import Text from '@/components/ui/custom-text';
 import { ExpandableCard } from '@/components/ui/expandable-card';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React, { ReactNode } from 'react';
-import { Animated, StyleSheet, Text, View } from 'react-native';
+import { Animated, StyleSheet, View } from 'react-native';
 import Badge from './badge';
-
-const features = [
-  {
-    icon: <Gomax color={theme.colors.primaryDark} />,
-    title: 'Lite Tv Streaming',
-    detail: '5 meses',
-    value: '1 pantalla',
-    canUpgrade: true
-  },
-  {
-    icon: <Wifi color={theme.colors.primaryDark} />,
-    title: 'Wifi Total',
-    detail: '2 Routers',
-    value: 'Wifi6',
-    canUpgrade: true
-  },
-  {
-    icon: <Dollar color={theme.colors.primaryDark}  />,
-    title: 'Precio Promocional',
-    detail: '$ 19.90',
-    value: 'x 8 Pagos',
-    canUpgrade: false
-  },
-];
 
 interface HomeExpandableCardProps extends BaseComponentProps {
   plan: string;
@@ -49,28 +26,54 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
   style,
   testID,
 }) => {
+  const { theme, isDark } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const { isExpanded } = useCardExpansion();
+  
+  const features = [
+    {
+      icon: <Gomax color={theme.colors.primaryDark} />,
+      title: 'Lite Tv Streaming',
+      detail: '5 meses',
+      value: '1 pantalla',
+      canUpgrade: true
+    },
+    {
+      icon: <Wifi color={theme.colors.primaryDark} />,
+      title: 'Wifi Total',
+      detail: '2 Routers',
+      value: 'Wifi6',
+      canUpgrade: true
+    },
+    {
+      icon: <Dollar color={theme.colors.primaryDark}  />,
+      title: 'Precio Promocional',
+      detail: '$ 19.90',
+      value: 'x 8 Pagos',
+      canUpgrade: false
+    },
+  ];
 
   return (
-    <View style={[styles.container, style]} testID={testID}>
+    <View style={[dynamicStyles.container, style]} testID={testID}>
       <Card 
         style={{
-          ...styles.card, paddingBottom: isExpanded ? 0 : theme.spacing.md
+          ...dynamicStyles.card, paddingBottom: isExpanded ? 0 : theme.spacing.md
         }} 
         variant="elevated"
       >
-        <View style={styles.featuresContainer}>
-          <Notification width={35} height={35} />
-          <Text style={styles.clientTitle}>{"Juan Gonzales".split(" ").join("\n")}</Text>
-          <Text style={styles.planTitle}>{plan}</Text>
-          <View style={styles.planSpeedContainer}><Text style={styles.planSpeed}>{speed}</Text><Text style={styles.planMbps}> Mbps</Text></View>
+        <View style={dynamicStyles.featuresContainer}>
+          <Notification width={35} height={35} fill={isDark ? theme.colors.primaryDark : theme.colors.shadow} />
+          <Text style={dynamicStyles.clientTitle}>{"Juan Gonzales".split(" ").join("\n")}</Text>
+          <Text style={dynamicStyles.planTitle}>{plan}</Text>
+          <View style={dynamicStyles.planSpeedContainer}><Text style={dynamicStyles.planSpeed}>{speed}</Text><Text style={dynamicStyles.planMbps}> Mbps</Text></View>
         </View>
         <ExpandableCard
-          style={styles.expandableCardContainer}
+          style={dynamicStyles.expandableCardContainer}
           onToggle={onToggle}
           renderHeader={(isExpanded, onToggle, rotation) => (
-            <View style={styles.centeredHeader}>
-              <Text style={styles.detailsLink}>
+            <View style={dynamicStyles.centeredHeader}>
+              <Text style={dynamicStyles.detailsLink}>
                 {isExpanded ? 'Ocultar Detalles' : 'Ver Detalles'}
               </Text>
               <Animated.View style={{ transform: [{ rotate: rotation }] }}>
@@ -79,7 +82,7 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
             </View>
           )}
         >
-          <View style={styles.detailsContainer}>
+          <View style={dynamicStyles.detailsContainer}>
             {features.map((feature, index) => (
               <DetailRow
                 key={index}
@@ -90,9 +93,9 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
                 canUpgrade={feature.canUpgrade}
               />
             ))}
-            <View style={styles.addServiceContainer}>
+            <View style={dynamicStyles.addServiceContainer}>
               <Badge count={"+"} />
-              <Text style={styles.addServiceText}>Agrega mas servicios</Text>
+              <Text style={dynamicStyles.addServiceText}>Agrega mas servicios</Text>
             </View>
           </View>
         </ExpandableCard>
@@ -109,23 +112,28 @@ interface DetailRowProps {
   canUpgrade?: boolean;
 }
 
-const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUpgrade }) => (
-  <View style={styles.detailRow}>
-    { icon }
-    <Text style={styles.detailTitle}>{title}</Text>
-    <Text style={styles.detailDetail}>{detail}</Text>
-    <Text style={styles.detailValue}>{value}</Text>
-    { canUpgrade ? <Badge count={"+"} /> : <Text> </Text> }
-  </View>
-);
+const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUpgrade }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
+  return (
+    <View style={dynamicStyles.detailRow}>
+      { icon }
+      <Text style={dynamicStyles.detailTitle}>{title}</Text>
+      <Text style={dynamicStyles.detailDetail}>{detail}</Text>
+      <Text style={dynamicStyles.detailValue}>{value}</Text>
+      { canUpgrade ? <Badge count={"+"} /> : <Text> </Text> }
+    </View>
+  );
+};
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     width: '100%',
   },
   clientTitle: {
+    color: theme.colors.primaryDark,
     textAlign: 'center',
-    fontStyle: 'italic'
   },
   card: {
     marginTop: theme.spacing.sm,
@@ -136,8 +144,7 @@ const styles = StyleSheet.create({
   },
   planTitle: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.xxl,
-    fontStyle: 'italic',
+    fontSize: theme.fontSize.xl,
     fontWeight: theme.fontWeight.bold,
     textAlign: 'center',
   },
@@ -149,7 +156,6 @@ const styles = StyleSheet.create({
   featuresText: {
     color: theme.colors.primaryDark,
     fontSize: theme.fontSize.md,
-    fontStyle: 'italic',
     textAlign: 'center',
   },
   expandableCardContainer: {
@@ -168,8 +174,6 @@ const styles = StyleSheet.create({
   },
   detailsLink: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.sm,
-    fontStyle: 'italic',
     textDecorationLine: 'underline',
   },
   detailRow: {
@@ -247,7 +251,7 @@ const styles = StyleSheet.create({
   },
   planSpeed: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.xxl,
+    fontSize: theme.fontSize.xl,
     fontWeight: theme.fontWeight.bolder,
     textAlign: 'center',
   },

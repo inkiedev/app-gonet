@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
@@ -16,25 +16,28 @@ export const PlanCard: React.FC<PlanCardProps> = ({
   style,
   testID,
 }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
   const cardStyle: ViewStyle[] = [
-    styles.base,
-    styles[variant],
+    dynamicStyles.base,
+    dynamicStyles[variant],
     style as ViewStyle,
   ];
 
   return (
     <View style={cardStyle} testID={testID}>
-      <View style={styles.header}>
-        <Text style={styles.headerText}>{title}</Text>
+      <View style={dynamicStyles.header}>
+        <Text style={dynamicStyles.headerText}>{title}</Text>
       </View>
-      <View style={styles.content}>
+      <View style={dynamicStyles.content}>
         {children}
       </View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   base: {
     borderRadius: theme.borderRadius.lg,
     backgroundColor: theme.colors.surface,

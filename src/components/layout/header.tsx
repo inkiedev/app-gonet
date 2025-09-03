@@ -1,7 +1,9 @@
-import { theme } from '@/styles/theme';
+import Text from '@/components/ui/custom-text';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
-import { StyleSheet, Text, TouchableOpacity, View } from 'react-native';
+import { StyleSheet, TouchableOpacity, View } from 'react-native';
+
 
 interface HeaderProps extends BaseComponentProps {
   title?: string;
@@ -27,14 +29,17 @@ export const Header: React.FC<HeaderProps> = ({
                                                 style,
                                                 testID,
                                               }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
   return (
-    <View style={[styles.container, styles[variant], style]} testID={testID}>
-      <View style={styles.header}>
-        <View style={styles.leftSection}>
+    <View style={[dynamicStyles.container, dynamicStyles[variant], style]} testID={testID}>
+      <View style={dynamicStyles.header}>
+        <View style={dynamicStyles.leftSection}>
           {leftAction && (
             <TouchableOpacity
               onPress={leftAction.onPress}
-              style={styles.actionButton}
+              style={dynamicStyles.actionButton}
               activeOpacity={0.7}
             >
               {leftAction.icon}
@@ -42,17 +47,17 @@ export const Header: React.FC<HeaderProps> = ({
           )}
         </View>
 
-        <View style={styles.centerSection}>
+        <View style={dynamicStyles.centerSection}>
           {centerContent || (
-            title && <Text style={styles.title}>{title}</Text>
+            title && <Text style={dynamicStyles.title}>{title}</Text>
           )}
         </View>
 
-        <View style={styles.rightSection}>
+        <View style={dynamicStyles.rightSection}>
           {rightAction && (
             <TouchableOpacity
               onPress={rightAction.onPress}
-              style={styles.actionButton}
+              style={dynamicStyles.actionButton}
               activeOpacity={0.7}
             >
               {rightAction.icon}
@@ -64,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     backgroundColor: theme.colors.surface,
   },

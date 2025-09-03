@@ -1,10 +1,11 @@
 import { Header } from "@/components/layout/header";
 import { Input } from "@/components/ui/custom-input";
 import { supportService } from "@/services/support";
-import { theme } from "@/styles/theme";
+import { useTheme } from "@/contexts/theme-context";
 import { BaseComponentProps } from "@/types/common";
 import { Ionicons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
+import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useEffect, useRef, useState } from "react";
 import {
   FlatList,
@@ -35,6 +36,8 @@ interface SoporteProps extends BaseComponentProps {
 }
 
 export default function Soporte({ onSendMessage, userContext, style, testID }: SoporteProps) {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const router = useRouter();
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputText, setInputText] = useState('');
@@ -91,18 +94,18 @@ export default function Soporte({ onSendMessage, userContext, style, testID }: S
 
   const renderMessage = ({ item }: { item: Message }) => (
     <View style={[
-      styles.messageBubble,
-      item.isUser ? styles.userMessage : styles.botMessage
+      dynamicStyles.messageBubble,
+      item.isUser ? dynamicStyles.userMessage : dynamicStyles.botMessage
     ]}>
       <Text style={[
-        styles.messageText,
-        item.isUser ? styles.userMessageText : styles.botMessageText
+        dynamicStyles.messageText,
+        item.isUser ? dynamicStyles.userMessageText : dynamicStyles.botMessageText
       ]}>
         {item.text}
       </Text>
       <Text style={[
-        styles.messageTime,
-        item.isUser ? styles.userMessageTime : styles.botMessageTime
+        dynamicStyles.messageTime,
+        item.isUser ? dynamicStyles.userMessageTime : dynamicStyles.botMessageTime
       ]}>
         {item.timestamp.toLocaleTimeString('es-ES', {
           hour: '2-digit',
@@ -132,51 +135,51 @@ export default function Soporte({ onSendMessage, userContext, style, testID }: S
   }, [messages]);
 
   return (
-    <SafeAreaView style={[styles.container, style]} edges={['top']} testID={testID}>
+    <SafeAreaView style={[dynamicStyles.container, style]} edges={['top']} testID={testID}>
       <Header
         title="Soporte"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"
       />
       
       <KeyboardAvoidingView 
-        style={styles.content}
+        style={dynamicStyles.content}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         keyboardVerticalOffset={0}
       >
-        <View style={styles.chatContainer}>
+        <View style={dynamicStyles.chatContainer}>
           <FlatList
             ref={flatListRef}
             data={messages}
             renderItem={renderMessage}
             keyExtractor={(item) => item.id}
             showsVerticalScrollIndicator={false}
-            contentContainerStyle={styles.messagesList}
+            contentContainerStyle={dynamicStyles.messagesList}
             ListEmptyComponent={
-              <View style={styles.loadingMessage}>
+              <View style={dynamicStyles.loadingMessage}>
                 <Ionicons
                   name="chatbubble-ellipses"
                   size={32}
                   color={theme.colors.primary}
                 />
-                <Text style={styles.loadingMessageText}>Iniciando chat...</Text>
+                <Text style={dynamicStyles.loadingMessageText}>Iniciando chat...</Text>
               </View>
             }
           />
           
           {isLoading && (
-            <View style={styles.loadingContainer}>
-              <Text style={styles.loadingText}>Escribiendo...</Text>
+            <View style={dynamicStyles.loadingContainer}>
+              <Text style={dynamicStyles.loadingText}>Escribiendo...</Text>
             </View>
           )}
         </View>
         
-        <View style={styles.inputContainer}>
+        <View style={dynamicStyles.inputContainer}>
           <Input
-            style={styles.textInput}
+            style={dynamicStyles.textInput}
             value={inputText}
             onChangeText={setInputText}
             placeholder="Escribe tu mensaje..."
@@ -188,8 +191,8 @@ export default function Soporte({ onSendMessage, userContext, style, testID }: S
           />
           <TouchableOpacity
             style={[
-              styles.sendButton,
-              (!inputText.trim() || isLoading) && styles.sendButtonDisabled
+              dynamicStyles.sendButton,
+              (!inputText.trim() || isLoading) && dynamicStyles.sendButtonDisabled
             ]}
             onPress={handleSendMessage}
             disabled={!inputText.trim() || isLoading}
@@ -211,7 +214,7 @@ export default function Soporte({ onSendMessage, userContext, style, testID }: S
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,

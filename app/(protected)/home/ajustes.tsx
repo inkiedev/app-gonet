@@ -1,23 +1,25 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
-import Tabs from '@/components/ui/tabs';
+import Text from '@/components/ui/custom-text';
+import { SegmentedControl } from '@/components/ui/segmented-control';
 import { useNotificationContext } from '@/contexts/notification-context';
+import { useTheme } from '@/contexts/theme-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
 import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import {
-  ScrollView,
   StyleSheet,
   Switch,
-  Text,
   View
 } from "react-native";
 import { useDispatch, useSelector } from 'react-redux';
 
 import { Button } from '@/components/ui/custom-button';
+import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AjustesContent = () => {
@@ -25,6 +27,7 @@ const AjustesContent = () => {
   const { rememberMe, biometricPreferences } = useSelector((state: RootState) => state.auth);
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { showSuccess, showError } = useNotificationContext();
+  const { theme: currentTheme, isDark, toggleTheme } = useTheme();
   
   useEffect(() => {
     if (rememberMe) {
@@ -70,63 +73,102 @@ const AjustesContent = () => {
     }
   };
 
+  const dynamicStyles = createDynamicStyles(currentTheme);
+
   return (
-    <>
-      <Text style={styles.tabTitle}>Ajustes</Text>
-      <Text style={styles.subTitle}>Sesión</Text>
-      <Text style={styles.centerText}>Administrar dispositivos activos</Text>
-
-      <Text style={styles.subTitle}>Seguridad</Text>
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
+      <Text style={dynamicStyles.tabTitle}>Configuración</Text>
       
-      {!rememberMe && (
-        <Text style={styles.disabledNotice}>
-          Active &ldquo;Recuérdame&rdquo; en el login para habilitar las opciones biométricas
-        </Text>
-      )}
-      
-      <View style={[styles.switchRow, !rememberMe && styles.switchRowDisabled]}>
-        <Switch 
-          value={biometricPreferences.useBiometricForPassword} 
-          onValueChange={handleBiometricPasswordChange}
-          disabled={!rememberMe}
-        />
-        <Text style={[styles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
-          Usar Huella o Face ID en lugar de su contraseña
-        </Text>
+      <View style={styles.sectionContainer}>
+        <Text style={dynamicStyles.subTitle}>Sesión</Text>
+        <Text style={dynamicStyles.centerText}>Administrar dispositivos activos</Text>
       </View>
 
-      <View style={[styles.switchRow, !rememberMe && styles.switchRowDisabled]}>
-        <Switch 
-          value={biometricPreferences.useBiometricForLogin} 
-          onValueChange={handleBiometricLoginChange}
-          disabled={!rememberMe}
-        />
-        <Text style={[styles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
-          Inicio de sesión con Huella o Face ID
-        </Text>
+      <View style={styles.sectionContainer}>
+        <Text style={dynamicStyles.subTitle}>Apariencia</Text>
+        <View style={dynamicStyles.switchRow}>
+          <Switch 
+            value={isDark} 
+            onValueChange={toggleTheme}
+            trackColor={{ false: currentTheme.colors.border.medium, true: currentTheme.colors.primary }}
+            thumbColor={isDark ? currentTheme.colors.surface : currentTheme.colors.surface}
+          />
+          <Text style={dynamicStyles.switchLabel}>
+            {isDark ? '🌙 Tema Oscuro' : '🌞 Tema Claro'}
+          </Text>
+        </View>
       </View>
-    </>
+
+      <View style={styles.sectionContainer}>
+        <Text style={dynamicStyles.subTitle}>Seguridad</Text>
+        
+        {!rememberMe && (
+          <Text style={[styles.disabledNotice, { color: currentTheme.colors.text.secondary }]}>
+            Active "Recuérdame" en el login para habilitar las opciones biométricas
+          </Text>
+        )}
+        
+        <View style={[dynamicStyles.switchRow, !rememberMe && styles.switchRowDisabled]}>
+          <Switch 
+            value={biometricPreferences.useBiometricForPassword} 
+            onValueChange={handleBiometricPasswordChange}
+            disabled={!rememberMe}
+            trackColor={{ false: currentTheme.colors.border.medium, true: currentTheme.colors.primary }}
+          />
+          <Text style={[dynamicStyles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
+            Usar Huella o Face ID en lugar de su contraseña
+          </Text>
+        </View>
+
+        <View style={[dynamicStyles.switchRow, !rememberMe && styles.switchRowDisabled]}>
+          <Switch 
+            value={biometricPreferences.useBiometricForLogin} 
+            onValueChange={handleBiometricLoginChange}
+            disabled={!rememberMe}
+            trackColor={{ false: currentTheme.colors.border.medium, true: currentTheme.colors.primary }}
+          />
+          <Text style={[dynamicStyles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
+            Inicio de sesión con Huella o Face ID
+          </Text>
+        </View>
+      </View>
+    </ScrollView>
   );
 };
 
 const ActualizarDatosContent = () => {
   const dispatch = useDispatch();
+  const { theme: currentTheme } = useTheme();
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { biometricPreferences, userData } = useSelector((state: RootState) => state.auth);
-  const [isVerified, setIsVerified] = useState(false);
   const { showError } = useNotificationContext();
 
+  // Pre-calcular el estado inicial para evitar flash
+  const initialVerificationState = useMemo(() => {
+    return !biometricPreferences.useBiometricForPassword;
+  }, [biometricPreferences.useBiometricForPassword]);
+
+  const [isVerified, setIsVerified] = useState(initialVerificationState);
+  const [isInitialized, setIsInitialized] = useState(false);
+
   useEffect(() => {
-    if (!biometricPreferences.useBiometricForPassword) {
-      setIsVerified(true);
-    } else {
-      setIsVerified(false);
-    }
+    const initializeTab = async () => {
+      // Sincronizar el estado con las preferencias actuales
+      setIsVerified(!biometricPreferences.useBiometricForPassword);
+      
+      if (!userData) {
+        dispatch(loadUserData() as any);
+      }
+      
+      // Micro delay solo para asegurar que el render sea estable
+      await new Promise(resolve => setTimeout(resolve, 10));
+      setIsInitialized(true);
+    };
     
-    if (!userData) {
-      dispatch(loadUserData() as any);
-    }
+    initializeTab();
   }, [biometricPreferences.useBiometricForPassword, dispatch, userData]);
+
+  const dynamicStyles = createDynamicStyles(currentTheme);
 
   const handleSecureAction = async () => {
     if (biometricPreferences.useBiometricForPassword) {
@@ -146,35 +188,56 @@ const ActualizarDatosContent = () => {
     }
   };
 
-  if (!isVerified) {
+  // Mostrar loading mientras se inicializa para evitar flash
+  if (!isInitialized) {
     return (
-      <View style={styles.verificationContainer}>
-        <Text style={styles.tabTitle}>Actualizar datos</Text>
-        <Text style={styles.verificationText}>
-          Esta acción requiere verificación de identidad
-        </Text>
-        <Text style={styles.verificationSubtext} onPress={handleSecureAction}>
-          {biometricPreferences.useBiometricForPassword ? 'Toca aquí para verificar con biometría' : 'Toca aquí para continuar'}
-        </Text>
+      <View style={styles.tabContent}>
+        <Text style={dynamicStyles.tabTitle}>Perfil</Text>
+        <View style={styles.loadingContainer}>
+          <Text style={styles.loadingText}>Cargando...</Text>
+        </View>
       </View>
     );
   }
 
+  if (!isVerified) {
+    return (
+      <ScrollView style={styles.tabContent}>
+        <Text style={styles.tabTitle}>Perfil</Text>
+        <View style={styles.verificationContainer}>
+          <View style={styles.verificationCard}>
+            <Text style={styles.verificationText}>
+              Esta acción requiere verificación de identidad
+            </Text>
+            <Button 
+              title={biometricPreferences.useBiometricForPassword ? 'Verificar con biometría' : 'Continuar'}
+              onPress={handleSecureAction}
+              style={styles.verificationButton}
+            />
+          </View>
+        </View>
+      </ScrollView>
+    );
+  }
+
   return (
-    <>
-      <Text style={styles.tabTitle}>Actualizar datos</Text>
-      <Input placeholder="Contraseña actual" secureTextEntry />
-      <Input placeholder="Correo" value={userData?.email || ''} />
-      <Input placeholder="Teléfono móvil" value={userData?.mobile || ''} />
-      <Input placeholder="Teléfono fijo" value={userData?.phone || ''} />
-      <Input placeholder="Dirección" value={userData?.street || ''} />
-      <Input placeholder="Ciudad" value={userData?.city || ''} />
-    </>
+    <ScrollView style={styles.tabContent}>
+      <Text style={dynamicStyles.tabTitle}>Perfil</Text>
+      <View style={styles.formContainer}>
+        <Input placeholder="Contraseña actual" secureTextEntry />
+        <Input placeholder="Correo" value={userData?.email || ''} />
+        <Input placeholder="Teléfono móvil" value={userData?.mobile || ''} />
+        <Input placeholder="Teléfono fijo" value={userData?.phone || ''} />
+        <Input placeholder="Dirección" value={userData?.street || ''} />
+        <Input placeholder="Ciudad" value={userData?.city || ''} />
+      </View>
+    </ScrollView>
   );
 };
 
 const CambiarContrasenaContent = () => {
   const dispatch = useDispatch();
+  const { theme: currentTheme } = useTheme();
   const { uid, username, rememberMe } = useSelector((state: RootState) => state.auth);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -241,83 +304,132 @@ const CambiarContrasenaContent = () => {
     }
   };
 
+  const dynamicStyles = createDynamicStyles(currentTheme);
+
   return (
-    <>
-      <Text style={styles.tabTitle}>Actualizar contraseña</Text>
-      <Input
-        placeholder="Contraseña actual"
-        secureTextEntry
-        value={currentPassword}
-        onChangeText={setCurrentPassword}
-      />
-      <Input
-        placeholder="Contraseña nueva"
-        secureTextEntry
-        value={newPassword}
-        onChangeText={setNewPassword}
-      />
-      <Input
-        placeholder="Confirmar nueva contraseña"
-        secureTextEntry
-        value={confirmPassword}
-        onChangeText={setConfirmPassword}
-      />
-      <Button title='Actualizar contraseña' onPress={handleChangePassword} />
-    </>
+    <View style={styles.tabContent}>
+      <Text style={dynamicStyles.tabTitle}>Seguridad</Text>
+      <View style={styles.formContainer}>
+        <Input
+          placeholder="Contraseña actual"
+          secureTextEntry
+          value={currentPassword}
+          onChangeText={setCurrentPassword}
+        />
+        <Input
+          placeholder="Contraseña nueva"
+          secureTextEntry
+          value={newPassword}
+          onChangeText={setNewPassword}
+        />
+        <Input
+          placeholder="Confirmar nueva contraseña"
+          secureTextEntry
+          value={confirmPassword}
+          onChangeText={setConfirmPassword}
+        />
+        <Button title='Actualizar contraseña' onPress={handleChangePassword} />
+      </View>
+    </View>
   );
 };
 
 /* --- Pantalla principal --- */
 export default function PerfilScreen() {
   const router = useRouter();
+  const { theme: currentTheme } = useTheme();
+  
   const handleGoBack = () => {
     router.back();
   };
 
+  const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
-    <SafeAreaView style={styles.container} edges={['top']}>
+    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.background }]} edges={['top']}>
       <Header
         title="Ajustes"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={currentTheme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"
       />
 
-      <ScrollView style={styles.content}>
-        <View style={styles.tabsContainer}>
-          <Tabs
-            tabs={[
-              {
-                id: 'ajustes',
-                label: 'Ajustes',
-                content: <AjustesContent />,
-              },
-              {
-                id: 'actualizar-datos',
-                label: 'Actualizar datos',
-                content: <ActualizarDatosContent />,
-              },
-              {
-                id: 'cambiar-contraseña',
-                label: 'Cambiar contraseña',
-                content: <CambiarContrasenaContent />,
-              },
-            ]}
-            variant="minimal"
-            contentScrollable={true}
-            tabsScrollable={true}
-            testID="perfil-tabs"
-          />
-        </View>
-      </ScrollView>
+      <View style={styles.segmentedContainer}>
+        <SegmentedControl
+          segments={[
+            {
+              id: 'ajustes',
+              label: 'Configuración',
+              content: <AjustesContent />,
+            },
+            {
+              id: 'actualizar-datos',
+              label: 'Perfil',
+              content: <ActualizarDatosContent />,
+            },
+            {
+              id: 'cambiar-contraseña',
+              label: 'Seguridad',
+              content: <CambiarContrasenaContent />,
+            },
+          ]}
+          variant="material"
+          animated={true}
+          size="md"
+          tintColor={currentTheme.colors.primary}
+          contentStyle={styles.segmentContent}
+        />
+      </View>
     </SafeAreaView>
   );
 }
 
-/* --- Estilos --- */
+/* --- Estilos dinámicos --- */
+const createDynamicStyles = (theme: any) => StyleSheet.create({
+  tabTitle: { 
+    fontSize: theme.fontSize.xl, 
+    fontWeight: theme.fontWeight.bold, 
+    color: theme.colors.text.primary,
+    textAlign: "center",
+    marginBottom: theme.spacing.md,
+  },
+  subTitle: { 
+    fontSize: theme.fontSize.lg, 
+    fontWeight: theme.fontWeight.bold, 
+    marginTop: theme.spacing.lg, 
+    marginBottom: theme.spacing.md,
+    color: theme.colors.primaryDark,
+  },
+  centerText: { 
+    textAlign: "center", 
+    marginBottom: theme.spacing.lg, 
+    color: theme.colors.text.secondary,
+    fontSize: theme.fontSize.sm,
+    fontStyle: "italic",
+  },
+  switchRow: {
+    flexDirection: "row", 
+    alignItems: "center", 
+    backgroundColor: theme.colors.surface, 
+    padding: theme.spacing.lg, 
+    borderRadius: theme.borderRadius.md, 
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light
+  },
+  switchLabel: { 
+    flex: 1, 
+    fontSize: theme.fontSize.md, 
+    marginLeft: theme.spacing.md, 
+    color: theme.colors.text.primary,
+    lineHeight: 20,
+  },
+});
+
+/* --- Estilos estáticos --- */
 const styles = StyleSheet.create({
   container: { 
     flex: 1, 
@@ -439,13 +551,12 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.md
   },
 
-  /* Tabs Container */
-  tabsContainer: {
-    minHeight: 400,
-    marginVertical: theme.spacing.xl,
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.lg,
-    ...theme.shadows.md,
+  /* Segmented Container */
+  segmentedContainer: {
+    flex: 1,
+    paddingHorizontal: theme.spacing.md,
+  },
+  segmentContent: {
   },
 
   content: {
@@ -453,23 +564,62 @@ const styles = StyleSheet.create({
     flexGrow: 1,
   },
 
+  /* Tab Content */
+  tabContent: {
+    flex: 1,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
+  },
+  
+  sectionContainer: {
+  },
+  
+  formContainer: {
+    gap: theme.spacing.md,
+  },
+
   /* Verification */
   verificationContainer: {
+    flex: 1,
+    justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: theme.spacing.xl,
   },
+  
+  verificationCard: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.xl,
+    borderRadius: theme.borderRadius.lg,
+    alignItems: 'center',
+    ...theme.shadows.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+    maxWidth: 320,
+  },
+  
   verificationText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+    lineHeight: 20,
+  },
+  
+  verificationButton: {
+    width: '100%',
+  },
+  
+  /* Loading */
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xl,
+  },
+  
+  loadingText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.text.secondary,
     textAlign: 'center',
-    marginTop: theme.spacing.lg,
-    marginBottom: theme.spacing.md,
-  },
-  verificationSubtext: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.primary,
-    textAlign: 'center',
-    textDecorationLine: 'underline',
-    fontWeight: theme.fontWeight.medium,
   },
 });

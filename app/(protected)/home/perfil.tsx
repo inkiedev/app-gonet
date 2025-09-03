@@ -1,15 +1,18 @@
+import Back from '@/assets/images/iconos gonet back.svg';
+import Cross from '@/assets/images/iconos gonet cross.svg';
+import Text from '@/components/ui/custom-text';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
-import React, { useState, useEffect } from 'react';
-import { Alert, ScrollView, StyleSheet, Text, View } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { Animated, ScrollView, StyleSheet, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useSelector, useDispatch } from 'react-redux';
+import { useDispatch, useSelector } from 'react-redux';
 
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/custom-button';
+import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
-import { theme } from '@/styles/theme';
 import { RootState } from '@/store';
 import { loadUserData } from '@/store/slices/auth-slice';
 
@@ -19,12 +22,85 @@ interface UserField {
   icon?: string;
 }
 
+interface ToastProps {
+  message: string;
+  type: 'success' | 'info' | 'error' | 'warning';
+  visible: boolean;
+  onHide: () => void;
+}
+
+const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  const opacity = useState(new Animated.Value(0))[0];
+
+  useEffect(() => {
+    if (visible) {
+      Animated.sequence([
+        Animated.timing(opacity, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.delay(2500),
+        Animated.timing(opacity, {
+          toValue: 0,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start(() => {
+        onHide();
+      });
+    }
+  }, [visible]);
+
+  if (!visible) return null;
+
+  const getToastStyle = () => {
+    switch (type) {
+      case 'success':
+        return dynamicStyles.toastSuccess;
+      case 'error':
+        return dynamicStyles.toastError;
+      case 'warning':
+        return dynamicStyles.toastWarning;
+      case 'info':
+        return dynamicStyles.toastInfo;
+      default:
+        return dynamicStyles.toastInfo;
+    }
+  };
+
+  return (
+    <Animated.View style={[
+      dynamicStyles.toastContainer,
+      getToastStyle(),
+      { opacity }
+    ]}>
+      <Ionicons
+        name={type === 'success' ? 'checkmark-circle' : type === 'error' ? 'close-circle' : type === 'warning' ? 'warning' : 'information-circle'}
+        size={20}
+        color={theme.colors.text.inverse}
+        style={{ marginRight: theme.spacing.xs }}
+      />
+      <Text style={dynamicStyles.toastText}>{message}</Text>
+    </Animated.View>
+  );
+};
+
 export default function AjustesScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isSmall, isTablet } = useResponsive();
   const [isEditing, setIsEditing] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning'; visible: boolean }>({
+    message: '',
+    type: 'success',
+    visible: false
+  });
   const { userData } = useSelector((state: RootState) => state.auth);
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
 
   useEffect(() => {
     if (!userData) {
@@ -70,9 +146,17 @@ export default function AjustesScreen() {
     },
   ];
 
+  const showToast = (message: string, type: 'success' | 'info' | 'error') => {
+    setToast({ message, type, visible: true });
+  };
+
+  const hideToast = () => {
+    setToast(prev => ({ ...prev, visible: false }));
+  };
+
   const handleEdit = () => {
     if (isEditing) {
-      Alert.alert('Cambios guardados', 'Tu perfil ha sido actualizado');
+      showToast('Tu perfil ha sido actualizado', 'success');
       setIsEditing(false);
     } else {
       setIsEditing(true);
@@ -81,31 +165,31 @@ export default function AjustesScreen() {
 
   const handleCancel = () => {
     setIsEditing(false);
-    Alert.alert('Cambios cancelados', 'No se guardaron los cambios');
+    showToast('No se guardaron los cambios', 'info');
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={dynamicStyles.container}>
       <Header
         title="Ajustes de perfil"
         leftAction={{
-          icon: 'arrow-back',
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: () => router.back(),
         }}
         rightAction={isEditing ? {
-          icon: 'close',
+          icon: <Cross width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleCancel,
         } : undefined}
         variant="transparent"
       />
 
       <ScrollView
-        style={styles.content}
+        style={dynamicStyles.content}
         showsVerticalScrollIndicator={false}
-        contentContainerStyle={styles.scrollContent}
+        contentContainerStyle={dynamicStyles.scrollContent}
       >
-        <View style={styles.profileHeader}>
-          <View style={styles.avatarContainer}>
+        <View style={dynamicStyles.profileHeader}>
+          <View style={dynamicStyles.avatarContainer}>
             <Ionicons
               name="person-circle"
               size={isSmall ? 80 : 100}
@@ -113,21 +197,21 @@ export default function AjustesScreen() {
             />
           </View>
           <Text style={[
-            styles.userName,
+            dynamicStyles.userName,
             { fontSize: isSmall ? theme.fontSize.xl : theme.fontSize.xxl }
           ]}>
             {userData?.name || 'Usuario'}
           </Text>
         </View>
 
-        <View style={styles.dividerContainer}>
-          <View style={styles.dividerLine} />
-          <Text style={styles.dividerText}>Información Personal</Text>
-          <View style={styles.dividerLine} />
+        <View style={dynamicStyles.dividerContainer}>
+          <View style={dynamicStyles.dividerLine} />
+          <Text style={dynamicStyles.dividerText}>Información Personal</Text>
+          <View style={dynamicStyles.dividerLine} />
         </View>
 
         <Card
-          style={styles.infoCard}
+          style={dynamicStyles.infoCard}
           padding={isSmall ? "sm" : "md"}
           variant="elevated"
         >
@@ -142,7 +226,7 @@ export default function AjustesScreen() {
           ))}
         </Card>
 
-        <View style={styles.buttonContainer}>
+        <View style={dynamicStyles.buttonContainer}>
           <Button
             title={isEditing ? "Guardar Cambios" : "Editar Perfil"}
             onPress={handleEdit}
@@ -170,6 +254,13 @@ export default function AjustesScreen() {
           )}
         </View>
       </ScrollView>
+      
+      <Toast
+        message={toast.message}
+        type={toast.type}
+        visible={toast.visible}
+        onHide={hideToast}
+      />
     </SafeAreaView>
   );
 }
@@ -187,23 +278,26 @@ const UserInfoRow: React.FC<UserInfoRowProps> = ({
                                                    isEditing,
                                                    isSmall
                                                  }) => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+
   return (
     <View style={[
-      styles.fieldRow,
-      !isLast && styles.fieldRowBorder,
+      dynamicStyles.fieldRow,
+      !isLast && dynamicStyles.fieldRowBorder,
       { paddingVertical: isSmall ? theme.spacing.sm : theme.spacing.md }
     ]}>
-      <View style={styles.fieldLeft}>
+      <View style={dynamicStyles.fieldLeft}>
         {field.icon && (
           <Ionicons
             name={field.icon as any}
             size={20}
             color={theme.colors.secondary}
-            style={styles.fieldIcon}
+            style={dynamicStyles.fieldIcon}
           />
         )}
         <Text style={[
-          styles.fieldLabel,
+          dynamicStyles.fieldLabel,
           { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
         ]}>
           {field.label}:
@@ -211,8 +305,8 @@ const UserInfoRow: React.FC<UserInfoRowProps> = ({
       </View>
 
       <Text style={[
-        styles.fieldValue,
-        isEditing && styles.fieldValueEditing,
+        dynamicStyles.fieldValue,
+        isEditing && dynamicStyles.fieldValueEditing,
         { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
       ]}>
         {field.value}
@@ -221,9 +315,10 @@ const UserInfoRow: React.FC<UserInfoRowProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: theme.colors.background,
   },
   content: {
     flex: 1,
@@ -333,5 +428,39 @@ const styles = StyleSheet.create({
   buttonContainer: {
     gap: theme.spacing.md,
     paddingTop: theme.spacing.lg,
+  },
+  toastContainer: {
+    position: 'absolute',
+    top: 100,
+    left: theme.spacing.md,
+    right: theme.spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+    zIndex: 1000,
+  },
+  toastSuccess: {
+    backgroundColor: theme.colors.success || theme.colors.primary,
+  },
+  toastError: {
+    backgroundColor: theme.colors.error || '#ff4444',
+  },
+  toastWarning: {
+    backgroundColor: theme.colors.warning || '#ff9900',
+  },
+  toastInfo: {
+    backgroundColor: theme.colors.info || theme.colors.secondary,
+  },
+  toastText: {
+    color: theme.colors.text.inverse,
+    fontSize: theme.fontSize.md,
+    flex: 1,
   },
 });

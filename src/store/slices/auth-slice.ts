@@ -121,6 +121,7 @@ const authSlice = createSlice({
       state.userData = null;
       secureStorageService.clearBiometricPreferences();
       secureStorageService.clearUserData();
+      secureStorageService.clearThemePreferences();
     },
     sessionLogout: (state) => {
       state.isAuthenticated = false;
@@ -137,6 +138,7 @@ const authSlice = createSlice({
         state.userData = null;
         secureStorageService.clearBiometricPreferences();
         secureStorageService.clearUserData();
+        secureStorageService.clearThemePreferences();
       }
     },
     clearSession: (state) => {

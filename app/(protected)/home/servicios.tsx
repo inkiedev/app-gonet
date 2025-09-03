@@ -1,24 +1,21 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Button } from "@/components/ui/custom-button";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { PlanCard } from "@/components/ui/plan-card";
-import { theme } from "@/styles/theme";
+import { SegmentedControl } from "@/components/ui/segmented-control";
+import { useTheme } from "@/contexts/theme-context";
 import { Foundation } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
-  ScrollView,
   StyleSheet,
   Text,
   View
 } from "react-native";
+import { ScrollView } from 'react-native-gesture-handler';
 import { SafeAreaView } from "react-native-safe-area-context";
  
-interface Account {
-  id: string;
-  name: string;
-}
-
 interface Account {
   id: string;
   name: string;
@@ -49,7 +46,55 @@ const currentPlan = {
   speedMbps: 250,
 };
 
-export const availablePlans: Plan[] = [
+const PlanesContent = () => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
+  return (
+    <ScrollView>
+      <Text style={dynamicStyles.contentTitle}>Actualizar Plan</Text>
+      {availablePlans.map((plan) => (
+        <PlanCard title={plan.name} style={dynamicStyles.planCard} key={plan.id}>
+          <View style={dynamicStyles.planContainer}>
+            <Text style={dynamicStyles.planPrice}>Precio: ${plan.price}+imp</Text>
+            <Text style={dynamicStyles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
+            <View style={dynamicStyles.planDetails}>
+              {plan.details.map((detail, index) => (
+                <Text key={index} style={dynamicStyles.planDetail}>
+                  {`\u2022 ${detail}`}
+                </Text>
+              ))}
+            </View>
+            <Button title="Actualizar" onPress={() => {}} />
+          </View>
+        </PlanCard>
+      ))}
+    </ScrollView>
+  );
+};
+
+const ServiciosContent = () => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+  
+  return (
+    <>
+      <Text style={dynamicStyles.contentTitle}>Servicios Adicionales</Text>
+      <View style={dynamicStyles.serviceContainer}>
+        <Text style={dynamicStyles.serviceText}>Próximamente dispondremos de servicios adicionales:</Text>
+        <View style={dynamicStyles.serviceList}>
+          <Text style={dynamicStyles.serviceItem}>• Telefonía fija</Text>
+          <Text style={dynamicStyles.serviceItem}>• TV por cable</Text>
+          <Text style={dynamicStyles.serviceItem}>• Soporte técnico premium</Text>
+          <Text style={dynamicStyles.serviceItem}>• Instalaciones especiales</Text>
+        </View>
+      </View>
+    </>
+  );
+};
+
+
+const availablePlans: Plan[] = [
   { 
     id: "p1", 
     name: "GoEssencial 300 Mbps", 
@@ -97,7 +142,9 @@ export const availablePlans: Plan[] = [
 ];
 
 
-export default function InternetPlans() {
+export default function ServicesScreen() {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
   const [selectedAccount, setSelectedAccount] = useState<Account>();
   const router = useRouter();
 
@@ -106,19 +153,18 @@ export default function InternetPlans() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <Header
         title="Mi Plan"
         leftAction={{
-          icon: "arrow-back",
+          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
           onPress: handleGoBack,
         }}
         variant="default"
       />
 
-      <View style={styles.header}>
-        <Text style={styles.contentTitle}>Plan actual</Text>
-        <Text style={styles.currentSpeed}>
+      <View style={dynamicStyles.header}>
+        <Text style={dynamicStyles.currentSpeed}>
           Velocidad: {currentPlan.speedMbps} Mbps
         </Text>
 
@@ -129,45 +175,47 @@ export default function InternetPlans() {
           renderItem={(option, index, isSelected) => {
             return (
               <View>
-                <Text style={styles.selectText}># {option.value.id}</Text>
-                <Text style={styles.selectText}>{option.value.name}</Text>
-                <Text style={styles.selectText}>{option.value.address}</Text>
+                <Text style={dynamicStyles.selectText}># {option.value.id}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.name}</Text>
+                <Text style={dynamicStyles.selectText}>{option.value.address}</Text>
               </View>
             );
           }}
           variant="outline"
           size="md"
-          leftIcon={<Foundation name="info" size={24} color="black" />}
+          leftIcon={<Foundation name="info" size={24} color={theme.colors.primary} />}
         />
       </View>
 
-      <ScrollView
-        contentContainerStyle={styles.scrollContent}
-        style={styles.scrollView}
-      >
-        <Text style={styles.contentTitle}>Actualizar Plan</Text>
-        {availablePlans.map((plan) => (
-          <PlanCard title={plan.name} key={plan.id}>
-            <View style={styles.planContainer}>
-              <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
-              <Text style={styles.planFinalPrice}>Precio final: {plan.finalPrice}</Text>
-              <View style={styles.planDetails}>
-                {
-                  plan.details.map((detail, index) => (
-                    <Text key={index} style={styles.planDetail}>{`\u2022 ${detail}`}</Text>
-                  ))
-                }
-              </View>
-              <Button title="Actualizar" onPress={() => {}} />
-            </View>
-          </PlanCard>
-        ))}
-      </ScrollView>
+      <View style={dynamicStyles.segmentedContainer}>
+        <SegmentedControl
+          segments={[
+            {
+              id: 'planes',
+              label: 'Planes',
+              content: <PlanesContent />,
+            },
+            {
+              id: 'servicios',
+              label: 'Servicios',
+              content: <ServiciosContent />,
+            },
+          ]}
+          variant="material"
+          animated={true}
+          size="md"
+          tintColor={theme.colors.primary}
+        />
+      </View>
+      
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
+  planCard: {
+    marginVertical: theme.spacing.md,
+  },
   container: {
     flex: 1,
     backgroundColor: theme.colors.background,
@@ -181,21 +229,24 @@ const styles = StyleSheet.create({
   },
   currentSpeed: {
     textAlign: "center",
-    fontSize: theme.fontSize.lg,
-    marginBottom: theme.spacing.sm,
+    fontSize: theme.fontSize.xxl,
+    color: theme.colors.primaryDark,
+    fontWeight: theme.fontWeight.semibold,
+    marginBottom: theme.spacing.md,
   },
   contentTitle: {
     textAlign: "center",
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.primaryDark,
+    marginBottom: theme.spacing.md,
   },
   planContainer: {
     paddingHorizontal: theme.spacing.sm,
     display: "flex",
     flexDirection: "column",
     gap: theme.spacing.sm,
-    alignItems: 'center'
+    alignItems: 'center',
   },
   planName: {
     fontSize: theme.fontSize.md,
@@ -209,6 +260,7 @@ const styles = StyleSheet.create({
   },
   planFinalPrice: {
     fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
   },
   planDetails: {
     width: '100%',
@@ -219,6 +271,7 @@ const styles = StyleSheet.create({
   },
   planDetail: {
     fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
   },
   accountSelector: {
     flexDirection: "row",
@@ -241,18 +294,34 @@ const styles = StyleSheet.create({
   accountButtonTextActive: {
     color: theme.colors.text.inverse,
   },
-  scrollView: {
+  segmentedContainer: {
     flex: 1,
-  },
-  scrollContent: {
-    padding: theme.spacing.md,
-    gap: theme.spacing.md,
+    margin: theme.spacing.md,
   },
   selectText: {
     fontSize: theme.fontSize.sm,
-    textTransform: 'uppercase'
+    textTransform: 'uppercase',
+    color: theme.colors.text.primary,
   },
-  updateButton: {
-
+  serviceContainer: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+  },
+  serviceText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.md,
+  },
+  serviceList: {
+    alignItems: 'center',
+    gap: theme.spacing.xs,
+  },
+  serviceItem: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.secondary,
   }
 });

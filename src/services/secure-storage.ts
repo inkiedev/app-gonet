@@ -8,6 +8,7 @@ const STORAGE_KEYS = {
   REMEMBER_ME: 'remember_me',
   BIOMETRIC_PREFERENCES: 'biometric_preferences',
   USER_DATA: 'user_data',
+  THEME_PREFERENCES: 'theme_preferences',
 };
 
 const MASTER_KEY_NAME = 'gonet_master_encryption_key';
@@ -33,6 +34,11 @@ export interface UserData {
   city: string;
   street2: string;
   vat: string;
+}
+
+export interface ThemePreferences {
+  isDark: boolean;
+  followSystem: boolean;
 }
 
 class SecureStorageService {
@@ -247,6 +253,36 @@ class SecureStorageService {
       await this.deleteSecureItem(STORAGE_KEYS.USER_DATA);
     } catch (error) {
       console.error('Error clearing user data:', error);
+    }
+  }
+
+  async saveThemePreferences(preferences: ThemePreferences): Promise<void> {
+    try {
+      await this.setSecureItem(STORAGE_KEYS.THEME_PREFERENCES, JSON.stringify(preferences));
+    } catch (error) {
+      console.error('Error saving theme preferences:', error);
+      throw new Error('No se pudieron guardar las preferencias de tema');
+    }
+  }
+
+  async getThemePreferences(): Promise<ThemePreferences | null> {
+    try {
+      const preferencesData = await this.getSecureItem(STORAGE_KEYS.THEME_PREFERENCES);
+      if (!preferencesData) {
+        return null;
+      }
+      return JSON.parse(preferencesData);
+    } catch (error) {
+      console.error('Error getting theme preferences:', error);
+      return null;
+    }
+  }
+
+  async clearThemePreferences(): Promise<void> {
+    try {
+      await this.deleteSecureItem(STORAGE_KEYS.THEME_PREFERENCES);
+    } catch (error) {
+      console.error('Error clearing theme preferences:', error);
     }
   }
 }
