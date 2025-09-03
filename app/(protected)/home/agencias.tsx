@@ -63,16 +63,12 @@ interface MarkerData {
 // --- Custom Hook for User Location ---
 const useUserLocation = () => {
     const [userLocation, setUserLocation] = useState<{ latitude: number; longitude: number } | null>(null);
-    const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
     useEffect(() => {
         (async () => {
             const { status } = await Location.requestForegroundPermissionsAsync();
             if (status !== 'granted') {
-                if (Platform.OS === 'web') {
-                    return;
-                }
-                setErrorMsg('Permission to access location was denied');
+                console.warn('Permission to access location was denied');
                 return;
             }
 
@@ -80,17 +76,13 @@ const useUserLocation = () => {
                 const location = await Location.getCurrentPositionAsync({});
                 setUserLocation(location.coords);
             } catch (error) {
-                if (Platform.OS === 'web') {
-                    console.error(error);
-                    return;
-                }
-                setErrorMsg('Failed to get location');
-                console.error(error);
+                console.error('Failed to get location:', error);
+                // userLocation will remain null, which is the desired behavior
             }
         })();
     }, []);
 
-    return { userLocation, errorMsg };
+    return { userLocation };
 };
 
 
@@ -242,7 +234,7 @@ export default function AgenciesScreen() {
     const [selectedNeighborhood, setSelectedNeighborhood] = useState<Neighborhood | null>(null);
     const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
     const [showCityPolygon, setShowCityPolygon] = useState(true);
-    const { userLocation, errorMsg } = useUserLocation();
+    const { userLocation } = useUserLocation();
     const router = useRouter();
 
     const handleMarkerPress = useCallback((marker: MarkerData) => {
@@ -300,11 +292,6 @@ export default function AgenciesScreen() {
         if (selectedCity) return selectedCity.region;
         return regionCoordinates;
     }, [selectedCity, selectedNeighborhood]);
-
-    if (errorMsg) {
-        // Optionally, render an error message to the user
-        return <View style={dynamicStyles.container}><Text>{errorMsg}</Text></View>;
-    }
 
     if (!selectedCity) {
         return <CitySelector onCitySelect={handleCitySelect} router={router} />;
