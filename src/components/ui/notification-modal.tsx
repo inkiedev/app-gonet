@@ -1,19 +1,19 @@
-import React, { useEffect, useRef } from 'react';
-import {
-  Modal,
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Animated,
-  Dimensions,
-  Platform,
-} from 'react-native';
-import { BlurView } from 'expo-blur';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { Ionicons } from '@expo/vector-icons';
 import { theme } from '@/styles/theme';
 import { NotificationModalProps, NotificationType } from '@/types/notification';
+import { Ionicons } from '@expo/vector-icons';
+import { BlurView } from 'expo-blur';
+import React, { useEffect, useRef } from 'react';
+import {
+  Animated,
+  Dimensions,
+  Modal,
+  Platform,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
+} from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { Button } from './custom-button';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
@@ -185,10 +185,10 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
                     onPress={notification.action.onPress}
                     variant="outline"
                     size="sm"
-                    style={[
-                      styles.actionButton,
-                      { borderColor: config.color }
-                    ]}
+                    style={{
+                      ...styles.actionButton,
+                      borderColor: config.color
+                    }}
                   />
                 </View>
               )}

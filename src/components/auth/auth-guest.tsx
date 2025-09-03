@@ -14,7 +14,7 @@ export const AuthGuest: React.FC<AuthGuestProps> = ({ children }) => {
 
   useEffect(() => {
     if (isAuthenticated && !needsBiometricVerification) {
-      router.replace('/(tabs)/home');
+      router.replace('/(protected)/home');
     }
   }, [isAuthenticated, needsBiometricVerification, router]);
 

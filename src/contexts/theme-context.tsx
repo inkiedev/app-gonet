@@ -127,7 +127,7 @@ const darkColors: ThemeColors = {
     inverse: '#333333',
     disabled: '#777777',
     inactive: '#cccccc',
-    button: '#ffffff'
+    button: '#404040ff'
   },
   border: {
     light: '#333333',

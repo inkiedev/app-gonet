@@ -1,6 +1,7 @@
 import { Footer } from "@/components/layout/footer";
 import { Button } from "@/components/ui/custom-button";
 import { PlanCard } from "@/components/ui/plan-card";
+import { useTheme } from "@/contexts/theme-context";
 import { useAuthRoute } from "@/providers/auth-route-provider";
 import { RootState } from "@/store";
 import { theme } from "@/styles/theme";
@@ -66,31 +67,38 @@ const availablePlans: Plan[] = [
   }
 ];
 
-const PlanesContent = () => (
-  <View style={styles.planesSection}>
-    <Text style={styles.sectionTitle}>Nuestros Planes</Text>
-    {availablePlans.map((plan) => (
-      <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
-        <View style={styles.planContainer}>
-          <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
-          <Text style={styles.planFinalPrice}>Precio final: ${plan.finalPrice}</Text>
-          <View style={styles.planDetails}>
-            {plan.details.map((detail, index) => (
-              <Text key={index} style={styles.planDetail}>
-                {`• ${detail}`}
-              </Text>
-            ))}
+const PlanesContent = () => {
+  const { theme } = useTheme();
+  const dynamicStyles = createDynamicStyles(theme);
+
+  return  <>
+    <View style={styles.planesSection}>
+      <Text style={styles.sectionTitle}>Nuestros Planes</Text>
+      {availablePlans.map((plan) => (
+        <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
+          <View style={styles.planContainer}>
+            <Text style={styles.planPrice}>Precio: ${plan.price}+imp</Text>
+            <Text style={dynamicStyles.planFinalPrice}>Precio final: ${plan.finalPrice}</Text>
+            <View style={styles.planDetails}>
+              {plan.details.map((detail, index) => (
+                <Text key={index} style={dynamicStyles.planDetail}>
+                  {`• ${detail}`}
+                </Text>
+              ))}
+            </View>
+            <Button title="Contratar" onPress={() => {}} />
           </View>
-          <Button title="Contratar" onPress={() => {}} />
-        </View>
-      </PlanCard>
-    ))}
-  </View>
-);
+        </PlanCard>
+      ))}
+    </View>
+  </>
+};
 
 export default function PublicHomeScreen() {
   const router = useRouter();
+  const { theme } = useTheme();
   const { isInitialized } = useAuthRoute();
+  const dynamicStyles = createDynamicStyles(theme);
   const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
 
   // Wait for auth initialization
@@ -109,7 +117,7 @@ export default function PublicHomeScreen() {
   };
 
   return (
-    <SafeAreaView style={styles.container} edges={["top"]}>
+    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <ScrollView style={styles.scrollContainer}>
         {/* Banner */}
         <View style={styles.bannerContainer}>
@@ -138,11 +146,23 @@ export default function PublicHomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: theme.colors.background,
   },
+  planFinalPrice: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+  },
+  planDetail: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+  },
+})
+
+
+const styles = StyleSheet.create({
   scrollContainer: {
     flex: 1,
   },
@@ -191,7 +211,7 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.bold,
     color: theme.colors.primaryDark,
     textAlign: 'center',
-    marginBottom: theme.spacing.lg,
+    marginBottom: theme.spacing.xs,
   },
   planCard: {
     marginVertical: theme.spacing.md,

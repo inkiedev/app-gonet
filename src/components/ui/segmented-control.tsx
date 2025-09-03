@@ -64,7 +64,16 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   const selectorPosition = useSharedValue(0);
   const contentOpacity = useSharedValue(1);
 
-  const segmentWidth = (screenWidth - (theme.spacing.lg * 2) - 8) / segments.length;
+  // Calculate segment width based on container layout
+  const [containerWidth, setContainerWidth] = useState(0);
+  const getPadding = () => {
+    switch (size) {
+      case 'sm': return 4;
+      case 'lg': return 12;
+      default: return 8;
+    }
+  };
+  const segmentWidth = containerWidth > 0 ? (containerWidth - getPadding()) / segments.length : 0;
 
   // Handlers
   const handleSegmentPress = useCallback((index: number) => {
@@ -106,8 +115,16 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 
   // Initialize selector position
   React.useEffect(() => {
-    selectorPosition.value = activeIndex * segmentWidth;
+    if (segmentWidth > 0) {
+      selectorPosition.value = activeIndex * segmentWidth;
+    }
   }, [activeIndex, segmentWidth, selectorPosition]);
+
+  // Handle container layout
+  const handleContainerLayout = (event: any) => {
+    const { width } = event.nativeEvent.layout;
+    setContainerWidth(width);
+  };
 
   // Get styles based on variant and size
   const getContainerStyles = () => {
@@ -158,7 +175,6 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
         key={segment.id}
         style={[
           styles.segment,
-          { width: segmentWidth },
           styles[`segment_${size}`]
         ]}
         onPress={() => handleSegmentPress(index)}
@@ -236,7 +252,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   return (
     <View style={[styles.wrapper, containerStyle]}>
       {/* Segmented Control */}
-      <View style={getContainerStyles()}>
+      <View style={getContainerStyles()} onLayout={handleContainerLayout}>
         {/* Background selector */}
         {renderSelector()}
         
@@ -324,6 +340,7 @@ const styles = StyleSheet.create({
 
   // Individual segment
   segment: {
+    flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
     zIndex: 3,

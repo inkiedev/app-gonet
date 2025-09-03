@@ -76,7 +76,7 @@ const AjustesContent = () => {
   const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
-    <ScrollView style={styles.tabContent}>
+    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
       <Text style={dynamicStyles.tabTitle}>Configuración</Text>
       
       <View style={styles.sectionContainer}>
@@ -138,6 +138,7 @@ const AjustesContent = () => {
 
 const ActualizarDatosContent = () => {
   const dispatch = useDispatch();
+  const { theme: currentTheme } = useTheme();
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { biometricPreferences, userData } = useSelector((state: RootState) => state.auth);
   const { showError } = useNotificationContext();
@@ -167,6 +168,8 @@ const ActualizarDatosContent = () => {
     initializeTab();
   }, [biometricPreferences.useBiometricForPassword, dispatch, userData]);
 
+  const dynamicStyles = createDynamicStyles(currentTheme);
+
   const handleSecureAction = async () => {
     if (biometricPreferences.useBiometricForPassword) {
       const isAvailable = await checkBiometricAvailability();
@@ -189,7 +192,7 @@ const ActualizarDatosContent = () => {
   if (!isInitialized) {
     return (
       <View style={styles.tabContent}>
-        <Text style={styles.tabTitle}>Perfil</Text>
+        <Text style={dynamicStyles.tabTitle}>Perfil</Text>
         <View style={styles.loadingContainer}>
           <Text style={styles.loadingText}>Cargando...</Text>
         </View>
@@ -219,7 +222,7 @@ const ActualizarDatosContent = () => {
 
   return (
     <ScrollView style={styles.tabContent}>
-      <Text style={styles.tabTitle}>Perfil</Text>
+      <Text style={dynamicStyles.tabTitle}>Perfil</Text>
       <View style={styles.formContainer}>
         <Input placeholder="Contraseña actual" secureTextEntry />
         <Input placeholder="Correo" value={userData?.email || ''} />
@@ -234,6 +237,7 @@ const ActualizarDatosContent = () => {
 
 const CambiarContrasenaContent = () => {
   const dispatch = useDispatch();
+  const { theme: currentTheme } = useTheme();
   const { uid, username, rememberMe } = useSelector((state: RootState) => state.auth);
   const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
@@ -300,9 +304,11 @@ const CambiarContrasenaContent = () => {
     }
   };
 
+  const dynamicStyles = createDynamicStyles(currentTheme);
+
   return (
     <View style={styles.tabContent}>
-      <Text style={styles.tabTitle}>Seguridad</Text>
+      <Text style={dynamicStyles.tabTitle}>Seguridad</Text>
       <View style={styles.formContainer}>
         <Input
           placeholder="Contraseña actual"
@@ -548,6 +554,7 @@ const styles = StyleSheet.create({
   /* Segmented Container */
   segmentedContainer: {
     flex: 1,
+    paddingHorizontal: theme.spacing.md,
   },
   segmentContent: {
   },
@@ -560,8 +567,8 @@ const styles = StyleSheet.create({
   /* Tab Content */
   tabContent: {
     flex: 1,
-    paddingTop: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.md,
   },
   
   sectionContainer: {

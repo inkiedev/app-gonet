@@ -1,7 +1,7 @@
-import React from 'react';
-import { TouchableOpacity, StyleSheet } from 'react-native';
-import { Text } from './text';
+import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
+import React from 'react';
+import { StyleSheet, TouchableOpacity } from 'react-native';
 
 interface ThemeToggleButtonProps {
   style?: any;
@@ -22,8 +22,8 @@ export const ThemeToggleButton: React.FC<ThemeToggleButtonProps> = ({ style }) =
       ]}
       onPress={toggleTheme}
     >
-      <Text variant="medium" color="inverse">
-        {isDark ? '🌞 Tema Claro' : '🌙 Tema Oscuro'}
+      <Text>
+        {isDark ? 'Tema Claro' : 'Tema Oscuro'}
       </Text>
     </TouchableOpacity>
   );

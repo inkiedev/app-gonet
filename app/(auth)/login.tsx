@@ -25,7 +25,7 @@ import { useNotificationContext } from '@/contexts/notification-context';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
 import { loginSuccess } from '@/store/slices/auth-slice';
-import { useTheme } from '@/contexts/theme-context';
+import { theme } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
 const loginSchema = z.object({
@@ -41,8 +41,6 @@ export default function LoginScreen() {
   const dispatch = useDispatch();
   const [loginError, setLoginError] = useState<string>('');
   const { showSuccess, showError, showWarning } = useNotificationContext();
-  const { theme } = useTheme();
-  const dynamicStyles = createDynamicStyles(theme);
   const {
     control,
     handleSubmit,
@@ -121,25 +119,25 @@ export default function LoginScreen() {
 
   const renderContent = () => (
     <ScrollView
-      contentContainerStyle={dynamicStyles.scrollContent}
+      contentContainerStyle={styles.scrollContent}
       keyboardShouldPersistTaps="handled"
     >
-      <View style={dynamicStyles.content}>
-        <Text style={dynamicStyles.welcomeText}>BIENVENIDO</Text>
+      <View style={styles.content}>
+        <Text style={styles.welcomeText}>BIENVENIDO</Text>
 
         <AppLogo variant="small" />
 
-        <TouchableOpacity style={dynamicStyles.userSection} onPress={() => router.navigate("./register")}>
-        <FontAwesome name = {"user"} style = {dynamicStyles.iconFP}/>
-        <View style={dynamicStyles.userSection}>
-          <Text style={dynamicStyles.newUserText}>¿Nuevo Usuario?</Text>
-          <Text style={dynamicStyles.registerText}>Regístrate aquí</Text>
+        <TouchableOpacity style={styles.userSection} onPress={() => router.navigate("./register")}>
+        <FontAwesome name = {"user"} style = {styles.iconFP}/>
+        <View style={styles.userSection}>
+          <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
+          <Text style={styles.registerText}>Regístrate aquí</Text>
         </View>
         </TouchableOpacity>
 
-        <View style={dynamicStyles.divider} />
+        <View style={styles.divider} />
 
-        <View style={dynamicStyles.form}>
+        <View style={styles.form}>
           <Controller
             control={control}
             name="username"
@@ -178,22 +176,22 @@ export default function LoginScreen() {
             control={control}
             name="rememberMe"
             render={({ field: { onChange, value } }) => (
-              <View style={dynamicStyles.checkboxContainer}>
+              <View style={styles.checkboxContainer}>
                 <Checkbox
                   value={value || false}
                   onValueChange={onChange}
-                  style={dynamicStyles.checkbox}
+                  style={styles.checkbox}
                   color={value ? theme.colors.primary : undefined}
                 />
                 <TouchableOpacity onPress={() => onChange(!value)}>
-                  <Text style={dynamicStyles.checkboxLabel}>Recuérdame</Text>
+                  <Text style={styles.checkboxLabel}>Recuérdame</Text>
                 </TouchableOpacity>
               </View>
             )}
           />
 
           {loginError ? (
-            <Text style={dynamicStyles.errorText} testID="login-error">
+            <Text style={styles.errorText} testID="login-error">
               {loginError}
             </Text>
           ) : null}
@@ -217,12 +215,12 @@ export default function LoginScreen() {
           ? require('@/assets/images/iconos gonet app svg_backing desktop.png')
           : require('@/assets/images/iconos gonet app svg_backing.png')
         }
-        style={Platform.OS === 'web' ? dynamicStyles.webBackground : dynamicStyles.background}
+        style={Platform.OS === 'web' ? styles.webBackground : styles.background}
         resizeMode="cover"
       >
-        <SafeAreaView style={dynamicStyles.container}>
+        <SafeAreaView style={styles.container}>
           <KeyboardAvoidingView
-            style={dynamicStyles.keyboardView}
+            style={styles.keyboardView}
             behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
           >
             {renderContent()}
@@ -233,7 +231,7 @@ export default function LoginScreen() {
   );
 }
 
-const createDynamicStyles = (theme: any) => StyleSheet.create({
+const styles = StyleSheet.create({
   background: {
     flex: 1,
   },
