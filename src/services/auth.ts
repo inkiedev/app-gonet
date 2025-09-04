@@ -1,4 +1,5 @@
-import { apiService, OdooAuthResult, OdooJsonRegisterRpcRequest, OdooUserData } from './api';
+import { Subscription } from '../types/subscription';
+import { apiService, OdooAuthResult, OdooJsonRegisterRpcRequest } from './api';
 
 export interface LoginRequest {
   username: string;
@@ -20,6 +21,7 @@ export interface LoginResponse {
     email: string;
     uid: number;
   };
+  subscriptions?: Subscription[];
   error?: string;
 }
 
@@ -58,30 +60,42 @@ export class AuthService {
         };
       }
 
-      const userData: OdooUserData = await apiService.getUserData(
+      // Obtener suscripciones usando el username como DNI
+      const subscriptions: Subscription[] = await apiService.getSuscription(
         database,
-        authResult.uid,
-        credentials.password
+        credentials.username
       );
 
-      if (!userData) {
+      if (!subscriptions || subscriptions.length === 0) {
+        return {
+          success: false,
+          error: 'No se encontraron suscripciones para este usuario'
+        };
+      }
+
+      // Extraer datos del usuario del primer partner en las suscripciones
+      const firstPartner = subscriptions[0].partner;
+      if (!firstPartner) {
         return {
           success: false,
           error: 'No se pudo obtener información del usuario'
         };
       }
 
+      // Guardar suscripciones en storage seguro
       const { secureStorageService } = await import('./secure-storage');
-      await secureStorageService.saveUserData(userData);
+      await secureStorageService.saveSubscriptions(subscriptions);
+      await secureStorageService.saveSelectedAccountIndex(0); // Primera cuenta por defecto
 
       return {
         success: true,
         user: {
-          id: userData.id,
-          name: userData.name,
-          email: userData.email || '',
+          id: firstPartner.id,
+          name: firstPartner.name,
+          email: firstPartner.email,
           uid: authResult.uid
-        }
+        },
+        subscriptions: subscriptions
       };
 
     } catch (error) {

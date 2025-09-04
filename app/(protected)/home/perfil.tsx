@@ -14,7 +14,7 @@ import { Button } from '@/components/ui/custom-button';
 import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
 import { RootState } from '@/store';
-import { loadUserData } from '@/store/slices/auth-slice';
+import { loadSubscriptionsData } from '@/store/slices/auth-slice';
 
 interface UserField {
   label: string;
@@ -91,57 +91,57 @@ const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) => {
 export default function AjustesScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
-  const { isSmall, isTablet } = useResponsive();
+  const { isSmall } = useResponsive();
   const [isEditing, setIsEditing] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning'; visible: boolean }>({
     message: '',
     type: 'success',
     visible: false
   });
-  const { userData } = useSelector((state: RootState) => state.auth);
+  const { currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
 
   useEffect(() => {
-    if (!userData) {
-      dispatch(loadUserData() as any);
+    if (!currentAccount && subscriptions.length === 0) {
+      dispatch(loadSubscriptionsData() as any);
     }
-  }, [dispatch, userData]);
+  }, [dispatch, currentAccount, subscriptions.length]);
 
   const userFields: UserField[] = [
     {
       label: 'Cédula',
-      value: userData?.vat || 'No disponible',
+      value: currentAccount?.partner?.dni || 'No disponible',
       icon: 'card-outline'
     },
     {
       label: 'Correo',
-      value: userData?.email || 'No disponible',
+      value: currentAccount?.partner?.email || 'No disponible',
       icon: 'mail-outline'
     },
     {
       label: 'Móvil',
-      value: userData?.mobile || 'No disponible',
+      value: currentAccount?.partner?.mobile || 'No disponible',
       icon: 'call-outline'
     },
     {
       label: 'Teléfono',
-      value: userData?.phone || 'No disponible',
+      value: currentAccount?.partner?.phone || 'No disponible',
       icon: 'call-outline'
     },
     {
       label: 'Ciudad',
-      value: userData?.city || 'No disponible',
+      value: currentAccount?.partner?.city || 'No disponible',
       icon: 'location-outline'
     },
     {
       label: 'Dirección',
-      value: userData?.street || 'No disponible',
+      value: currentAccount?.partner?.street || 'No disponible',
       icon: 'location-outline'
     },
     {
       label: 'Dirección 2',
-      value: userData?.street2 || 'No disponible',
+      value: currentAccount?.partner?.street2 || 'No disponible',
       icon: 'location-outline'
     },
   ];
@@ -201,7 +201,7 @@ export default function AjustesScreen() {
               dynamicStyles.userName,
               { fontSize: isSmall ? theme.fontSize.xl : theme.fontSize.xxl }
             ]}>
-              {userData?.name || 'Usuario'}
+              {currentAccount?.partner?.name || 'Usuario'}
             </Text>
           </View>
 

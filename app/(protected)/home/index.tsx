@@ -15,7 +15,7 @@ import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
 import { authService } from '@/services/auth';
 import { RootState } from '@/store';
-import { loadUserData, logout } from '@/store/slices/auth-slice';
+import { loadSubscriptionsData, logout } from '@/store/slices/auth-slice';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { BackHandler, StyleSheet, View } from 'react-native';
@@ -55,11 +55,13 @@ export default function HomeScreen() {
   const heightAnimation = useSharedValue(60);
   const router = useRouter();
   const dispatch = useDispatch();
-  const { userData } = useSelector((state: RootState) => state.auth);
+  const { currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
   const { showSuccess, showError, showInfo } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
   const { height } = useResponsive();
   const { theme } = useTheme();
+
+  console.log(currentAccount)
 
   useEffect(() => {
     const backAction = () => {
@@ -76,10 +78,10 @@ export default function HomeScreen() {
   }, []);
 
   useEffect(() => {
-    if (!userData) {
-      dispatch(loadUserData() as any);
-    }
-  }, [dispatch, userData]);
+      if (!currentAccount && subscriptions.length === 0) {
+        dispatch(loadSubscriptionsData() as any);
+      }
+    }, [dispatch, currentAccount, subscriptions.length]);
 
   const toggleMenu = () => {
     setMenuVisible(!menuVisible);

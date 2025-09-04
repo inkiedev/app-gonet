@@ -1,3 +1,5 @@
+import { Subscription } from '../types/subscription';
+
 interface OdooAuthResult {
   uid: number;
 }
@@ -195,11 +197,30 @@ class ApiService {
 
     return result;
   }
+
+  async getSuscription(database: string, dni: string): Promise<Subscription[]> {
+    if (!database || typeof database !== 'string' || database.trim() === '' ||
+        !dni || typeof dni !== 'string' || dni.trim() === '') {
+      throw new Error('Database and dni are required');
+    }
+
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute',
+      args: [database, 2, 'admin', 'my.app.api', 'get_suscription', dni]
+    });
+
+    if (!result || !Array.isArray(result)) {
+      return [];
+    }
+
+    return result;
+  }
 }
 
 export const apiService = new ApiService(
   process.env.EXPO_PUBLIC_API_URL || 'http://192.168.70.123:8069'
 );
 
-export type { OdooAuthResult, OdooJsonRegisterRpcRequest, OdooJsonRpcResponse, OdooUserData };
+export type { OdooAuthResult, OdooJsonRegisterRpcRequest, OdooJsonRpcResponse, OdooUserData, Subscription };
 

@@ -24,7 +24,7 @@ import { Input } from '@/components/ui/custom-input';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
-import { loginSuccess } from '@/store/slices/auth-slice';
+import { loginSuccess, setSubscriptions } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -63,7 +63,7 @@ export default function LoginScreen() {
         password: data.password,
       });
 
-      if (result.success && result.user) {
+      if (result.success && result.user && result.subscriptions) {
         try {
           const loginData = {
             uid: result.user.uid,
@@ -72,7 +72,9 @@ export default function LoginScreen() {
             rememberMe: data.rememberMe || false
           };
 
+          // Dispatch login success and subscriptions
           dispatch(loginSuccess(loginData));
+          dispatch(setSubscriptions(result.subscriptions));
 
           if (data.rememberMe) {
             console.log('Guardando credenciales en el dispositivo')

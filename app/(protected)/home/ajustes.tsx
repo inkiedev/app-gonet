@@ -7,7 +7,7 @@ import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, loadUserData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadSubscriptionsData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from "react";
@@ -154,7 +154,7 @@ const ActualizarDatosContent = () => {
   const dispatch = useDispatch();
   const { theme: currentTheme } = useTheme();
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
-  const { biometricPreferences, userData } = useSelector((state: RootState) => state.auth);
+  const { biometricPreferences, currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
   const { showError } = useNotificationContext();
 
   // Pre-calcular el estado inicial para evitar flash
@@ -170,8 +170,8 @@ const ActualizarDatosContent = () => {
       // Sincronizar el estado con las preferencias actuales
       setIsVerified(!biometricPreferences.useBiometricForPassword);
       
-      if (!userData) {
-        dispatch(loadUserData() as any);
+      if (!currentAccount && subscriptions.length === 0) {
+        dispatch(loadSubscriptionsData() as any);
       }
       
       // Micro delay solo para asegurar que el render sea estable
@@ -180,7 +180,7 @@ const ActualizarDatosContent = () => {
     };
     
     initializeTab();
-  }, [biometricPreferences.useBiometricForPassword, dispatch, userData]);
+  }, [biometricPreferences.useBiometricForPassword, dispatch, currentAccount, subscriptions.length]);
 
   const dynamicStyles = createDynamicStyles(currentTheme);
 
@@ -240,11 +240,11 @@ const ActualizarDatosContent = () => {
         <Text style={dynamicStyles.subTitle}>Actualizar Datos</Text>
         <View style={styles.formContainer}>
           <Input placeholder="Contraseña actual" secureTextEntry />
-          <Input placeholder="Correo" value={userData?.email || ''} />
-          <Input placeholder="Teléfono móvil" value={userData?.mobile || ''} />
-          <Input placeholder="Teléfono fijo" value={userData?.phone || ''} />
-          <Input placeholder="Dirección" value={userData?.street || ''} />
-          <Input placeholder="Ciudad" value={userData?.city || ''} />
+          <Input placeholder="Correo" value={currentAccount?.partner?.email || ''} />
+          <Input placeholder="Teléfono móvil" value={currentAccount?.partner?.mobile || ''} />
+          <Input placeholder="Teléfono fijo" value={currentAccount?.partner?.phone || ''} />
+          <Input placeholder="Dirección" value={currentAccount?.partner?.street || ''} />
+          <Input placeholder="Ciudad" value={currentAccount?.partner?.city || ''} />
         </View>
       </View>
     </ScrollView>

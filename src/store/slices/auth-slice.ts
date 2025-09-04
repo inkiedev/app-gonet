@@ -1,7 +1,8 @@
-import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { secureStorageService, BiometricPreferences, UserData } from '@/services/secure-storage';
+import { BiometricPreferences, secureStorageService, UserData } from '@/services/secure-storage';
+import { Subscription } from '@/types/subscription';
+import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 
-export const loadBiometricPreferences = createAsyncThunk(
+const loadBiometricPreferences = createAsyncThunk(
   'auth/loadBiometricPreferences',
   async () => {
     const preferences = await secureStorageService.getBiometricPreferences();
@@ -9,7 +10,7 @@ export const loadBiometricPreferences = createAsyncThunk(
   }
 );
 
-export const saveBiometricPreferences = createAsyncThunk(
+const saveBiometricPreferences = createAsyncThunk(
   'auth/saveBiometricPreferences',
   async (preferences: BiometricPreferences) => {
     await secureStorageService.saveBiometricPreferences(preferences);
@@ -17,7 +18,7 @@ export const saveBiometricPreferences = createAsyncThunk(
   }
 );
 
-export const saveUserData = createAsyncThunk(
+const saveUserData = createAsyncThunk(
   'auth/saveUserData',
   async (userData: UserData) => {
     await secureStorageService.saveUserData(userData);
@@ -25,7 +26,7 @@ export const saveUserData = createAsyncThunk(
   }
 );
 
-export const loadUserData = createAsyncThunk(
+const loadUserData = createAsyncThunk(
   'auth/loadUserData',
   async () => {
     const userData = await secureStorageService.getUserData();
@@ -33,7 +34,7 @@ export const loadUserData = createAsyncThunk(
   }
 );
 
-export const updateStoredPassword = createAsyncThunk(
+const updateStoredPassword = createAsyncThunk(
   'auth/updateStoredPassword',
   async ({ newPassword, uid, username, rememberMe }: { 
     newPassword: string; 
@@ -49,6 +50,17 @@ export const updateStoredPassword = createAsyncThunk(
   }
 );
 
+const loadSubscriptionsData = createAsyncThunk(
+  'auth/loadSubscriptionsData',
+  async () => {
+    const subscriptions = await secureStorageService.getSubscriptions();
+    const selectedIndex = await secureStorageService.getSelectedAccountIndex();
+    return { subscriptions, selectedIndex };
+  }
+);
+
+// Helper function is no longer needed since we store the full subscription
+
 interface AuthState {
   isAuthenticated: boolean;
   uid: number | null;
@@ -60,7 +72,9 @@ interface AuthState {
     useBiometricForPassword: boolean;
     useBiometricForLogin: boolean;
   };
-  userData: UserData | null;
+  currentAccount: Subscription | null;
+  subscriptions: Subscription[];
+  selectedAccountIndex: number;
 }
 
 const initialState: AuthState = {
@@ -74,7 +88,9 @@ const initialState: AuthState = {
     useBiometricForPassword: false,
     useBiometricForLogin: false,
   },
-  userData: null,
+  currentAccount: null,
+  subscriptions: [],
+  selectedAccountIndex: 0,
 };
 
 const authSlice = createSlice({
@@ -118,10 +134,14 @@ const authSlice = createSlice({
         useBiometricForPassword: false,
         useBiometricForLogin: false,
       };
-      state.userData = null;
+      state.currentAccount = null;
+      state.subscriptions = [];
+      state.selectedAccountIndex = 0;
       secureStorageService.clearBiometricPreferences();
       secureStorageService.clearUserData();
       secureStorageService.clearThemePreferences();
+      secureStorageService.clearSubscriptions();
+      secureStorageService.clearSelectedAccountIndex();
     },
     sessionLogout: (state) => {
       state.isAuthenticated = false;
@@ -135,10 +155,14 @@ const authSlice = createSlice({
           useBiometricForPassword: false,
           useBiometricForLogin: false,
         };
-        state.userData = null;
+        state.currentAccount = null;
+        state.subscriptions = [];
+        state.selectedAccountIndex = 0;
         secureStorageService.clearBiometricPreferences();
         secureStorageService.clearUserData();
         secureStorageService.clearThemePreferences();
+        secureStorageService.clearSubscriptions();
+        secureStorageService.clearSelectedAccountIndex();
       }
     },
     clearSession: (state) => {
@@ -161,6 +185,25 @@ const authSlice = createSlice({
     updatePassword: (state, action: PayloadAction<string>) => {
       state.password = action.payload;
     },
+    setSubscriptions: (state, action: PayloadAction<Subscription[]>) => {
+      state.subscriptions = action.payload;
+      state.selectedAccountIndex = 0; // Default to first account
+      
+      // Auto-update currentAccount from first subscription
+      if (action.payload.length > 0) {
+        state.currentAccount = action.payload[0];
+      }
+    },
+    selectAccount: (state, action: PayloadAction<number>) => {
+      const index = action.payload;
+      if (index >= 0 && index < state.subscriptions.length) {
+        state.selectedAccountIndex = index;
+        state.currentAccount = state.subscriptions[index];
+        
+        // Persist the selection
+        secureStorageService.saveSelectedAccountIndex(index);
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -173,18 +216,41 @@ const authSlice = createSlice({
         state.biometricPreferences = action.payload;
       })
       .addCase(saveUserData.fulfilled, (state, action) => {
-        state.userData = action.payload;
+        // saveUserData is no longer used since we store full subscription
       })
       .addCase(loadUserData.fulfilled, (state, action) => {
-        if (action.payload) {
-          state.userData = action.payload;
-        }
+        // loadUserData is no longer used since we store full subscription
       })
       .addCase(updateStoredPassword.fulfilled, (state, action) => {
         state.password = action.payload;
+      })
+      .addCase(loadSubscriptionsData.fulfilled, (state, action) => {
+        if (action.payload.subscriptions.length > 0) {
+          state.subscriptions = action.payload.subscriptions;
+          const selectedIndex = Math.min(action.payload.selectedIndex, action.payload.subscriptions.length - 1);
+          state.selectedAccountIndex = selectedIndex;
+          state.currentAccount = action.payload.subscriptions[selectedIndex];
+        }
       });
   },
 });
 
-export const { loginSuccess, restoreSession, logout, sessionLogout, clearSession, completeBiometricVerification, updateBiometricPreferences, updatePassword } = authSlice.actions;
+export const { 
+  loginSuccess, 
+  restoreSession, 
+  logout, 
+  sessionLogout, 
+  clearSession, 
+  completeBiometricVerification, 
+  updateBiometricPreferences, 
+  updatePassword,
+  setSubscriptions,
+  selectAccount
+} = authSlice.actions;
+
+export {
+  loadBiometricPreferences, loadSubscriptionsData, loadUserData, saveBiometricPreferences,
+  saveUserData, updateStoredPassword
+};
+
 export default authSlice.reducer;

@@ -2,6 +2,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as Crypto from 'expo-crypto';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { Subscription } from '../types/subscription';
 
 const STORAGE_KEYS = {
   CREDENTIALS: 'secure_credentials',
@@ -9,6 +10,8 @@ const STORAGE_KEYS = {
   BIOMETRIC_PREFERENCES: 'biometric_preferences',
   USER_DATA: 'user_data',
   THEME_PREFERENCES: 'theme_preferences',
+  SUBSCRIPTIONS: 'subscriptions',
+  SELECTED_ACCOUNT_INDEX: 'selected_account_index',
 };
 
 const MASTER_KEY_NAME = 'gonet_master_encryption_key';
@@ -283,6 +286,67 @@ class SecureStorageService {
       await this.deleteSecureItem(STORAGE_KEYS.THEME_PREFERENCES);
     } catch (error) {
       console.error('Error clearing theme preferences:', error);
+    }
+  }
+
+  async saveSubscriptions(subscriptions: Subscription[]): Promise<void> {
+    try {
+      await this.setSecureItem(STORAGE_KEYS.SUBSCRIPTIONS, JSON.stringify(subscriptions));
+    } catch (error) {
+      console.error('Error saving subscriptions:', error);
+      throw new Error('No se pudieron guardar las suscripciones');
+    }
+  }
+
+  async getSubscriptions(): Promise<Subscription[]> {
+    try {
+      const subscriptionsData = await this.getSecureItem(STORAGE_KEYS.SUBSCRIPTIONS);
+      if (!subscriptionsData) {
+        return [];
+      }
+      return JSON.parse(subscriptionsData);
+    } catch (error) {
+      console.error('Error getting subscriptions:', error);
+      return [];
+    }
+  }
+
+  async clearSubscriptions(): Promise<void> {
+    try {
+      await this.deleteSecureItem(STORAGE_KEYS.SUBSCRIPTIONS);
+    } catch (error) {
+      console.error('Error clearing subscriptions:', error);
+    }
+  }
+
+  async saveSelectedAccountIndex(index: number): Promise<void> {
+    try {
+      await this.setSecureItem(STORAGE_KEYS.SELECTED_ACCOUNT_INDEX, index.toString());
+    } catch (error) {
+      console.error('Error saving selected account index:', error);
+      throw new Error('No se pudo guardar el índice de cuenta seleccionada');
+    }
+  }
+
+  async getSelectedAccountIndex(): Promise<number> {
+    try {
+      const indexData = await this.getSecureItem(STORAGE_KEYS.SELECTED_ACCOUNT_INDEX);
+      if (!indexData) {
+        return 0; // Default to first account
+      }
+      const index = parseInt(indexData, 10);
+      return isNaN(index) ? 0 : index;
+    } catch (error) {
+      console.error('Error getting selected account index:', error);
+      return 0;
+    }
+  }
+
+  async clearSelectedAccountIndex(): Promise<void> {
+    try {
+      await this.deleteSecureItem(STORAGE_KEYS.SELECTED_ACCOUNT_INDEX);
+    } catch (error) {
+      console.error('Error clearing selected account index:', error);
     }
   }
 }
