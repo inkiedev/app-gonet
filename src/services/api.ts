@@ -137,7 +137,7 @@ class ApiService {
     const result = await this.makeJsonRpcRequest('call', {
       service: 'object',
       method: 'execute_kw',
-      args: [database, uid, password, 'res.users', 'write', [userId, data]]
+      args: [database, uid, password, 'res.partner', 'write', [userId, data]]
     });
 
     return result === true;

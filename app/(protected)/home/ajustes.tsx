@@ -7,7 +7,7 @@ import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, loadSubscriptionsData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadSubscriptionsData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword, loadThemePreferences, saveThemePreferences, updateThemePreferences } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from "react";
@@ -27,17 +27,20 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 const AjustesContent = () => {
   const dispatch = useDispatch();
-  const { rememberMe, biometricPreferences } = useSelector((state: RootState) => state.auth);
+  const { rememberMe, biometricPreferences, themePreferences } = useSelector((state: RootState) => state.auth);
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
-  const { showSuccess, showError } = useNotificationContext();
+  const { showError } = useNotificationContext();
   const { theme: currentTheme, isDark, toggleTheme, setFollowSystem } = useTheme();
-  const [ systemTheme, setSystemTheme ] = useState(true);
   
   useEffect(() => {
     if (rememberMe) {
       dispatch(loadBiometricPreferences() as any);
     }
   }, [dispatch, rememberMe]);
+
+  useEffect(() => {
+    dispatch(loadThemePreferences() as any);
+  }, [dispatch]);
 
   const authenticateForSettingsChange = async (): Promise<boolean> => {
     const isAvailable = await checkBiometricAvailability();
@@ -77,9 +80,18 @@ const AjustesContent = () => {
     }
   };
 
-  const handleSystemThemeChange = () => {
-    setFollowSystem(!systemTheme);
-    setSystemTheme(!systemTheme);
+  const handleSystemThemeChange = async () => {
+    const newFollowSystem = !themePreferences.followSystem;
+    
+    // Update store preferences
+    dispatch(updateThemePreferences({ followSystem: newFollowSystem }));
+    dispatch(saveThemePreferences({ 
+      isDark: themePreferences.isDark, 
+      followSystem: newFollowSystem 
+    }) as any);
+    
+    // Update theme context
+    setFollowSystem(newFollowSystem);
   }
 
   const dynamicStyles = createDynamicStyles(currentTheme);
@@ -95,13 +107,13 @@ const AjustesContent = () => {
         <Text style={dynamicStyles.subTitle}>Apariencia</Text>
         <View style={dynamicStyles.switchRow}>
           <TouchableOpacity onPress={handleSystemThemeChange} style={styles.themeChangeContainer}>
-            <Checkbox value={systemTheme} onValueChange={handleSystemThemeChange} />
+            <Checkbox value={themePreferences.followSystem} onValueChange={handleSystemThemeChange} />
             <Text style={dynamicStyles.switchLabel}>Usar tema del sistema</Text>
           </TouchableOpacity>
         </View>
         <View style={dynamicStyles.switchRow}>
           <Switch 
-            disabled={systemTheme}
+            disabled={themePreferences.followSystem}
             value={isDark} 
             onValueChange={toggleTheme}
             trackColor={{ false: currentTheme.colors.border.medium, true: currentTheme.colors.primary }}

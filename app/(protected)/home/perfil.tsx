@@ -4,101 +4,59 @@ import Text from '@/components/ui/custom-text';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { Animated, ScrollView, StyleSheet, View } from 'react-native';
+import { ScrollView, StyleSheet, TextInput, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import * as z from 'zod';
 
 import { Header } from '@/components/layout/header';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/custom-button';
+import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
+import { apiService } from '@/services/api';
 import { RootState } from '@/store';
-import { loadSubscriptionsData } from '@/store/slices/auth-slice';
+import { loadSubscriptionsData, refreshSubscriptionsFromAPI } from '@/store/slices/auth-slice';
+
+// Validation schema for editable fields
+const profileSchema = z.object({
+  email: z.email('Email inválido').min(1, 'Email requerido'),
+  mobile: z.string().min(10, 'Mínimo 10 dígitos').max(15, 'Máximo 15 dígitos'),
+  phone: z.string().min(7, 'Mínimo 7 dígitos').max(15, 'Máximo 15 dígitos').or(z.literal('')),
+  street: z.string().min(5, 'Dirección muy corta').max(100, 'Dirección muy larga'),
+  street2: z.string().max(100, 'Dirección muy larga').optional().or(z.literal('')),
+});
+
+type ProfileFormData = z.infer<typeof profileSchema>;
 
 interface UserField {
   label: string;
   value: string;
   icon?: string;
+  key: keyof ProfileFormData | 'dni' | 'name' | 'type_doc' | 'country' | 'state' | 'city';
+  iconColor?: string;
+  editable: boolean;
+  type?: 'text' | 'email' | 'phone';
 }
-
-interface ToastProps {
-  message: string;
-  type: 'success' | 'info' | 'error' | 'warning';
-  visible: boolean;
-  onHide: () => void;
-}
-
-const Toast: React.FC<ToastProps> = ({ message, type, visible, onHide }) => {
-  const { theme } = useTheme();
-  const dynamicStyles = createDynamicStyles(theme);
-  const opacity = useState(new Animated.Value(0))[0];
-
-  useEffect(() => {
-    if (visible) {
-      Animated.sequence([
-        Animated.timing(opacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.delay(2500),
-        Animated.timing(opacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        onHide();
-      });
-    }
-  }, [visible]);
-
-  if (!visible) return null;
-
-  const getToastStyle = () => {
-    switch (type) {
-      case 'success':
-        return dynamicStyles.toastSuccess;
-      case 'error':
-        return dynamicStyles.toastError;
-      case 'warning':
-        return dynamicStyles.toastWarning;
-      case 'info':
-        return dynamicStyles.toastInfo;
-      default:
-        return dynamicStyles.toastInfo;
-    }
-  };
-
-  return (
-    <Animated.View style={[
-      dynamicStyles.toastContainer,
-      getToastStyle(),
-      { opacity }
-    ]}>
-      <Ionicons
-        name={type === 'success' ? 'checkmark-circle' : type === 'error' ? 'close-circle' : type === 'warning' ? 'warning' : 'information-circle'}
-        size={20}
-        color={theme.colors.text.inverse}
-        style={{ marginRight: theme.spacing.xs }}
-      />
-      <Text style={dynamicStyles.toastText}>{message}</Text>
-    </Animated.View>
-  );
-};
 
 export default function AjustesScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { isSmall } = useResponsive();
   const [isEditing, setIsEditing] = useState(false);
-  const [toast, setToast] = useState<{ message: string; type: 'success' | 'info' | 'error' | 'warning'; visible: boolean }>({
-    message: '',
-    type: 'success',
-    visible: false
+  const [isLoading, setIsLoading] = useState(false);
+  const { showSuccess, showWarning, showError } = useNotificationContext();
+  const [formData, setFormData] = useState<ProfileFormData>({
+    email: '',
+    mobile: '',
+    phone: '',
+    street: '',
+    street2: ''
   });
-  const { currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
+  const [formErrors, setFormErrors] = useState<Partial<Record<keyof ProfileFormData, string>>>({});
+  
+  const { currentAccount, subscriptions, uid, password } = useSelector((state: RootState) => state.auth);
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
 
@@ -108,68 +66,184 @@ export default function AjustesScreen() {
     }
   }, [dispatch, currentAccount, subscriptions.length]);
 
+  useEffect(() => {
+    if (currentAccount?.partner) {
+      const partner = currentAccount.partner;
+      setFormData({
+        email: partner.email || '',
+        mobile: partner.mobile || '',
+        phone: partner.phone || '',
+        street: partner.street || '',
+        street2: partner.street2 || ''
+      });
+    }
+  }, [currentAccount]);
+
   const userFields: UserField[] = [
+    {
+      label: 'Tipo de Documento',
+      value: currentAccount?.partner?.type_doc || 'No disponible',
+      icon: 'document-outline',
+      key: 'type_doc',
+      editable: false
+    },
     {
       label: 'Cédula',
       value: currentAccount?.partner?.dni || 'No disponible',
-      icon: 'card-outline'
+      icon: 'card-outline',
+      key: 'dni',
+      editable: false
     },
     {
       label: 'Correo',
-      value: currentAccount?.partner?.email || 'No disponible',
-      icon: 'mail-outline'
+      value: isEditing ? formData.email : currentAccount?.partner?.email || 'No disponible',
+      icon: 'mail-outline',
+      key: 'email',
+      editable: true,
+      type: 'email'
     },
     {
       label: 'Móvil',
-      value: currentAccount?.partner?.mobile || 'No disponible',
-      icon: 'call-outline'
+      value: isEditing ? formData.mobile : currentAccount?.partner?.mobile || 'No disponible',
+      icon: 'call-outline',
+      key: 'mobile',
+      editable: true,
+      type: 'phone'
     },
     {
       label: 'Teléfono',
-      value: currentAccount?.partner?.phone || 'No disponible',
-      icon: 'call-outline'
+      value: isEditing ? (formData.phone || '') : (currentAccount?.partner?.phone || 'No disponible'),
+      icon: 'call-outline',
+      key: 'phone',
+      editable: true,
+      type: 'phone'
+    },
+    {
+      label: 'País',
+      value: currentAccount?.partner?.country || 'No disponible',
+      icon: 'globe-outline',
+      key: 'country',
+      editable: false
+    },
+    {
+      label: 'Provincia',
+      value: currentAccount?.partner?.state || 'No disponible',
+      icon: 'location-outline',
+      key: 'state',
+      editable: false
     },
     {
       label: 'Ciudad',
       value: currentAccount?.partner?.city || 'No disponible',
-      icon: 'location-outline'
+      icon: 'location-outline',
+      key: 'city',
+      editable: false
     },
     {
-      label: 'Dirección',
-      value: currentAccount?.partner?.street || 'No disponible',
-      icon: 'location-outline'
+      label: 'Dirección Principal',
+      value: isEditing ? formData.street : currentAccount?.partner?.street || 'No disponible',
+      icon: 'home-outline',
+      key: 'street',
+      editable: true
     },
     {
-      label: 'Dirección 2',
-      value: currentAccount?.partner?.street2 || 'No disponible',
-      icon: 'location-outline'
+      label: 'Dirección Secundaria',
+      value: isEditing ? (formData.street2 || '') : (currentAccount?.partner?.street2 || 'No disponible'),
+      icon: 'home-outline',
+      key: 'street2',
+      editable: true
     },
   ];
 
-  const showToast = (message: string, type: 'success' | 'info' | 'error') => {
-    setToast({ message, type, visible: true });
+  const validateForm = (): boolean => {
+    try {
+      profileSchema.parse(formData);
+      setFormErrors({});
+      return true;
+    } catch (error) {
+      if (error instanceof z.ZodError) {
+        const errors: Partial<Record<keyof ProfileFormData, string>> = {};
+        error.issues.forEach((err) => {
+          if (err.path[0]) {
+            errors[err.path[0] as keyof ProfileFormData] = err.message;
+          }
+        });
+        setFormErrors(errors);
+        return false;
+      }
+      return false;
+    }
   };
 
-  const hideToast = () => {
-    setToast(prev => ({ ...prev, visible: false }));
+  const handleFieldChange = (key: keyof ProfileFormData, value: string) => {
+    setFormData(prev => ({ ...prev, [key]: value }));
+    // Clear error for this field when user starts typing
+    if (formErrors[key]) {
+      setFormErrors(prev => ({ ...prev, [key]: undefined }));
+    }
+  };
+
+  const handleSave = async () => {
+    if (!validateForm()) {
+      showError('Error', 'Ingrese los campos faltantes correctamente', 2000);
+      return;
+    }
+
+    if (!currentAccount?.partner?.id || !uid || !password) {
+      showError('Error', 'Informacion de sesion no disponible', 2000);
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await apiService.updateUserProfile(
+        'enterprise', // database
+        uid,
+        password,
+        currentAccount.partner.id,
+        formData
+      );
+      
+      await dispatch(refreshSubscriptionsFromAPI() as any);
+      
+      setIsEditing(false);
+      showSuccess('Exito', 'Perfil actualizado correctamente', 2000);
+    } catch (error) {
+      console.error('Error updating profile:', error);
+      showError('Error', 'Error al actualizar el perfil', 2000);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleEdit = () => {
     if (isEditing) {
-      showToast('Tu perfil ha sido actualizado', 'success');
-      setIsEditing(false);
+      handleSave();
     } else {
       setIsEditing(true);
+      setFormErrors({});
     }
   };
 
   const handleCancel = () => {
+    // Reset form data to original values
+    if (currentAccount?.partner) {
+      const partner = currentAccount.partner;
+      setFormData({
+        email: partner.email || '',
+        mobile: partner.mobile || '',
+        phone: partner.phone || '',
+        street: partner.street || '',
+        street2: partner.street2 || '',
+      });
+    }
+    setFormErrors({});
     setIsEditing(false);
-    showToast('No se guardaron los cambios', 'info');
+    showWarning('Aviso', 'Cambios cancelados', 2000);
   };
 
   return (
-    <SafeAreaView style={dynamicStyles.container}>
+    <SafeAreaView style={dynamicStyles.container} edges={['top']}>
       <Header
         title="Ajustes de perfil"
         leftAction={{
@@ -223,6 +297,8 @@ export default function AjustesScreen() {
                 isLast={index === userFields.length - 1}
                 isEditing={isEditing}
                 isSmall={isSmall}
+                onFieldChange={handleFieldChange}
+                error={field.editable && field.key !== 'dni' && field.key !== 'name' && field.key !== 'type_doc' ? formErrors[field.key as keyof ProfileFormData] : undefined}
               />
             ))}
           </Card>
@@ -234,13 +310,17 @@ export default function AjustesScreen() {
               variant="primary"
               size={isSmall ? "md" : "lg"}
               fullWidth
+              loading={isLoading}
+              disabled={isLoading}
               icon={
-                <Ionicons
-                  name={isEditing ? "save-outline" : "create-outline"}
-                  size={20}
-                  color={theme.colors.text.inverse}
-                  style={{ marginRight: theme.spacing.xs }}
-                />
+                !isLoading && (
+                  <Ionicons
+                    name={isEditing ? "save-outline" : "create-outline"}
+                    size={20}
+                    color={theme.colors.text.inverse}
+                    style={{ marginRight: theme.spacing.xs }}
+                  />
+                )
               }
             />
 
@@ -256,13 +336,6 @@ export default function AjustesScreen() {
           </View>
         </View>
       </ScrollView>
-      
-      <Toast
-        message={toast.message}
-        type={toast.type}
-        visible={toast.visible}
-        onHide={hideToast}
-      />
     </SafeAreaView>
   );
 }
@@ -272,47 +345,88 @@ interface UserInfoRowProps {
   isLast: boolean;
   isEditing: boolean;
   isSmall: boolean;
+  onFieldChange: (key: keyof ProfileFormData, value: string) => void;
+  error?: string;
 }
 
 const UserInfoRow: React.FC<UserInfoRowProps> = ({
-                                                   field,
-                                                   isLast,
-                                                   isEditing,
-                                                   isSmall
-                                                 }) => {
+  field,
+  isLast,
+  isEditing,
+  isSmall,
+  onFieldChange,
+  error
+}) => {
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
 
-  return (
-    <View style={[
-      dynamicStyles.fieldRow,
-      !isLast && dynamicStyles.fieldRowBorder,
-      { paddingVertical: isSmall ? theme.spacing.sm : theme.spacing.md }
-    ]}>
-      <View style={dynamicStyles.fieldLeft}>
-        {field.icon && (
-          <Ionicons
-            name={field.icon as any}
-            size={20}
-            color={theme.colors.secondary}
-            style={dynamicStyles.fieldIcon}
-          />
-        )}
-        <Text style={[
-          dynamicStyles.fieldLabel,
-          { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
-        ]}>
-          {field.label}:
-        </Text>
-      </View>
+  const getKeyboardType = () => {
+    if (field.type === 'email') return 'email-address';
+    if (field.type === 'phone') return 'phone-pad';
+    return 'default';
+  };
 
-      <Text style={[
-        dynamicStyles.fieldValue,
-        isEditing && dynamicStyles.fieldValueEditing,
-        { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
+  const canEdit = isEditing && field.editable;
+
+  return (
+    <View>
+      <View style={[
+        dynamicStyles.fieldRow,
+        !isLast && !error && dynamicStyles.fieldRowBorder,
+        { paddingVertical: isSmall ? theme.spacing.sm : theme.spacing.md }
       ]}>
-        {field.value}
-      </Text>
+        <View style={dynamicStyles.fieldLeft}>
+          {field.icon && (
+            <Ionicons
+              name={field.icon as any}
+              size={20}
+              color={field.editable ? theme.colors.primary : theme.colors.secondary}
+              style={dynamicStyles.fieldIcon}
+            />
+          )}
+          <Text style={[
+            dynamicStyles.fieldLabel,
+            { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md },
+            !field.editable && { color: theme.colors.text.secondary }
+          ]}>
+            {field.label}:
+          </Text>
+        </View>
+
+        {canEdit ? (
+          <TextInput
+            style={[
+              dynamicStyles.fieldInput,
+              { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md },
+              error && dynamicStyles.fieldInputError
+            ]}
+            value={field.value}
+            onChangeText={(value) => onFieldChange(field.key as keyof ProfileFormData, value)}
+            keyboardType={getKeyboardType()}
+            placeholder={`Ingresa ${field.label.toLowerCase()}`}
+            placeholderTextColor={theme.colors.text.placeholder}
+            multiline={field.key === 'street' || field.key === 'street2'}
+            numberOfLines={field.key === 'street' || field.key === 'street2' ? 2 : 1}
+          />
+        ) : (
+          <Text style={[
+            dynamicStyles.fieldValue,
+            { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md },
+            !field.editable && { color: theme.colors.text.secondary }
+          ]}>
+            {field.value}
+          </Text>
+        )}
+      </View>
+      
+      {error && (
+        <Text style={[
+          dynamicStyles.errorText,
+          { fontSize: theme.fontSize.xs, marginBottom: theme.spacing.sm, textAlign: 'right' }
+        ]}>
+          {error}
+        </Text>
+      )}
     </View>
   );
 };
@@ -396,6 +510,25 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   fieldValueEditing: {
     color: theme.colors.primary,
+    fontWeight: theme.fontWeight.medium,
+  },
+  fieldInput: {
+    flex: 1.5,
+    textAlign: 'right',
+    color: theme.colors.text.primary,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+    borderRadius: theme.borderRadius.sm,
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    backgroundColor: theme.colors.background,
+    minHeight: 36,
+  },
+  fieldInputError: {
+    borderColor: theme.colors.error,
+  },
+  errorText: {
+    color: theme.colors.error,
     fontWeight: theme.fontWeight.medium,
   },
   statsCard: {

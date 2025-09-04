@@ -1,6 +1,7 @@
 import { BiometricPreferences, secureStorageService, UserData } from '@/services/secure-storage';
 import { Subscription } from '@/types/subscription';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { apiService } from '@/services/api';
 
 const loadBiometricPreferences = createAsyncThunk(
   'auth/loadBiometricPreferences',
@@ -50,11 +51,48 @@ const updateStoredPassword = createAsyncThunk(
   }
 );
 
+const saveThemePreferences = createAsyncThunk(
+  'auth/saveThemePreferences',
+  async (preferences: { isDark: boolean; followSystem: boolean }) => {
+    await secureStorageService.saveThemePreferences(preferences);
+    return preferences;
+  }
+);
+
+const loadThemePreferences = createAsyncThunk(
+  'auth/loadThemePreferences',
+  async () => {
+    const preferences = await secureStorageService.getThemePreferences();
+    return preferences;
+  }
+);
+
 const loadSubscriptionsData = createAsyncThunk(
   'auth/loadSubscriptionsData',
   async () => {
     const subscriptions = await secureStorageService.getSubscriptions();
     const selectedIndex = await secureStorageService.getSelectedAccountIndex();
+    return { subscriptions, selectedIndex };
+  }
+);
+
+const refreshSubscriptionsFromAPI = createAsyncThunk(
+  'auth/refreshSubscriptionsFromAPI',
+  async (_, { getState }) => {
+    const state = getState() as { auth: AuthState };
+    const { username } = state.auth;
+    
+    if (!username) {
+      throw new Error('Username not available');
+    }
+
+    // Fetch fresh subscriptions from API
+    const subscriptions = await apiService.getSuscription('enterprise', username);
+    const selectedIndex = await secureStorageService.getSelectedAccountIndex();
+    
+    // Persist updated subscriptions
+    await secureStorageService.saveSubscriptions(subscriptions);
+    
     return { subscriptions, selectedIndex };
   }
 );
@@ -72,6 +110,10 @@ interface AuthState {
     useBiometricForPassword: boolean;
     useBiometricForLogin: boolean;
   };
+  themePreferences: {
+    isDark: boolean;
+    followSystem: boolean;
+  };
   currentAccount: Subscription | null;
   subscriptions: Subscription[];
   selectedAccountIndex: number;
@@ -87,6 +129,10 @@ const initialState: AuthState = {
   biometricPreferences: {
     useBiometricForPassword: false,
     useBiometricForLogin: false,
+  },
+  themePreferences: {
+    isDark: false,
+    followSystem: true,
   },
   currentAccount: null,
   subscriptions: [],
@@ -134,6 +180,10 @@ const authSlice = createSlice({
         useBiometricForPassword: false,
         useBiometricForLogin: false,
       };
+      state.themePreferences = {
+        isDark: false,
+        followSystem: true,
+      };
       state.currentAccount = null;
       state.subscriptions = [];
       state.selectedAccountIndex = 0;
@@ -154,6 +204,10 @@ const authSlice = createSlice({
         state.biometricPreferences = {
           useBiometricForPassword: false,
           useBiometricForLogin: false,
+        };
+        state.themePreferences = {
+          isDark: false,
+          followSystem: true,
         };
         state.currentAccount = null;
         state.subscriptions = [];
@@ -204,6 +258,38 @@ const authSlice = createSlice({
         secureStorageService.saveSelectedAccountIndex(index);
       }
     },
+    updateCurrentAccountPartner: (state, action: PayloadAction<Partial<Subscription['partner']>>) => {
+      if (state.currentAccount && state.currentAccount.partner) {
+        // Update current account partner data
+        state.currentAccount.partner = {
+          ...state.currentAccount.partner,
+          ...action.payload
+        };
+        
+        // Also update the same partner in subscriptions array
+        const currentIndex = state.selectedAccountIndex;
+        if (state.subscriptions[currentIndex]) {
+          state.subscriptions[currentIndex].partner = {
+            ...state.subscriptions[currentIndex].partner,
+            ...action.payload
+          };
+          
+          // Persist updated subscriptions
+          secureStorageService.saveSubscriptions(state.subscriptions);
+        }
+      }
+    },
+    updateThemePreferences: (state, action: PayloadAction<{
+      isDark?: boolean;
+      followSystem?: boolean;
+    }>) => {
+      if (action.payload.isDark !== undefined) {
+        state.themePreferences.isDark = action.payload.isDark;
+      }
+      if (action.payload.followSystem !== undefined) {
+        state.themePreferences.followSystem = action.payload.followSystem;
+      }
+    },
   },
   extraReducers: (builder) => {
     builder
@@ -231,6 +317,22 @@ const authSlice = createSlice({
           state.selectedAccountIndex = selectedIndex;
           state.currentAccount = action.payload.subscriptions[selectedIndex];
         }
+      })
+      .addCase(refreshSubscriptionsFromAPI.fulfilled, (state, action) => {
+        if (action.payload.subscriptions.length > 0) {
+          state.subscriptions = action.payload.subscriptions;
+          const selectedIndex = Math.min(action.payload.selectedIndex, action.payload.subscriptions.length - 1);
+          state.selectedAccountIndex = selectedIndex;
+          state.currentAccount = action.payload.subscriptions[selectedIndex];
+        }
+      })
+      .addCase(loadThemePreferences.fulfilled, (state, action) => {
+        if (action.payload) {
+          state.themePreferences = action.payload;
+        }
+      })
+      .addCase(saveThemePreferences.fulfilled, (state, action) => {
+        state.themePreferences = action.payload;
       });
   },
 });
@@ -245,12 +347,21 @@ export const {
   updateBiometricPreferences, 
   updatePassword,
   setSubscriptions,
-  selectAccount
+  selectAccount,
+  updateCurrentAccountPartner,
+  updateThemePreferences
 } = authSlice.actions;
 
 export {
-  loadBiometricPreferences, loadSubscriptionsData, loadUserData, saveBiometricPreferences,
-  saveUserData, updateStoredPassword
+  loadBiometricPreferences, 
+  loadSubscriptionsData, 
+  refreshSubscriptionsFromAPI,
+  loadUserData, 
+  saveBiometricPreferences,
+  saveUserData, 
+  updateStoredPassword,
+  loadThemePreferences,
+  saveThemePreferences
 };
 
 export default authSlice.reducer;

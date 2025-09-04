@@ -17,6 +17,7 @@ export interface ThemeColors {
   darkgreen: string;
   shadow: string;
   text: {
+    placeholder: string;
     primary: string;
     contrast: string;
     secondary: string;
@@ -99,7 +100,8 @@ const lightColors: ThemeColors = {
     inverse: '#ffffff',
     disabled: '#999999',
     inactive: '#666666',
-    button: '#009a94'
+    button: '#009a94',
+    placeholder: '#999999'
   },
   border: {
     light: '#e0e0e0',
@@ -127,7 +129,8 @@ const darkColors: ThemeColors = {
     inverse: '#333333',
     disabled: '#777777',
     inactive: '#cccccc',
-    button: '#404040ff'
+    button: '#404040ff',
+    placeholder: '#cccccc'
   },
   border: {
     light: '#333333',
