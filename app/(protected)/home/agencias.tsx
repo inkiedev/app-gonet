@@ -1,13 +1,18 @@
+import LogoMensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
+import LogoWhatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
+import Back from '@/assets/images/iconos gonet back.svg';
+import LogoCall from '@/assets/images/icons/phone.svg';
 import { Header } from "@/components/layout/header";
 import { Button as CustomButton } from "@/components/ui/custom-button";
+import Text from '@/components/ui/custom-text';
 import { Map } from "@/components/ui/map";
-import { agencies, cities, neighborhoods, polygons, regionCoordinates } from "@/data/agencies";
 import { useTheme } from "@/contexts/theme-context";
+import { neighborhoods, polygons, regionCoordinates } from "@/data/agencies";
+import { AgencyData, getAgencies, getImageLink } from "@/services/public-api";
 import * as Location from 'expo-location';
 import { Router, useRouter } from "expo-router";
-import Back from '@/assets/images/iconos gonet back.svg';
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button, Platform, ScrollView, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Linking, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // --- Types ---
@@ -34,17 +39,7 @@ interface Neighborhood {
     };
 }
 
-interface Agency {
-  id: string;
-  name: string;
-  address: string;
-  phone: string;
-  location: {
-    latitude: number;
-    longitude: number;
-  };
-  city: string;
-}
+type Agency = AgencyData; // Using the imported AgencyData
 
 interface MarkerData {
     id: string;
@@ -54,9 +49,7 @@ interface MarkerData {
         latitude: number;
         longitude: number;
     };
-    image: {
-        uri: string;
-    };
+    image: string; // Changed to string
 }
 
 
@@ -88,7 +81,7 @@ const useUserLocation = () => {
 
 // --- UI Components ---
 
-const CitySelector = ({ onCitySelect, router }: { onCitySelect: (city: City) => void, router: Router }) => {
+const CitySelector = ({ onCitySelect, router, cities }: { onCitySelect: (city: City) => void, router: Router, cities: City[] }) => {
     const { theme } = useTheme();
     const dynamicStyles = createDynamicStyles(theme);
     
@@ -213,13 +206,75 @@ const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect
 const AgencyInfo = ({ agency, onClose }: { agency: Agency; onClose: () => void }) => {
     const { theme } = useTheme();
     const dynamicStyles = createDynamicStyles(theme);
+    const weekDays: { [key: string]: string } = {
+        "0": "Lunes",
+        "1": "Martes",
+        "2": "Miércoles",
+        "3": "Jueves",
+        "4": "Viernes",
+        "5": "Sábado",
+        "6": "Domingo",
+    };
+
+    const DetailItem = ({ label, value, icons }: { label: string, value: string | boolean | undefined, icons?: { icon: React.ReactNode, onPress: () => void }[] }) => {
+        if (typeof value !== 'string' || !value) return null;
+        return (
+            <View style={dynamicStyles.detailItem}>
+                <Text style={dynamicStyles.detailLabel}>{label}:</Text>
+                <Text style={dynamicStyles.detailValue}>{value}</Text>
+                <View style={dynamicStyles.iconsContainer}>
+                    {icons && icons.map((iconData, index) => (
+                        <TouchableOpacity key={index} onPress={iconData.onPress} style={dynamicStyles.iconContainer}>
+                            {iconData.icon}
+                        </TouchableOpacity>
+                    ))}
+                </View>
+            </View>
+        );
+    };
     
     return (
         <View style={dynamicStyles.agencyInfoContainer}>
             <Text style={dynamicStyles.agencyTitle}>{agency.name}</Text>
-            <Text>{agency.address}</Text>
-            <Text>{agency.phone}</Text>
-            <Button title="Cerrar" onPress={onClose} />
+            <DetailItem label="Dirección" value={agency.address} />
+            <DetailItem 
+                label="Teléfono" 
+                value={agency.phone} 
+                icons={[
+                    {
+                        icon: <LogoCall width={24} height={24} color={theme.colors.text.primary} />,
+                        onPress: () => Linking.openURL(`tel:${agency.phone}`)
+                    },
+                    {
+                        icon: <LogoWhatsapp width={24} height={24} fill={theme.colors.text.primary} color={theme.colors.text.primary} />,
+                        onPress: () => Linking.openURL(`whatsapp://send?phone=${agency.phone}`)
+                    }
+                ]}
+            />
+            <DetailItem 
+                label="Correo" 
+                value={agency.email} 
+                icons={[
+                    {
+                        icon: <LogoMensaje width={24} height={24} color={theme.colors.text.primary} />,
+                        onPress: () => Linking.openURL(`mailto:${agency.email}`)
+                    }
+                ]}
+            />
+            <DetailItem label="Sitio Web" value={agency.website} />
+            <DetailItem label="Horario General" value={agency.schedule} />
+            
+            {agency.days_schedule && agency.days_schedule.length > 0 && (
+                <View style={dynamicStyles.scheduleContainer}>
+                    <Text style={dynamicStyles.detailLabel}>Horario por día:</Text>
+                    {agency.days_schedule.map(day => (
+                        <Text key={day.dia} style={dynamicStyles.scheduleItem}>
+                            {`${weekDays[day.dia]}: ${day.start_time}:00 - ${day.end_time}:00`}
+                        </Text>
+                    ))}
+                </View>
+            )}
+            <CustomButton title="Cerrar" onPress={onClose} style={{marginTop: 10}}/>
         </View>
     );
 };
@@ -237,12 +292,43 @@ export default function AgenciesScreen() {
     const { userLocation } = useUserLocation();
     const router = useRouter();
 
+    const [agenciesData, setAgenciesData] = useState<Agency[]>([]);
+    const [loadingAgencies, setLoadingAgencies] = useState(true);
+
+    useEffect(() => {
+        const fetchAgencies = async () => {
+            try {
+                const data = await getAgencies();
+                setAgenciesData(data);
+            } catch (error) {
+                console.error("Failed to fetch agencies:", error);
+            } finally {
+                setLoadingAgencies(false);
+            }
+        };
+        fetchAgencies();
+    }, []);
+
+    const availableCities = useMemo(() => {
+        const uniqueCities = new Set<string>();
+        agenciesData.forEach(agency => {
+            if (agency.city) {
+                uniqueCities.add(agency.city);
+            }
+        });
+        return Array.from(uniqueCities).map(city => ({
+            label: city,
+            value: city,
+            region: regionCoordinates // Placeholder, ideally this would come from API or a more specific data source
+        }));
+    }, [agenciesData]);
+
     const handleMarkerPress = useCallback((marker: MarkerData) => {
-        const agency = agencies.find(a => a.id === marker.id);
+        const agency = agenciesData.find(a => a.id.toString() === marker.id);
         if (agency) {
             setSelectedAgency(agency);
         }
-    }, []);
+    }, [agenciesData]);
 
     const handleCitySelect = (city: City) => {
         setSelectedCity(city);
@@ -256,17 +342,17 @@ export default function AgenciesScreen() {
     };
 
     const filteredAgencies = useMemo(() => {
-        if (!selectedCity) return [];
-        return agencies.filter(agency => agency.city === selectedCity.value);
-    }, [selectedCity]);
+        if (!selectedCity) return agenciesData;
+        return agenciesData.filter(agency => agency.city === selectedCity.value);
+    }, [selectedCity, agenciesData]);
 
     const markers: MarkerData[] = useMemo(() =>
         filteredAgencies.map(agency => ({
-            id: agency.id,
+            id: agency.id.toString(),
             title: agency.name,
-            description: agency.address,
-            coordinate: agency.location,
-            image: { uri: 'https://i.imgur.com/M010000.png' } // Placeholder icon
+            description: typeof agency.address === 'string' ? agency.address : '',
+            coordinate: { latitude: agency.latitude, longitude: agency.longitude },
+            image: agency.id_img ? getImageLink(agency.id_img as number) : 'https://cdn-icons-png.flaticon.com/512/458/458363.png' // Direct string URL
         })), [filteredAgencies]);
 
     const displayPolygon = useMemo(() => {
@@ -287,14 +373,44 @@ export default function AgenciesScreen() {
         return [];
     }, [selectedCity, selectedNeighborhood, showCityPolygon]);
 
-    const mapRegion = useMemo(() => {
+        const mapRegion = useMemo(() => {
         if (selectedNeighborhood) return selectedNeighborhood.region;
-        if (selectedCity) return selectedCity.region;
-        return regionCoordinates;
-    }, [selectedCity, selectedNeighborhood]);
+
+        if (selectedCity) {
+            // If the selected city's region is the generic default, or not suitable
+            // The condition `selectedCity.region === regionCoordinates` checks if it's the default placeholder.
+            // The second part `!(...)` checks if the region has zero values for lat/lon/deltas.
+            if (selectedCity.region === regionCoordinates ||
+                !(selectedCity.region.latitude !== 0 && selectedCity.region.longitude !== 0 &&
+                  selectedCity.region.latitudeDelta !== 0 && selectedCity.region.longitudeDelta !== 0)) {
+                // Find the first agency in this city
+                const firstAgencyInCity = agenciesData.find(agency => agency.city === selectedCity.value);
+                if (firstAgencyInCity) {
+                    return {
+                        latitude: firstAgencyInCity.latitude,
+                        longitude: firstAgencyInCity.longitude,
+                        latitudeDelta: 0.0922, // Default delta, can be adjusted
+                        longitudeDelta: 0.0421, // Default delta, can be adjusted
+                    };
+                }
+            } else {
+                // If selectedCity.region is specific and suitable, use it
+                return selectedCity.region;
+            }
+        } else if (agenciesData.length > 0) { // This else if handles the case where no city is selected
+            const firstAgency = agenciesData[0];
+            return {
+                latitude: firstAgency.latitude,
+                longitude: firstAgency.longitude,
+                latitudeDelta: 0.0922, // Default delta, can be adjusted
+                longitudeDelta: 0.0421, // Default delta, can be adjusted
+            };
+        }
+        return regionCoordinates; // Ultimate fallback
+    }, [selectedCity, selectedNeighborhood, agenciesData]);
 
     if (!selectedCity) {
-        return <CitySelector onCitySelect={handleCitySelect} router={router} />;
+        return <CitySelector onCitySelect={handleCitySelect} router={router} cities={availableCities} />;
     }
 
     return (
@@ -407,7 +523,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
         bottom: 20,
         left: 20,
         right: 20,
-        backgroundColor: 'white',
+        backgroundColor: theme.colors.background,
         padding: 20,
         borderRadius: 15,
         shadowColor: '#000',
@@ -415,11 +531,42 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
         shadowOpacity: 0.2,
         shadowRadius: 5,
         elevation: 10,
+        borderWidth: 2,
+        borderColor: theme.colors.primaryDark,
     },
     agencyTitle: {
         fontSize: 20,
         fontWeight: 'bold',
-        marginBottom: 8,
+        marginBottom: 12,
+        color: theme.colors.text.primary,
+    },
+    detailItem: {
+        flexDirection: 'row',
+        marginBottom: 4,
+        alignItems: 'center',
+        color: theme.colors.text.primary,
+    },
+    detailLabel: {
+        fontWeight: 'bold',
+        marginRight: 5,
+        color: theme.colors.text.primary,
+    },
+    detailValue: {
+        flex: 1,
+        color: theme.colors.text.primary,
+    },
+    iconsContainer: {
+        flexDirection: 'row',
+    },
+    iconContainer: {
+        marginLeft: 10,
+    },
+    scheduleContainer: {
+        marginTop: 8,
+    },
+    scheduleItem: {
+        marginLeft: 10,
+        color: theme.colors.text.primary,
     },
 
 
