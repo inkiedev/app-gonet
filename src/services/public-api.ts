@@ -68,5 +68,51 @@ export const getPromotionById = async (
   if (data.status !== "success") {
     throw new Error("API returned an error");
   }
-  return data.data[0];
+    return data.data[0];
+};
+
+// New interfaces and functions for agencies
+export interface AgencyData {
+    id: number;
+    name: string;
+    phone: string | boolean;
+    email: string | boolean;
+    website: string | boolean;
+    schedule: string;
+    days_schedule: {
+        dia: string;
+        start_time: number;
+        end_time: number;
+    }[];
+    longitude: number;
+    latitude: number;
+    address: string | boolean;
+    id_img: number | boolean;
+    city: string;
+}
+
+export interface AgenciesApiResponse {
+    status: string;
+    count: number;
+    data: AgencyData[];
+}
+
+export const getAgencies = async (): Promise<AgencyData[]> => {
+    const response = await fetch(`${API_URL}/app/agencies`, {
+        method: "GET",
+        headers: {},
+    });
+    if (!response.ok) {
+        throw new Error(`Network error: ${response.statusText}`);
+    }
+    const data: AgenciesApiResponse = await response.json();
+    if (data.status !== "success") {
+        throw new Error("API returned an error");
+    }
+    
+    return data.data;
+};
+
+export const getImageLink = (fileId: number): string => {
+    return `${API_URL}/app/img_link/${fileId}`;
 };

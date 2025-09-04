@@ -20,7 +20,7 @@ interface MapProps {
     coordinate: { latitude: number; longitude: number };
     title?: string;
     description?: string;
-    image?: any;
+    image?: string; // Changed to string
   }[];
   onMarkerPress?: (marker: any) => void;
   userLocation?: {
@@ -58,17 +58,16 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
               attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
-            const gonetIcon = L.icon({
-                iconUrl: 'https://gonet.ec/wp-content/uploads/2021/08/GoNet.png',
-                iconSize: [38, 38], // size of the icon
-            });
-
             ${polygons?.map(polygon => `
               L.polygon(${JSON.stringify(polygon.coordinates.map(c => [c.latitude, c.longitude]))}, {color: '${polygon.strokeColor}', fillColor: '${polygon.fillColor}', fillOpacity: 0.5, weight: 0}).addTo(map);
             `).join('')}
 
             ${markers?.map(marker => `
-              L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}], {icon: gonetIcon})
+              const markerIcon_${marker.id} = L.icon({
+                  iconUrl: '${marker.image}',
+                  iconSize: [38, 38], // size of the icon
+              });
+              L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}], {icon: markerIcon_${marker.id}})
                 .addTo(map)
                 .on('click', () => {
                   window.ReactNativeWebView.postMessage(JSON.stringify(${JSON.stringify(marker)}));
@@ -125,7 +124,7 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
           coordinate={marker.coordinate}
           title={marker.title}
           description={marker.description}
-          image={marker.image}
+          image={{ uri: marker.image }} // Use { uri: string } for react-native-maps
           onPress={() => onMarkerPress && onMarkerPress(marker)}
         />
       ))}
