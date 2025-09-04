@@ -1,5 +1,4 @@
 import Notification from '@/assets/images/iconos gonet app svg_notificacion.svg';
-import Dollar from '@/assets/images/iconos gonet dollar.svg';
 import Down from '@/assets/images/iconos gonet down.svg';
 import Gomax from '@/assets/images/iconos gonet gomax.svg';
 import Wifi from '@/assets/images/iconos gonet wifi.svg';
@@ -9,9 +8,12 @@ import { ExpandableCard } from '@/components/ui/expandable-card';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
+import { RootState } from '@/store';
 import { BaseComponentProps } from '@/types/common';
+import { formatGoWord } from '@/utils';
 import React, { ReactNode } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
+import { useSelector } from 'react-redux';
 import Badge from './badge';
 
 interface HomeExpandableCardProps extends BaseComponentProps {
@@ -21,14 +23,13 @@ interface HomeExpandableCardProps extends BaseComponentProps {
 }
 
 export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
-  plan,
-  speed,
   onToggle,
   style,
   testID,
 }) => {
   const { theme, isDark } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
+  const { currentAccount } = useSelector((state: RootState) => state.auth);
   const { isExpanded } = useCardExpansion();
   const { isTablet } = useResponsive();
   
@@ -47,13 +48,6 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
       value: 'Wifi6',
       canUpgrade: true
     },
-    {
-      icon: <Dollar color={theme.colors.primaryDark}  />,
-      title: 'Precio Promocional',
-      detail: '$ 19.90',
-      value: 'x 8 Pagos',
-      canUpgrade: false
-    },
   ];
 
   return (
@@ -66,9 +60,9 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
       >
         <View style={[dynamicStyles.featuresContainer, isTablet && { justifyContent: 'space-around' } ]}>
           <Notification width={35} height={35} fill={isDark ? theme.colors.primaryDark : theme.colors.shadow} />
-          <Text style={dynamicStyles.clientTitle}>{"Juan Gonzales".split(" ").join("\n")}</Text>
-          <Text style={dynamicStyles.planTitle}>{plan}</Text>
-          <View style={dynamicStyles.planSpeedContainer}><Text style={dynamicStyles.planSpeed}>{speed}</Text><Text style={dynamicStyles.planMbps}> Mbps</Text></View>
+          <Text style={dynamicStyles.clientTitle}>{currentAccount?.partner.name}</Text>
+          <Text style={dynamicStyles.planTitle}>{formatGoWord(currentAccount?.plan[0]?.name)}</Text>
+          <View style={dynamicStyles.planSpeedContainer}><Text style={dynamicStyles.planSpeed}>{currentAccount?.plan[0]?.name.match(/\d+/)}</Text><Text style={dynamicStyles.planMbps}>Mbps</Text></View>
         </View>
         <ExpandableCard
           style={dynamicStyles.expandableCardContainer}
@@ -90,7 +84,6 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
                 key={index}
                 icon={feature.icon}
                 title={feature.title}
-                detail={feature.detail}
                 value={feature.value}
                 canUpgrade={feature.canUpgrade}
               />
@@ -109,12 +102,11 @@ export const HomeExpandableCard: React.FC<HomeExpandableCardProps> = ({
 interface DetailRowProps {
   icon: ReactNode;
   title: string;
-  detail: string;
   value: string;
   canUpgrade?: boolean;
 }
 
-const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUpgrade }) => {
+const DetailRow: React.FC<DetailRowProps> = ({ icon, title, value, canUpgrade }) => {
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
   
@@ -122,7 +114,6 @@ const DetailRow: React.FC<DetailRowProps> = ({ icon, title, detail, value, canUp
     <View style={dynamicStyles.detailRow}>
       { icon }
       <Text style={dynamicStyles.detailTitle}>{title}</Text>
-      <Text style={dynamicStyles.detailDetail}>{detail}</Text>
       <Text style={dynamicStyles.detailValue}>{value}</Text>
       { canUpgrade ? <Badge count={"+"} /> : <Text> </Text> }
     </View>
@@ -135,7 +126,10 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   clientTitle: {
     color: theme.colors.primaryDark,
-    textAlign: 'center',
+    flexWrap: 'wrap',
+    fontSize: theme.fontSize.xs,
+    width: '25%',
+    textAlign: 'center'
   },
   card: {
     marginTop: theme.spacing.sm,
@@ -146,7 +140,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   planTitle: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.xl,
+    fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
     textAlign: 'center',
   },
@@ -249,12 +243,13 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     alignItems: 'center'
   },
   planSpeedContainer: {
-    flexDirection: 'row',
-    alignItems: 'flex-end'
+    flexDirection: 'column',
+    alignItems: 'center'
+
   },
   planSpeed: {
     color: theme.colors.primaryDark,
-    fontSize: theme.fontSize.xl,
+    fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bolder,
     textAlign: 'center',
   },
@@ -262,5 +257,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.primaryDark,
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.medium,
+
   }
 });
