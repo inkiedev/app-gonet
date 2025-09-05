@@ -48,8 +48,7 @@ export const AppLogo: React.FC<AppLogoProps> = ({
 const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     alignItems: 'center',
-    justifyContent: 'center',
-    padding: theme.spacing.lg,
+    justifyContent: 'center'
   },
 });
 

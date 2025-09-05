@@ -1,4 +1,4 @@
-import { ThemedStatusBar as StatusBar, ThemedStatusBar } from '@/components/ui/themed-status-bar';
+import { ThemedStatusBar as StatusBar } from '@/components/ui/themed-status-bar';
 import { CardExpansionProvider } from '@/contexts/card-expansion-container';
 import { NotificationProvider } from '@/contexts/notification-context';
 import { ThemeProvider } from '@/contexts/theme-context';
@@ -70,7 +70,6 @@ export default function RootLayout() {
                         }}
                       />
                     </Stack>
-                    <ThemedStatusBar />
                   </View>
                 </AuthRouteProvider>
               </CardExpansionProvider>

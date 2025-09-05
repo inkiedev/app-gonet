@@ -63,8 +63,6 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
 
 const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
-    borderBottomLeftRadius: theme.borderRadius.xxl,
-    borderBottomRightRadius: theme.borderRadius.xxl,
     overflow: 'hidden',
   },
 });

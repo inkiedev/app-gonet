@@ -1,350 +1,166 @@
+import Beneficios from '@/assets/images/iconos gonet app svg_beneficios.svg';
+import AppLogo from '@/assets/images/iconos gonet app svg_GoneetLogo.svg';
+import Servicios from '@/assets/images/iconos gonet app svg_gonetBlack.svg';
+import Mensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
+import Pagos from '@/assets/images/iconos gonet app svg_Pagos.svg';
+import Soporte from '@/assets/images/iconos gonet app svg_Soporte.svg';
 import { Footer } from "@/components/layout/footer";
-import { Button } from "@/components/ui/custom-button";
-import Text from "@/components/ui/custom-text";
-import { PlanCard } from "@/components/ui/plan-card";
+import Text from '@/components/ui/custom-text';
+import { ImageCarousel } from "@/components/ui/image-carousel";
+import { useNotificationContext } from "@/contexts/notification-context";
 import { useTheme } from "@/contexts/theme-context";
+import { useResponsive } from "@/hooks/use-responsive";
 import { useAuthRoute } from "@/providers/auth-route-provider";
-import { getPromotionById, getPromotions, Promotion, PromotionDetail } from "@/services/public-api";
 import { RootState } from "@/store";
 import { Redirect, useRouter } from "expo-router";
-import React, { useEffect, useState } from "react";
-import { Image, ScrollView, StyleSheet, View } from "react-native";
+import React from "react";
+import { ImageBackground, Platform, StyleSheet, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
-const PlanesContent = ({
-  promotions,
-  isLoading,
-  onSelectPromotion,
-}: {
-  promotions: Promotion[];
-  isLoading: boolean;
-  onSelectPromotion: (id: number) => void;
-}) => {
-  const { theme } = useTheme();  
-  const dynamicStyles = createDynamicStyles(theme);
 
-  return (
-  <View style={dynamicStyles.planesSection}>
-    <Text style={dynamicStyles.sectionTitle}>Nuestros Planes</Text>
-    {isLoading ? (
-      <Text>Cargando...</Text>
-    ) : promotions.length > 0 ? (
-      promotions.map((plan) => (
-        <PlanCard title={plan.name} style={dynamicStyles.planCard} key={plan.id}>
-          <View style={dynamicStyles.planContainer}>
-            <Text style={dynamicStyles.planFinalPrice}>
-              Precio final: ${plan.total.toFixed(2)}
-            </Text>
-            <View style={dynamicStyles.planDetails}>
-              {plan.extras.map((detail, index) => (
-                <Text key={index} style={dynamicStyles.planDetail}>
-                  {`• ${detail.name}`}
-                </Text>
-              ))}
-            </View>
-            <Button
-              title="Ver detalle"
-              onPress={() => onSelectPromotion(plan.id)}
-            />
-          </View>
-        </PlanCard>
-      ))
-    ) : (
-      <Text style={dynamicStyles.noPromotionsText}>
-        No hay promociones disponibles en este momento.
-      </Text>
-    )}
-  </View>)
-};
-
-
-const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number, onBack: () => void }) => {
-  const [promotion, setPromotion] = useState<PromotionDetail | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const { theme } = useTheme()
-  const dynamicStyles = createDynamicStyles(theme);
-
-  useEffect(() => {
-    const fetchPromotionDetails = async () => {
-      try {
-        setIsLoading(true);
-        const fetchedPromotion = await getPromotionById(promotionId);
-        setPromotion(fetchedPromotion);
-      } catch (error) {
-        console.error("Failed to fetch promotion details:", error);
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    fetchPromotionDetails();
-  }, [promotionId]);
-
-  const renderDiscountMessage = (extra: any) => {
-    if (extra.apply_method === "monthly" && extra.months_discount > 0) {
-      return `Por ${extra.months_discount} meses tienes un descuento de ${extra.discount}%.`;
-    }
-    if (extra.apply_method === "indefinite" && extra.discount > 0) {
-      return `Descuento de ${extra.discount}% para siempre.`;
-    }
-    return null;
-  };
-
-  const kbpsToMbps = (kbps: string) => {
-    return (parseInt(kbps) / 1000).toFixed(2);
-  };
-
-  return (
-    <View style={dynamicStyles.planesSection}>
-        <Button title="Volver a la lista" onPress={onBack} />
-      {isLoading ? (
-        <Text>Cargando...</Text>
-      ) : promotion ? (
-        <PlanCard title={promotion.name} style={dynamicStyles.planCard}>
-            <Text style={dynamicStyles.planFinalPrice}>Precio Total: ${promotion.total.toFixed(2)}</Text>
-            <Text style={dynamicStyles.planDetail}>Tipo de Enlace: {promotion.link_type}</Text>
-            <Text style={dynamicStyles.planDetail}>Nivel de Compartición: {promotion.sharing_level}</Text>
-            <Text style={dynamicStyles.planDetail}>Tipo de Conexión: {promotion.connection_type}</Text>
-            <Text style={dynamicStyles.planDetail}>
-              Velocidad de Subida: {kbpsToMbps(promotion["speed:_upload"])} Mbps ({promotion["speed:_upload"]} kbps)
-            </Text>
-            <Text style={dynamicStyles.planDetail}>
-              Velocidad de Bajada: {kbpsToMbps(promotion["speed:_download"])} Mbps ({promotion["speed:_download"]} kbps)
-            </Text>
-
-            <View style={dynamicStyles.extrasContainer}>
-              <Text style={dynamicStyles.extrasTitle}>Extras:</Text>
-              {promotion.extras.map((extra, index) => (
-                <View key={index} style={dynamicStyles.extraItem}>
-                  <Text style={dynamicStyles.extraName}>{extra.name}</Text>
-                  <Text style={dynamicStyles.extraPrice}>Precio: ${extra.price_unit.toFixed(2)}</Text>
-                  {renderDiscountMessage(extra) && (
-                    <Text style={dynamicStyles.discountText}>{renderDiscountMessage(extra)}</Text>
-                  )}
-                </View>
-              ))}
-            </View>
-        </PlanCard>
-      ) : (
-        <Text style={dynamicStyles.noPromotionsText}>No se encontraron detalles de la promoción.</Text>
-      )}
-    </View>
-  );
-};
+const iconOptions = [
+  {
+    SvgComponent: Mensaje,
+    label: 'Mensajes',
+    badgeCount: 2,
+  },
+  {
+    SvgComponent: Pagos,
+    label: 'Pagos',
+  },
+  {
+    SvgComponent: Servicios,
+    label: '+Servicios',
+    badgeCount: '+',
+  },
+  {
+    SvgComponent: Soporte,
+    label: 'Soporte',
+  },
+  {
+    SvgComponent: Beneficios,
+    label: 'Beneficios',
+  },
+];
 
 export default function PublicHomeScreen() {
   const router = useRouter();
   const { theme } = useTheme();
   const { isInitialized } = useAuthRoute();
-  const dynamicStyles = createDynamicStyles(theme);
   const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
-  const [promotions, setPromotions] = useState<Promotion[]>([]);
-  const [promotionsLoading, setPromotionsLoading] = useState(true);
-  const [selectedPromotionId, setSelectedPromotionId] = useState<number | null>(
-    null
-  );
-
-  useEffect(() => {
-    const fetchPromotions = async () => {
-      try {
-        setPromotionsLoading(true);
-        const fetchedPromotions = await getPromotions();
-        setPromotions(fetchedPromotions);
-      } catch (error) {
-        console.error("Failed to fetch promotions:", error);
-      } finally {
-        setPromotionsLoading(false);
-      }
-    };
-
-    fetchPromotions();
-  }, []);
-
-  // Wait for auth initialization
+  const { showSuccess, showError } = useNotificationContext();
+  const { height } = useResponsive();
+  
   if (!isInitialized) {
-    return null; // AuthRouteProvider handles loading state
+    return null; 
   }
 
-  // Redirect authenticated users to protected area
   if (isAuthenticated && !needsBiometricVerification) {
     return <Redirect href="/(protected)/home" />;
   }
-
 
   const handleLogin = () => {
     router.push("/(auth)/login");
   };
 
-  const handleSelectPromotion = (id: number) => {
-    setSelectedPromotionId(id);
-  };
-
-  const handleBackToList = () => {
-    setSelectedPromotionId(null);
-  };
+  const styles = createDynamicStyles(theme);
 
   return (
-    <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
-      <ScrollView style={styles.scrollContainer}>
-        {/* Banner */}
+    <SafeAreaView style={styles.container} edges={["top"]}>
+      <ImageBackground
+        source={Platform.OS === 'web' 
+          ? require('@/assets/images/iconos gonet app svg_backing desktop.png')
+          : require('@/assets/images/iconos gonet app svg_backing.png')
+        }
+        style={Platform.OS === 'web' ? styles.webBackground : styles.background}
+        resizeMode="cover"
+      >
         <View style={styles.bannerContainer}>
-          <Image
-            source={{ uri: "https://picsum.photos/800/400" }}
-            style={styles.bannerImage}
+          <ImageCarousel
+            style={styles.banner}
+            height={height * 0.55}
           />
-          <View style={dynamicStyles.bannerOverlay}>
-            <Text style={dynamicStyles.bannerTitle}>Bienvenido a GoNet</Text>
-            <Text style={dynamicStyles.bannerSubtitle}>Internet de alta velocidad para tu hogar</Text>
-            <Button 
-              title="Iniciar Sesión" 
-              onPress={handleLogin}
-              style={dynamicStyles.loginButton}
-            />
+        </View>
+        <View style={styles.content}>
+          <AppLogo style={styles.logo} width={150} height={150} />
+          <View style={styles.options}>
+            <Text style={styles.title}>BIENVENIDO</Text>
+            <View style={styles.iconsGrid}>
+
+            </View>
           </View>
         </View>
-        {/* Planes Content */}
-        {selectedPromotionId ? (
-          <PromotionDetailsContent promotionId={selectedPromotionId} onBack={handleBackToList} />
-        ) : (
-          <PlanesContent
-            promotions={promotions}
-            isLoading={promotionsLoading}
-            onSelectPromotion={handleSelectPromotion}
-          />
-        )}
-      </ScrollView>
-
-      {/* Footer */}
-      <Footer />
+        <Footer style={styles.footer} variant='transparent' />
+      </ImageBackground>
     </SafeAreaView>
   );
 }
 
 const createDynamicStyles = (theme: any) => StyleSheet.create({
-  container: { 
-    flex: 1, 
-    backgroundColor: theme.colors.background,
+  container: {
+    flex: 1,
   },
-  bannerOverlay: {
+  bannerContainer: {
+    position: 'relative',
+  },
+  banner: {
+  },
+  fixedHeader: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.4)',
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: theme.spacing.lg,
+    zIndex: 10,
   },
-  bannerTitle: {
-    fontSize: theme.fontSize.xxl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.inverse,
-    textAlign: 'center',
-    marginBottom: theme.spacing.sm,
-  },
-  bannerSubtitle: {
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text.inverse,
-    textAlign: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  loginButton: {
-    backgroundColor: theme.colors.primary,
-    paddingHorizontal: theme.spacing.xl,
-  },
-  planesSection: {
-    padding: theme.spacing.lg,
-    alignItems: 'center'
-  },
-  sectionTitle: {
-    fontSize: theme.fontSize.xxl,
-    fontWeight: theme.fontWeight.bold,
-    color: theme.colors.primaryDark,
-    textAlign: 'center',
-    marginBottom: theme.spacing.xs,
-  },
-  planCard: {
-    marginVertical: theme.spacing.md,
-  },
-  planContainer: {
-    paddingHorizontal: theme.spacing.sm,
-    display: "flex",
-    flexDirection: "column",
-    gap: theme.spacing.sm,
-    alignItems: 'center',
-  },
-  planPrice: {
-    fontSize: theme.fontSize.xl,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.primaryDark,
-  },
-  planDetails: {
-    width: '100%',
-    marginVertical: theme.spacing.xs,
-    display: "flex",
-    justifyContent: "space-between",
-    flexDirection: "column"
-  },
-  planDetail: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
-  },
-  noPromotionsText: {
-    textAlign: "center",
-    fontSize: theme.fontSize.lg,
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.lg,
-  },
-  extrasContainer: {
-    marginTop: theme.spacing.md,
-  },
-  extrasTitle: {
-    fontSize: theme.fontSize.lg,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.sm,
-  },
-  extraItem: {
-    backgroundColor: theme.colors.background,
-    borderRadius: theme.borderRadius.sm,
-    padding: theme.spacing.sm,
-    marginBottom: theme.spacing.sm,
-  },
-  extraName: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.semibold,
-    color: theme.colors.text.primary,
-  },
-  extraPrice: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.secondary,
-  },
-  discountText: {
-    fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
-    marginTop: theme.spacing.xs,
-  },
-  planFinalPrice: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
-  },
-})
-
-
-const styles = StyleSheet.create({
-  scrollContainer: {
+  content: {
     flex: 1,
-  },
-  bannerContainer: {
-    height: 300,
+    display: 'flex',
+    flexDirection: 'column',
+    justifyContent: 'space-evenly',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    gap: 16,
     position: 'relative',
   },
-  bannerImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
+  options: {
+    marginTop: 100,
+    flex: 1,
+    flexDirection: 'column',
+    alignItems: 'center',
   },
+  iconsGrid: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    maxWidth: 700
+  },
+  background: {
+    flex: 1,
+  },
+  webBackground: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    ...(Platform.OS === 'web' && {
+      minHeight: '100vh',
+      minWidth: '100vw',
+    }),
+  } as any,
+  logo: {
+    position: 'absolute',
+    top: -50
+  },
+  title: {
+    color: '#ffffff',
+    fontWeight: theme.fontWeight.normal,
+    fontSize: 18,
+    letterSpacing: 1
+  },
+  footer: {
+    borderTopColor: '#f0f0f0',
+    borderTopWidth: 0.5,
+    marginHorizontal: 25
+  }
 });

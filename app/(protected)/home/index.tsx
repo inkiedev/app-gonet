@@ -56,10 +56,12 @@ export default function HomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   const { currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
-  const { showSuccess, showError, showInfo } = useNotificationContext();
+  const { showSuccess, showError } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
   const { height } = useResponsive();
   const { theme } = useTheme();
+  const styles = createDynamicStyles(theme);
+
 
   useEffect(() => {
     const backAction = () => {
@@ -199,7 +201,7 @@ export default function HomeScreen() {
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -207,6 +209,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   banner: {
+    borderBottomLeftRadius: theme.borderRadius.xxl,
+    borderBottomRightRadius: theme.borderRadius.xxl
   },
   fixedHeader: {
     position: 'absolute',

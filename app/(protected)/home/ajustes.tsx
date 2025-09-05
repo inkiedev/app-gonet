@@ -1,10 +1,12 @@
 import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
+import { Select, SelectOption } from '@/components/ui/custom-select';
 import Text from '@/components/ui/custom-text';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
+import { FontSize } from '@/services/secure-storage';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
 import { loadBiometricPreferences, loadSubscriptionsData, loadThemePreferences, saveBiometricPreferences, saveThemePreferences, updateBiometricPreferences, updateStoredPassword, updateThemePreferences } from '@/store/slices/auth-slice';
@@ -29,7 +31,7 @@ const AjustesContent = () => {
   const { rememberMe, biometricPreferences, themePreferences } = useSelector((state: RootState) => state.auth);
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { showError } = useNotificationContext();
-  const { theme: currentTheme, isDark, toggleTheme, setFollowSystem } = useTheme();
+  const { theme: currentTheme, isDark, toggleTheme, setFollowSystem, fontSize, setFontSize } = useTheme();
   
   useEffect(() => {
     if (rememberMe) {
@@ -86,12 +88,23 @@ const AjustesContent = () => {
     dispatch(updateThemePreferences({ followSystem: newFollowSystem }));
     dispatch(saveThemePreferences({ 
       isDark: themePreferences.isDark, 
-      followSystem: newFollowSystem 
+      followSystem: newFollowSystem,
+      fontSize: themePreferences.fontSize || 'medium'
     }) as any);
     
     // Update theme context
     setFollowSystem(newFollowSystem);
   }
+
+  const fontSizeOptions: SelectOption<FontSize>[] = [
+    { value: 'small' },
+    { value: 'medium' },
+    { value: 'large' }
+  ];
+
+  const handleFontSizeChange = (selectedFontSize: FontSize) => {
+    setFontSize(selectedFontSize);
+  };
 
   const dynamicStyles = createDynamicStyles(currentTheme);
 
@@ -121,6 +134,27 @@ const AjustesContent = () => {
           <Text style={dynamicStyles.switchLabel}>
             {isDark ? 'Tema Oscuro' : 'Tema Claro'}
           </Text>
+        </View>
+
+        <View style={dynamicStyles.selectContainer}>
+          <Text style={dynamicStyles.selectLabel}>Tamaño de letra</Text>
+          <Select<FontSize>
+            options={fontSizeOptions}
+            value={fontSize}
+            onValueChange={handleFontSizeChange}
+            placeholder="Seleccionar tamaño"
+            renderItem={(option, index, isSelected) => (
+              <Text style={[
+                dynamicStyles.selectOption,
+                isSelected && dynamicStyles.selectOptionSelected
+              ]}>
+                {option.value === 'small' ? 'Pequeño' : 
+                 option.value === 'medium' ? 'Mediano' : 
+                 'Grande'}
+              </Text>
+            )}
+            style={dynamicStyles.select}
+          />
         </View>
       </View>
 
@@ -590,6 +624,34 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.text.secondary,
     textAlign: 'center',
+  },
+  selectContainer: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+  },
+  selectLabel: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  select: {
+    flex: 1,
+  },
+  selectOption: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+  },
+  selectOptionSelected: {
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.bold,
   },
 });
 

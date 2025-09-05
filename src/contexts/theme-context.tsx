@@ -1,5 +1,6 @@
 import { RootState } from '@/store';
 import { loadThemePreferences, saveThemePreferences, updateThemePreferences } from '@/store/slices/ui-slice';
+import { FontSize } from '@/services/secure-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
@@ -139,6 +140,36 @@ const darkColors: ThemeColors = {
   },
 };
 
+const fontSizeVariants = {
+  small: {
+    xs: 10,
+    sm: 12,
+    md: 14,
+    lg: 16,
+    xl: 18,
+    xxl: 20,
+    huge: 26,
+  },
+  medium: {
+    xs: 12,
+    sm: 14,
+    md: 16,
+    lg: 18,
+    xl: 20,
+    xxl: 24,
+    huge: 32,
+  },
+  large: {
+    xs: 14,
+    sm: 16,
+    md: 18,
+    lg: 20,
+    xl: 22,
+    xxl: 28,
+    huge: 38,
+  },
+};
+
 const baseTheme = {
   spacing: {
     xs: 4,
@@ -155,15 +186,6 @@ const baseTheme = {
     xl: 20,
     xxl: 30,
     full: 50,
-  },
-  fontSize: {
-    xs: 12,
-    sm: 14,
-    md: 16,
-    lg: 18,
-    xl: 20,
-    xxl: 24,
-    huge: 32,
   },
   fontFamily: {
     regular: 'Montserrat_400Regular',
@@ -204,15 +226,11 @@ const baseTheme = {
   },
 };
 
-const lightTheme: ThemeType = {
+const createTheme = (colors: ThemeColors, fontSize: FontSize, isDark: boolean): ThemeType => ({
   ...baseTheme,
-  colors: lightColors,
-};
-
-const darkTheme: ThemeType = {
-  ...baseTheme,
-  colors: darkColors,
-  shadows: {
+  colors,
+  fontSize: fontSizeVariants[fontSize],
+  shadows: isDark ? {
     sm: {
       ...baseTheme.shadows.sm,
       shadowOpacity: 0.3,
@@ -225,25 +243,29 @@ const darkTheme: ThemeType = {
       ...baseTheme.shadows.lg,
       shadowOpacity: 0.5,
     },
-  },
-};
+  } : baseTheme.shadows,
+});
 
 interface ThemeContextType {
   theme: ThemeType;
   isDark: boolean;
   followSystem: boolean;
+  fontSize: FontSize;
   toggleTheme: () => void;
   setTheme: (isDark: boolean) => void;
   setFollowSystem: (followSystem: boolean) => void;
+  setFontSize: (fontSize: FontSize) => void;
 }
 
 const ThemeContext = createContext<ThemeContextType>({
-  theme: lightTheme,
+  theme: createTheme(lightColors, 'medium', false),
   isDark: false,
   followSystem: true,
+  fontSize: 'medium',
   toggleTheme: () => {},
   setTheme: () => {},
   setFollowSystem: () => {},
+  setFontSize: () => {},
 });
 
 export const useTheme = () => {
@@ -287,12 +309,20 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const toggleTheme = () => {
     const newIsDark = !isDark;
     dispatch(updateThemePreferences({ isDark: newIsDark, followSystem: false }));
-    dispatch(saveThemePreferences({ isDark: newIsDark, followSystem: false }) as any);
+    dispatch(saveThemePreferences({ 
+      isDark: newIsDark, 
+      followSystem: false, 
+      fontSize: themePreferences.fontSize 
+    }) as any);
   };
 
   const setTheme = (dark: boolean) => {
     dispatch(updateThemePreferences({ isDark: dark, followSystem: false }));
-    dispatch(saveThemePreferences({ isDark: dark, followSystem: false }) as any);
+    dispatch(saveThemePreferences({ 
+      isDark: dark, 
+      followSystem: false, 
+      fontSize: themePreferences.fontSize 
+    }) as any);
   };
 
   const setFollowSystem = (followSystem: boolean) => {
@@ -303,20 +333,36 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     }));
     dispatch(saveThemePreferences({ 
       followSystem, 
-      isDark: followSystem ? currentSystemDark : themePreferences.isDark 
+      isDark: followSystem ? currentSystemDark : themePreferences.isDark,
+      fontSize: themePreferences.fontSize
     }) as any);
   };
 
-  const theme = isDark ? darkTheme : lightTheme;
+  const setFontSize = (fontSize: FontSize) => {
+    dispatch(updateThemePreferences({ fontSize }));
+    dispatch(saveThemePreferences({ 
+      isDark: themePreferences.isDark, 
+      followSystem: themePreferences.followSystem,
+      fontSize 
+    }) as any);
+  };
+
+  const theme = createTheme(
+    isDark ? darkColors : lightColors,
+    themePreferences.fontSize,
+    isDark
+  );
 
   return (
     <ThemeContext.Provider value={{ 
       theme, 
       isDark, 
       followSystem: themePreferences.followSystem,
+      fontSize: themePreferences.fontSize,
       toggleTheme, 
       setTheme, 
-      setFollowSystem 
+      setFollowSystem,
+      setFontSize 
     }}>
       {children}
     </ThemeContext.Provider>

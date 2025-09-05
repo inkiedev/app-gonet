@@ -39,9 +39,12 @@ export interface UserData {
   vat: string;
 }
 
+export type FontSize = 'small' | 'medium' | 'large';
+
 export interface ThemePreferences {
   isDark: boolean;
   followSystem: boolean;
+  fontSize: FontSize;
 }
 
 class SecureStorageService {

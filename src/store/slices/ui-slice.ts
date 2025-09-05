@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction, createAsyncThunk } from '@reduxjs/toolkit';
-import { secureStorageService, ThemePreferences } from '@/services/secure-storage';
+import { secureStorageService, ThemePreferences, FontSize } from '@/services/secure-storage';
 
 export const loadThemePreferences = createAsyncThunk(
   'ui/loadThemePreferences',
@@ -21,6 +21,7 @@ interface UIState {
   themePreferences: {
     isDark: boolean;
     followSystem: boolean;
+    fontSize: FontSize;
   };
 }
 
@@ -28,6 +29,7 @@ const initialState: UIState = {
   themePreferences: {
     isDark: false,
     followSystem: true,
+    fontSize: 'medium',
   },
 };
 
@@ -41,6 +43,9 @@ const uiSlice = createSlice({
       }
       if (action.payload.followSystem !== undefined) {
         state.themePreferences.followSystem = action.payload.followSystem;
+      }
+      if (action.payload.fontSize !== undefined) {
+        state.themePreferences.fontSize = action.payload.fontSize;
       }
     },
     resetThemePreferences: (state) => {
