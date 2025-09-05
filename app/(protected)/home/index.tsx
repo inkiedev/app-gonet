@@ -61,8 +61,6 @@ export default function HomeScreen() {
   const { height } = useResponsive();
   const { theme } = useTheme();
 
-  console.log(currentAccount)
-
   useEffect(() => {
     const backAction = () => {
       BackHandler.exitApp();

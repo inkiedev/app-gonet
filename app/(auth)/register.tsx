@@ -20,8 +20,8 @@ import { AppLogo } from '@/components/app/app-logo';
 import { Button } from '@/components/ui/custom-button';
 import { Input } from '@/components/ui/custom-input';
 import { useNotificationContext } from '@/contexts/notification-context';
-import { authService } from '@/services/auth';
 import { useTheme } from '@/contexts/theme-context';
+import { authService } from '@/services/auth';
 import { FontAwesome } from '@expo/vector-icons';
 
 /* --- Custom cedula validation function --- */
@@ -138,7 +138,6 @@ export default function RegisterScreen() {
           'Ocurrió un error inesperado. Por favor, intenta nuevamente.',
           5000
         );
-        console.log(result);
       }
     }
 

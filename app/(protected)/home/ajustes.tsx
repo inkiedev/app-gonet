@@ -7,7 +7,7 @@ import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, loadSubscriptionsData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword, loadThemePreferences, saveThemePreferences, updateThemePreferences } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadSubscriptionsData, loadThemePreferences, saveBiometricPreferences, saveThemePreferences, updateBiometricPreferences, updateStoredPassword, updateThemePreferences } from '@/store/slices/auth-slice';
 import { theme } from '@/styles/theme';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from "react";
@@ -293,7 +293,6 @@ const CambiarContrasenaContent = () => {
       
 
       if (credentials.password !=currentPassword ) {
-        console.log(credentials.password, currentPassword)
         showError('Contraseña incorrecta', 'La contraseña actual ingresada no es correcta.');
         return;
       }
