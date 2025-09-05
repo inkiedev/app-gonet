@@ -6,7 +6,6 @@ import { useTheme } from "@/contexts/theme-context";
 import { useAuthRoute } from "@/providers/auth-route-provider";
 import { getPromotionById, getPromotions, Promotion, PromotionDetail } from "@/services/public-api";
 import { RootState } from "@/store";
-import { theme } from "@/styles/theme";
 import { Redirect, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, ScrollView, StyleSheet, View } from "react-native";
@@ -26,18 +25,18 @@ const PlanesContent = ({
   const dynamicStyles = createDynamicStyles(theme);
 
   return (
-  <View style={styles.planesSection}>
-    <Text style={styles.sectionTitle}>Nuestros Planes</Text>
+  <View style={dynamicStyles.planesSection}>
+    <Text style={dynamicStyles.sectionTitle}>Nuestros Planes</Text>
     {isLoading ? (
       <Text>Cargando...</Text>
     ) : promotions.length > 0 ? (
       promotions.map((plan) => (
-        <PlanCard title={plan.name} style={styles.planCard} key={plan.id}>
-          <View style={styles.planContainer}>
+        <PlanCard title={plan.name} style={dynamicStyles.planCard} key={plan.id}>
+          <View style={dynamicStyles.planContainer}>
             <Text style={dynamicStyles.planFinalPrice}>
               Precio final: ${plan.total.toFixed(2)}
             </Text>
-            <View style={styles.planDetails}>
+            <View style={dynamicStyles.planDetails}>
               {plan.extras.map((detail, index) => (
                 <Text key={index} style={dynamicStyles.planDetail}>
                   {`• ${detail.name}`}
@@ -52,7 +51,7 @@ const PlanesContent = ({
         </PlanCard>
       ))
     ) : (
-      <Text style={styles.noPromotionsText}>
+      <Text style={dynamicStyles.noPromotionsText}>
         No hay promociones disponibles en este momento.
       </Text>
     )}
@@ -97,12 +96,12 @@ const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number,
   };
 
   return (
-    <View style={styles.planesSection}>
+    <View style={dynamicStyles.planesSection}>
         <Button title="Volver a la lista" onPress={onBack} />
       {isLoading ? (
         <Text>Cargando...</Text>
       ) : promotion ? (
-        <PlanCard title={promotion.name} style={styles.planCard}>
+        <PlanCard title={promotion.name} style={dynamicStyles.planCard}>
             <Text style={dynamicStyles.planFinalPrice}>Precio Total: ${promotion.total.toFixed(2)}</Text>
             <Text style={dynamicStyles.planDetail}>Tipo de Enlace: {promotion.link_type}</Text>
             <Text style={dynamicStyles.planDetail}>Nivel de Compartición: {promotion.sharing_level}</Text>
@@ -110,25 +109,25 @@ const PromotionDetailsContent = ({ promotionId, onBack }: { promotionId: number,
             <Text style={dynamicStyles.planDetail}>
               Velocidad de Subida: {kbpsToMbps(promotion["speed:_upload"])} Mbps ({promotion["speed:_upload"]} kbps)
             </Text>
-            <Text style={styles.planDetail}>
+            <Text style={dynamicStyles.planDetail}>
               Velocidad de Bajada: {kbpsToMbps(promotion["speed:_download"])} Mbps ({promotion["speed:_download"]} kbps)
             </Text>
 
-            <View style={styles.extrasContainer}>
-              <Text style={styles.extrasTitle}>Extras:</Text>
+            <View style={dynamicStyles.extrasContainer}>
+              <Text style={dynamicStyles.extrasTitle}>Extras:</Text>
               {promotion.extras.map((extra, index) => (
-                <View key={index} style={styles.extraItem}>
-                  <Text style={styles.extraName}>{extra.name}</Text>
-                  <Text style={styles.extraPrice}>Precio: ${extra.price_unit.toFixed(2)}</Text>
+                <View key={index} style={dynamicStyles.extraItem}>
+                  <Text style={dynamicStyles.extraName}>{extra.name}</Text>
+                  <Text style={dynamicStyles.extraPrice}>Precio: ${extra.price_unit.toFixed(2)}</Text>
                   {renderDiscountMessage(extra) && (
-                    <Text style={styles.discountText}>{renderDiscountMessage(extra)}</Text>
+                    <Text style={dynamicStyles.discountText}>{renderDiscountMessage(extra)}</Text>
                   )}
                 </View>
               ))}
             </View>
         </PlanCard>
       ) : (
-        <Text style={styles.noPromotionsText}>No se encontraron detalles de la promoción.</Text>
+        <Text style={dynamicStyles.noPromotionsText}>No se encontraron detalles de la promoción.</Text>
       )}
     </View>
   );
@@ -194,13 +193,13 @@ export default function PublicHomeScreen() {
             source={{ uri: "https://picsum.photos/800/400" }}
             style={styles.bannerImage}
           />
-          <View style={styles.bannerOverlay}>
-            <Text style={styles.bannerTitle}>Bienvenido a GoNet</Text>
-            <Text style={styles.bannerSubtitle}>Internet de alta velocidad para tu hogar</Text>
+          <View style={dynamicStyles.bannerOverlay}>
+            <Text style={dynamicStyles.bannerTitle}>Bienvenido a GoNet</Text>
+            <Text style={dynamicStyles.bannerSubtitle}>Internet de alta velocidad para tu hogar</Text>
             <Button 
               title="Iniciar Sesión" 
               onPress={handleLogin}
-              style={styles.loginButton}
+              style={dynamicStyles.loginButton}
             />
           </View>
         </View>
@@ -226,30 +225,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: theme.colors.background,
-  },
-  planFinalPrice: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
-  },
-  planDetail: {
-    fontSize: theme.fontSize.md,
-    color: theme.colors.text.primary,
-  }
-})
-
-
-const styles = StyleSheet.create({
-  scrollContainer: {
-    flex: 1,
-  },
-  bannerContainer: {
-    height: 300,
-    position: 'relative',
-  },
-  bannerImage: {
-    width: "100%",
-    height: "100%",
-    resizeMode: "cover",
   },
   bannerOverlay: {
     position: 'absolute',
@@ -351,5 +326,25 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.primary,
     marginTop: theme.spacing.xs,
+  },
+  planFinalPrice: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+  },
+})
+
+
+const styles = StyleSheet.create({
+  scrollContainer: {
+    flex: 1,
+  },
+  bannerContainer: {
+    height: 300,
+    position: 'relative',
+  },
+  bannerImage: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
 });

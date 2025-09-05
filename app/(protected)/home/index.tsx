@@ -182,7 +182,7 @@ export default function HomeScreen() {
           {iconOptions.map((option, index) => (
             <IconWithBadge
               key={index}
-              size={60}
+              size={55}
               SvgComponent={option.SvgComponent}
               label={option.label}
               badgeCount={option.badgeCount}

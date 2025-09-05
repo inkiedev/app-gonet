@@ -7,7 +7,7 @@ import { authService } from '@/services/auth';
 import { loadBiometricPreferences, restoreSession, completeBiometricVerification } from '@/store/slices/auth-slice';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { ActivityIndicator, View, StyleSheet, Text } from 'react-native';
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 
 interface AuthRouteContextType {
   isInitialized: boolean;
@@ -26,6 +26,8 @@ export const AuthRouteProvider: React.FC<AuthRouteProviderProps> = ({ children }
   const segments = useSegments();
   const navigationState = useRootNavigationState();
   const dispatch = useDispatch();
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -156,9 +158,9 @@ export const AuthRouteProvider: React.FC<AuthRouteProviderProps> = ({ children }
   // Show loading screen while initializing or processing biometrics
   if (!isInitialized || isLoading || (isAuthenticated && needsBiometricVerification && biometricPending)) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>
+      <View style={dynamicStyles.loadingContainer}>
+        <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+        <Text style={dynamicStyles.loadingText}>
           {biometricPending ? 'Verificando identidad...' : 'Inicializando...'}
         </Text>
       </View>
@@ -180,7 +182,7 @@ export const useAuthRoute = () => {
   return context;
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

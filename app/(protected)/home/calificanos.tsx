@@ -21,9 +21,11 @@ import { SafeAreaView } from "react-native-safe-area-context";
 interface StarRatingProps {
   rating: number;
   onChange: (valor: number) => void;
+  theme: any;
+  dynamicStyles: any;
 }
 
-const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
+const StarRating: React.FC<StarRatingProps> = ({ rating, onChange, theme, dynamicStyles }) => {
   const totalStars = 5;
 
   return (
@@ -46,14 +48,14 @@ const StarRating: React.FC<StarRatingProps> = ({ rating, onChange }) => {
   );
 };
 
-const EncuestasContent = () => (
+const EncuestasContent = ({ dynamicStyles }: { dynamicStyles: any }) => (
   <View style={dynamicStyles.card}>
     <Text style={dynamicStyles.cardTitle}>Encuestas</Text>
     <Text style={dynamicStyles.cardText}>No hay encuestas en este momento</Text>
   </View>
 );
 
-const SugerenciasContent = () => {
+const SugerenciasContent = ({ dynamicStyles }: { dynamicStyles: any }) => {
   const [texto, setTexto] = useState<string>("");
 
   const enviarSugerencia = () => {
@@ -82,7 +84,7 @@ const SugerenciasContent = () => {
   );
 };
 
-const SiguenosContent = () => (
+const SiguenosContent = ({ dynamicStyles, theme }: { dynamicStyles: any; theme: any }) => (
   <View style={[dynamicStyles.card, { alignItems: "center" }]}>
     <Text style={dynamicStyles.cardTitle}>Contáctanos</Text>
     <View style={dynamicStyles.socialContainer}>
@@ -101,72 +103,6 @@ const SiguenosContent = () => (
     </View>
   </View>
 );
-
-export default function CalificanosScreen(): React.ReactElement {
-  const { theme } = useTheme();
-  const dynamicStyles = createDynamicStyles(theme);
-  const [puntuacion, setPuntuacion] = useState<number>(0);
-
-  useEffect(() => {
-    setTimeout(() => {
-      const puntuacionDesdeBD: number = 4;
-      setPuntuacion(puntuacionDesdeBD);
-    }, 1000);
-  }, []);
-
-  return (
-
-   
-
-    <SafeAreaView style={dynamicStyles.container} edges={['top']}>
-
-<Header style={dynamicStyles.header} 
-        leftAction={{
-          icon: <Back width={24} height={24} color={theme.colors.text.primary} />,
-          onPress: () => router.back(),
-        }}
-        title="Calificanos"
-      />
-      
-      
-      <Text style={dynamicStyles.title}>Califica Nuestra App</Text>
-      <Text style={dynamicStyles.subtitle}>Puntuación actual: {puntuacion}</Text>
-
-      <StarRating rating={puntuacion} onChange={setPuntuacion} />
-
-      <View style={dynamicStyles.segmentedContainer}>
-        <SegmentedControl
-          segments={[
-            {
-              id: 'encuestas',
-              label: 'Encuesta',
-              content: <EncuestasContent />,
-              icon: <Ionicons name="clipboard-outline" size={16} color={theme.colors.primary} />,
-            },
-            {
-              id: 'sugerencias',
-              label: 'Feedback',
-              content: <SugerenciasContent />,
-              icon: <Ionicons name="chatbubble-outline" size={16} color={theme.colors.primary} />,
-            },
-            {
-              id: 'siguenos',
-              label: 'Social',
-              content: <SiguenosContent />,
-              icon: <Ionicons name="heart-outline" size={16} color={theme.colors.primary} />,
-            },
-          ]}
-          variant="glass"
-          animated={true}
-          size="md"
-          tintColor={theme.colors.primary}
-        />
-      </View>
-
-      
-    </SafeAreaView>
-  );
-}
 
 const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
@@ -248,3 +184,69 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
 
 });
+
+export default function CalificanosScreen(): React.ReactElement {
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
+  const [puntuacion, setPuntuacion] = useState<number>(0);
+
+  useEffect(() => {
+    setTimeout(() => {
+      const puntuacionDesdeBD: number = 4;
+      setPuntuacion(puntuacionDesdeBD);
+    }, 1000);
+  }, []);
+
+  return (
+
+   
+
+    <SafeAreaView style={dynamicStyles.container} edges={['top']}>
+
+<Header style={dynamicStyles.header} 
+        leftAction={{
+          icon: <Back width={24} height={24} color={currentTheme.colors.text.primary} />,
+          onPress: () => router.back(),
+        }}
+        title="Calificanos"
+      />
+      
+      
+      <Text style={dynamicStyles.title}>Califica Nuestra App</Text>
+      <Text style={dynamicStyles.subtitle}>Puntuación actual: {puntuacion}</Text>
+
+      <StarRating rating={puntuacion} onChange={setPuntuacion} theme={currentTheme} dynamicStyles={dynamicStyles} />
+
+      <View style={dynamicStyles.segmentedContainer}>
+        <SegmentedControl
+          segments={[
+            {
+              id: 'encuestas',
+              label: 'Encuesta',
+              content: <EncuestasContent dynamicStyles={dynamicStyles} />,
+              icon: <Ionicons name="clipboard-outline" size={16} color={currentTheme.colors.primary} />,
+            },
+            {
+              id: 'sugerencias',
+              label: 'Feedback',
+              content: <SugerenciasContent dynamicStyles={dynamicStyles} />,
+              icon: <Ionicons name="chatbubble-outline" size={16} color={currentTheme.colors.primary} />,
+            },
+            {
+              id: 'siguenos',
+              label: 'Social',
+              content: <SiguenosContent dynamicStyles={dynamicStyles} theme={currentTheme} />,
+              icon: <Ionicons name="heart-outline" size={16} color={currentTheme.colors.primary} />,
+            },
+          ]}
+          variant="glass"
+          animated={true}
+          size="md"
+          tintColor={currentTheme.colors.primary}
+        />
+      </View>
+
+      
+    </SafeAreaView>
+  );
+}

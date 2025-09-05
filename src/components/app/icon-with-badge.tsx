@@ -1,6 +1,5 @@
 import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
-import { theme } from '@/styles/theme';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
 import { StyleSheet, TouchableOpacity, View } from 'react-native';
@@ -18,7 +17,7 @@ interface IconWithBadgeProps extends BaseComponentProps {
 export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
                                                               SvgComponent,
                                                               size = 55,
-                                                              color = theme.colors.text.primary,
+                                                              color,
                                                               badgeCount,
                                                               onPress,
                                                               label,
@@ -26,27 +25,30 @@ export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
                                                               testID,
                                                             }) => {
   const showBadge = badgeCount !== undefined && badgeCount !== 0;
-  const { isDark } = useTheme();
+  const { isDark, theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
+  
+  const iconColor = color || currentTheme.colors.text.primary;
 
   const Container = onPress ? TouchableOpacity : View;
 
   return (
     <Container
-      style={[styles.container, style]}
+      style={[dynamicStyles.container, style]}
       onPress={onPress}
       activeOpacity={onPress ? 0.7 : 1}
       testID={testID}
     >
       <View style={styles.iconContainer}>
-        <SvgComponent width={size} height={size} fill={isDark ? 'white' : color} color={isDark ? 'rgba(219, 219, 219, 1)' : color} />
-        {showBadge && <Badge count={badgeCount} style={styles.badge} />}
+        <SvgComponent width={size} height={size} fill={isDark ? 'white' : iconColor} color={isDark ? 'rgba(219, 219, 219, 1)' : iconColor} />
+        {showBadge && <Badge count={badgeCount} style={dynamicStyles.badge} />}
       </View>
-      {label && <Text style={styles.label}>{label}</Text>}
+      {label && <Text style={dynamicStyles.label}>{label}</Text>}
     </Container>
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     alignItems: 'center',
     gap: theme.spacing.xs,
@@ -56,17 +58,20 @@ const styles = StyleSheet.create({
     top: -5,
     right: -5,
   },
+  label: {
+    marginTop: theme.spacing.xs,
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.primaryDark,
+    textAlign: 'center',
+  },
+});
+
+const styles = StyleSheet.create({
   iconContainer: {
     position: 'relative',
     width: 70,
     height: 55,
     justifyContent: 'center',
     alignItems: 'center',
-  },
-  label: {
-    marginTop: theme.spacing.xs,
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.primaryDark,
-    textAlign: 'center',
   },
 });

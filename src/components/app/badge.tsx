@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import React from 'react';
 import { StyleSheet, Text, View, ViewStyle } from 'react-native';
 
@@ -9,10 +9,13 @@ export interface BadgeProps {
 
 const Badge: React.FC<BadgeProps> = ({ style, count }) => {
   if (!count || count === 0) return null;
+  
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
-    <View style={[styles.badge, style]}>
-      <Text style={styles.badgeText}>
+    <View style={[dynamicStyles.badge, style]}>
+      <Text style={dynamicStyles.badgeText}>
         {typeof count === 'number'
           ? count > 99 ? '99+' : count.toString()
           : count}
@@ -21,7 +24,7 @@ const Badge: React.FC<BadgeProps> = ({ style, count }) => {
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   badge: {
     minWidth: 20,
     height: 20,
@@ -32,7 +35,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: theme.spacing.xs,
   },
   badgeText: {
-    color: theme.colors.text.primary,
+    color: theme.colors.text.inverse,
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.bold,
   },

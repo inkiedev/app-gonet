@@ -19,7 +19,7 @@ import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import { Select, SelectOption } from "@/components/ui/custom-select";
 import { useNotificationContext } from '@/contexts/notification-context';
-import { theme } from "@/styles/theme";
+import { useTheme } from '@/contexts/theme-context';
 import { FontAwesome } from "@expo/vector-icons";
 
 /* --- Validación con Zod --- */
@@ -39,6 +39,8 @@ type FormData = z.infer<typeof formSchema>;
 export default function ContactFormScreen() {
   const router = useRouter();
   const { showSuccess, showError } = useNotificationContext();
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
 
   const {
     control,
@@ -102,22 +104,22 @@ export default function ContactFormScreen() {
           behavior={Platform.OS === "ios" ? "padding" : "height"}
         >
           <ScrollView
-            contentContainerStyle={styles.scrollContent}
+            contentContainerStyle={dynamicStyles.scrollContent}
             keyboardShouldPersistTaps="handled"
           >
             <View style={styles.content}>
-              <Text style={styles.title}>GONECTATE</Text>
-              <Text style={styles.subtitle}>
+              <Text style={dynamicStyles.title}>GONECTATE</Text>
+              <Text style={dynamicStyles.subtitle}>
                 Déjanos tus datos y nos pondremos en contacto contigo y puedas
                 navegar sin problemas con GONET
               </Text>
 
               <AppLogo variant="small" />
-              <FontAwesome name={"paper-plane"} style={styles.iconFP} />
+              <FontAwesome name={"paper-plane"} style={dynamicStyles.iconFP} />
 
-              <View style={styles.form}>
+              <View style={dynamicStyles.form}>
                 {/* Servicio a contratar */}
-                <Text style={styles.label}>Servicio a contratar</Text>
+                <Text style={dynamicStyles.label}>Servicio a contratar</Text>
                 <Controller
                   control={control}
                   name="servicio"
@@ -125,7 +127,7 @@ export default function ContactFormScreen() {
 
 
                     <Select
-                      style={styles.select}
+                      style={dynamicStyles.select}
                       
                       placeholder="Seleccionar servicio"
                       options={servicioOptions}
@@ -136,8 +138,8 @@ export default function ContactFormScreen() {
                         <Text
                           style={{
                             color: isSelected
-                              ? theme.colors.primary
-                              : theme.colors.text.primary,
+                              ? currentTheme.colors.primary
+                              : currentTheme.colors.text.primary,
                           }}
                         >
                           {option.value}
@@ -193,7 +195,7 @@ export default function ContactFormScreen() {
                 />
 
                 {/* Ciudad */}
-                <Text style={styles.label}>Ciudad</Text>
+                <Text style={dynamicStyles.label}>Ciudad</Text>
                 <Controller
                   control={control}
                   name="ciudad"
@@ -209,8 +211,8 @@ export default function ContactFormScreen() {
                         <Text
                           style={{
                             color: isSelected
-                              ? theme.colors.primary
-                              : theme.colors.text.primary,
+                              ? currentTheme.colors.primary
+                              : currentTheme.colors.text.primary,
                           }}
                         >
                           {option.value}
@@ -222,7 +224,7 @@ export default function ContactFormScreen() {
 
                 {/* Botón */}
                 <Button
-                  style={styles.button}
+                  style={dynamicStyles.button}
                   title="ENVIAR"
                   onPress={handleSubmit(onSubmit)}
                   loading={isSubmitting}
@@ -237,16 +239,12 @@ export default function ContactFormScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  background: { flex: 1 },
-  container: { flex: 1 },
-  keyboardView: { flex: 1 },
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: "center",
     paddingHorizontal: theme.spacing.xl,
   },
-  content: { alignItems: "center" },
   title: {
     fontSize: theme.fontSize.xxl,
     fontWeight: theme.fontWeight.bold,
@@ -254,17 +252,13 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.sm,
     letterSpacing: 1.5,
   },
-
   button: {
     marginTop: theme.spacing.xl,
     marginBottom: theme.spacing.xxl,
   },
-
   select: {
     marginBottom: theme.spacing.md,
-
   },
-
   label:{
     color: theme.colors.surface,
     fontSize: theme.fontSize.md,
@@ -281,11 +275,17 @@ const styles = StyleSheet.create({
     maxWidth: 350,
     marginTop: theme.spacing.sm,
     marginBottom: theme.spacing.xl,
-    
   },
   iconFP: {
     color: theme.colors.surface,
     fontSize: theme.fontSize.xl * 2,
     marginBottom: theme.spacing.lg,
   },
+});
+
+const styles = StyleSheet.create({
+  background: { flex: 1 },
+  container: { flex: 1 },
+  keyboardView: { flex: 1 },
+  content: { alignItems: "center" },
 });

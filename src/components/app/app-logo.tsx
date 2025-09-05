@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import React from 'react';
 import { Image, ImageStyle, StyleSheet, View, ViewStyle } from 'react-native';
@@ -20,10 +20,12 @@ export const AppLogo: React.FC<AppLogoProps> = ({
                                                   style,
                                                   testID,
                                                 }) => {
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
   const logoSize = size || logoSizes[variant];
 
   const containerStyle: ViewStyle[] = [
-    styles.container,
+    dynamicStyles.container,
     style as ViewStyle,
   ];
 
@@ -43,12 +45,15 @@ export const AppLogo: React.FC<AppLogoProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     alignItems: 'center',
     justifyContent: 'center',
     padding: theme.spacing.lg,
   },
+});
+
+const styles = StyleSheet.create({
   image: {
     backgroundColor: 'transparent',
   },
