@@ -1,24 +1,22 @@
 import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
-import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/custom-button";
 import { Select } from "@/components/ui/custom-select";
 import Text from "@/components/ui/custom-text";
 import { ExpandableCard } from "@/components/ui/expandable-card";
 import { useTheme } from "@/contexts/theme-context";
-import { apiService, Payment, PaymentsResponse, Invoice, InvoicesResponse } from '@/services/api';
+import { apiService, Invoice, InvoicesResponse, Payment, PaymentsResponse } from '@/services/api';
 import { RootState } from '@/store';
 import { Subscription } from '@/types/subscription';
 import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { createSelector } from '@reduxjs/toolkit';
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Linking,
   ScrollView,
   StyleSheet,
-  TouchableOpacity,
-  View,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from 'react-redux';
@@ -86,7 +84,7 @@ const handlePaymentPress = async () => {
       const response: PaymentsResponse = await apiService.getPaymentsByInvoicePartner(
         'enterprise',
         selectedAccount.partner_invoice.id,
-        10 // Limitar a 10 pagos recientes
+        5 // Limitar a 5 pagos recientes
       );
       
       if (response.success) {
@@ -107,7 +105,7 @@ const handlePaymentPress = async () => {
       const response: InvoicesResponse = await apiService.getInvoicesByPartner(
         'enterprise',
         selectedAccount.partner_invoice.id,
-        10 // Limitar a 10 facturas recientes
+        5 // Limitar a 5 facturas recientes
       );
       
       if (response.success) {
@@ -270,7 +268,7 @@ const handlePaymentPress = async () => {
             <View style={dynamicStyles.cardActions}>
               <Button
                 title="Ver Todo el Historial"
-                onPress={() => console.log('Ver historial completo')}
+                onPress={() => router.push('/(protected)/home/historial-pagos')}
                 size="sm"
               />
             </View>
@@ -329,6 +327,14 @@ const handlePaymentPress = async () => {
                 onPress={handleInvoiceConsultation}
                 size="sm"
               />
+              {invoices.length > 0 && (
+                <Button
+                  title="Ver Todas las Facturas"
+                  onPress={() => router.push('/(protected)/home/historial-facturas')}
+                  size="sm"
+                  variant="outline"
+                />
+              )}
             </View>
           </ExpandableCard>
         </View>
@@ -407,6 +413,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   cardActions: {
     marginTop: theme.spacing.md,
     alignItems: 'flex-start',
+    gap: theme.spacing.md,
   },
   paymentMethodItem: {
     flexDirection: 'row',
