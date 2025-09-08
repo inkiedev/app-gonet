@@ -1,7 +1,7 @@
+import LogoCall from '@/assets/icons/phone.svg';
 import LogoMensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
 import LogoWhatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
 import Back from '@/assets/images/iconos gonet back.svg';
-import LogoCall from '@/assets/images/icons/phone.svg';
 import { Header } from "@/components/layout/header";
 import { Button as CustomButton } from "@/components/ui/custom-button";
 import Text from '@/components/ui/custom-text';

@@ -140,15 +140,7 @@ export default function RegisterScreen() {
         );
       }
     }
-
       setRegisterError('');
-      // Aquí se llamaría al servicio real de registro
-
-
-
-
-
-      
     } catch (error) {
       const errorMessage =
         error instanceof Error ? error.message : 'Error de conexión';

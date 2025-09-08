@@ -1,13 +1,13 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/store';
-import { secureStorageService } from '@/services/secure-storage';
-import { authService } from '@/services/auth';
-import { loadBiometricPreferences, restoreSession, completeBiometricVerification } from '@/store/slices/auth-slice';
-import { useBiometricAuth } from '@/hooks/use-biometric-auth';
-import { ActivityIndicator, View, StyleSheet, Text } from 'react-native';
 import { useTheme } from '@/contexts/theme-context';
+import { useBiometricAuth } from '@/hooks/use-biometric-auth';
+import { authService } from '@/services/auth';
+import { secureStorageService } from '@/services/secure-storage';
+import { RootState } from '@/store';
+import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from '@/store/slices/auth-slice';
+import { useRootNavigationState, useRouter, useSegments } from 'expo-router';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface AuthRouteContextType {
   isInitialized: boolean;

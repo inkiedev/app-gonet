@@ -41,7 +41,15 @@ export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
     >
       <View style={styles.iconContainer}>
         <SvgComponent width={size} height={size} fill={isDark ? 'white' : iconColor} color={isDark ? 'rgba(219, 219, 219, 1)' : iconColor} />
-        {showBadge && <Badge count={badgeCount} style={dynamicStyles.badge} />}
+        {showBadge && (
+          <Badge style={dynamicStyles.badge}>
+            <Text style={dynamicStyles.badgeText}>
+              {typeof badgeCount === 'number'
+                ? badgeCount > 99 ? '99+' : badgeCount.toString()
+                : badgeCount}
+            </Text>
+          </Badge>
+        )}
       </View>
       {label && <Text style={dynamicStyles.label}>{label}</Text>}
     </Container>
@@ -55,8 +63,8 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   badge: {
     position: 'absolute',
-    top: -5,
-    right: -5,
+    top: -2,
+    right: -2,
   },
   label: {
     marginTop: theme.spacing.xs,
@@ -64,6 +72,11 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.primaryDark,
     textAlign: 'center',
   },
+  badgeText: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.text.inverse,
+    fontWeight: theme.fontWeight.bold,
+  }
 });
 
 const styles = StyleSheet.create({

@@ -1,9 +1,9 @@
-import Beneficios from '@/assets/images/iconos gonet app svg_beneficios.svg';
+import NewUser from '@/assets/icons/new-user.svg';
+import Register from '@/assets/icons/register.svg';
+import User from '@/assets/icons/user.svg';
 import AppLogo from '@/assets/images/iconos gonet app svg_GoneetLogo.svg';
-import Servicios from '@/assets/images/iconos gonet app svg_gonetBlack.svg';
-import Mensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
-import Pagos from '@/assets/images/iconos gonet app svg_Pagos.svg';
 import Soporte from '@/assets/images/iconos gonet app svg_Soporte.svg';
+import MaskedBadge from '@/components/app/masked-badge';
 import { Footer } from "@/components/layout/footer";
 import Text from '@/components/ui/custom-text';
 import { ImageCarousel } from "@/components/ui/image-carousel";
@@ -14,34 +14,29 @@ import { useAuthRoute } from "@/providers/auth-route-provider";
 import { RootState } from "@/store";
 import { Redirect, useRouter } from "expo-router";
 import React from "react";
-import { ImageBackground, Platform, StyleSheet, View } from "react-native";
+import { ImageBackground, Platform, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useSelector } from "react-redux";
 
+const SVG_SIZE = 30;
 
 const iconOptions = [
   {
-    SvgComponent: Mensaje,
-    label: 'Mensajes',
-    badgeCount: 2,
+    SvgComponent: <Soporte width={SVG_SIZE} height={SVG_SIZE} />,
+    label: 'Soporte para inicio de sesion',
   },
   {
-    SvgComponent: Pagos,
-    label: 'Pagos',
+    SvgComponent: <User width={SVG_SIZE} height={SVG_SIZE} />,
+    label: 'Iniciar Sesion',
   },
   {
-    SvgComponent: Servicios,
-    label: '+Servicios',
-    badgeCount: '+',
+    SvgComponent: <Register width={SVG_SIZE} height={SVG_SIZE} />,
+    label: '¿Nuevo Usuario?\nRegistrate Aqui',
   },
   {
-    SvgComponent: Soporte,
-    label: 'Soporte',
-  },
-  {
-    SvgComponent: Beneficios,
-    label: 'Beneficios',
-  },
+    SvgComponent: <NewUser width={SVG_SIZE} height={SVG_SIZE} />,
+    label: '¿Quieres formar parte de GoNet?',
+  }
 ];
 
 export default function PublicHomeScreen() {
@@ -50,7 +45,7 @@ export default function PublicHomeScreen() {
   const { isInitialized } = useAuthRoute();
   const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
   const { showSuccess, showError } = useNotificationContext();
-  const { height } = useResponsive();
+  const { height, isTablet } = useResponsive();
   
   if (!isInitialized) {
     return null; 
@@ -62,6 +57,18 @@ export default function PublicHomeScreen() {
 
   const handleLogin = () => {
     router.push("/(auth)/login");
+  };
+
+  const handleBadgePress = (index: number) => {
+    // Rutas que podrás configurar después
+    const routes = [
+      '/soporte',
+      '/login', 
+      '/register',
+      '/hola',
+    ];
+    
+    router.push(routes[index])
   };
 
   const styles = createDynamicStyles(theme);
@@ -86,8 +93,25 @@ export default function PublicHomeScreen() {
           <AppLogo style={styles.logo} width={150} height={150} />
           <View style={styles.options}>
             <Text style={styles.title}>BIENVENIDO</Text>
-            <View style={styles.iconsGrid}>
-
+            <View style={[styles.badgeRow, isTablet && { padding: theme.spacing.md }]}>
+              {iconOptions.map((icon, index) => (
+                <TouchableOpacity
+                  key={index}
+                  onPress={() => handleBadgePress(index)}
+                  activeOpacity={0.7}
+                  style={styles.iconContainer}
+                >
+                  <MaskedBadge
+                    size={50}
+                    backgroundColor="white"
+                    style={styles.maskedBadge}
+                    iconSize={SVG_SIZE}
+                  >
+                    {icon.SvgComponent}
+                  </MaskedBadge>
+                  <Text style={[styles.badgeText, isTablet && { fontSize: theme.fontSize.xs  }]}>{icon.label}</Text>
+                </TouchableOpacity>
+              ))}
             </View>
           </View>
         </View>
@@ -119,22 +143,53 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    paddingHorizontal: 16,
     gap: 16,
     position: 'relative',
   },
   options: {
+    width: '100%',
+    maxWidth: 800,
     marginTop: 100,
     flex: 1,
     flexDirection: 'column',
     alignItems: 'center',
   },
-  iconsGrid: {
-    width: '100%',
+  badgeRow: {
     flexDirection: 'row',
-    justifyContent: 'space-around',
+    flex: 1,
+    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+    width: '95%',
+    marginTop: theme.spacing.lg,
+    marginBottom: theme.spacing.lg,
+  },
+  badge: {
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.25,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  badgeText: {
+    color: '#fff',
+    fontSize: theme.fontSize.xs * 0.7,
+    wordWrap: 'wrap',
+    fontWeight: theme.fontWeight.bold,
+    textAlign: 'center',
+    padding: theme.spacing.xs,
+    paddingTop: 10
+  },
+  maskedBadge: {
+    
+  },
+  iconContainer: {
+    width: '25%',
+    display: 'flex',
     alignItems: 'center',
-    maxWidth: 700
+    justifyContent: 'center',
   },
   background: {
     flex: 1,

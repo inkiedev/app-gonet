@@ -4,6 +4,7 @@ import { FontSize } from '@/services/secure-storage';
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Appearance, ColorSchemeName } from 'react-native';
 import { useDispatch, useSelector } from 'react-redux';
+import { usePathname } from 'expo-router';
 
 export interface ThemeColors {
   primary: string;
@@ -284,6 +285,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
   const dispatch = useDispatch();
   const { themePreferences } = useSelector((state: RootState) => state.ui);
   const [systemColorScheme, setSystemColorScheme] = useState<ColorSchemeName>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     // Load saved theme preferences
@@ -301,10 +303,16 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
     return () => subscription?.remove();
   }, [dispatch]);
 
+  // Routes where dark theme should be disabled (force light theme)
+  const lightOnlyRoutes = ['/login', '/register', '/forgot-password'];
+  const isLightOnlyRoute = lightOnlyRoutes.some(route => pathname?.includes(route));
+
   // Determine the actual theme to use
-  const isDark = themePreferences.followSystem 
-    ? systemColorScheme === 'dark' 
-    : themePreferences.isDark;
+  const isDark = isLightOnlyRoute 
+    ? false 
+    : (themePreferences.followSystem 
+        ? systemColorScheme === 'dark' 
+        : themePreferences.isDark);
 
   const toggleTheme = () => {
     const newIsDark = !isDark;
