@@ -103,7 +103,7 @@ export const BottomSheet = React.forwardRef<
     >
       <View style={styles.draggerContainer} {...panResponder.panHandlers}>
         <View
-          style={[styles.dragger, { backgroundColor: theme.colors.primary }]}
+          style={[styles.dragger, { backgroundColor: theme.colors.primaryDark }]}
         />
       </View>
       {children}
