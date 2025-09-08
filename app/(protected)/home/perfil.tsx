@@ -1,6 +1,7 @@
 import Back from '@/assets/images/iconos gonet back.svg';
 import Cross from '@/assets/images/iconos gonet cross.svg';
 import Text from '@/components/ui/custom-text';
+import { formatGoWord } from '@/utils';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
@@ -334,6 +335,84 @@ export default function AjustesScreen() {
               />
             )}
           </View>
+
+          {/* Plan Information Section */}
+          <View style={dynamicStyles.dividerContainer}>
+            <View style={dynamicStyles.dividerLine} />
+            <Text style={dynamicStyles.dividerText}>Plan Actual</Text>
+            <View style={dynamicStyles.dividerLine} />
+          </View>
+
+          <Card
+            style={dynamicStyles.infoCard}
+            padding={isSmall ? "sm" : "md"}
+            variant="elevated"
+          >
+            <View style={[dynamicStyles.planHeader, { paddingVertical: isSmall ? theme.spacing.md : theme.spacing.lg }]}>
+              <View style={dynamicStyles.planIconContainer}>
+                <Ionicons
+                  name="wifi"
+                  size={isSmall ? 40 : 50}
+                  color={theme.colors.primary}
+                />
+              </View>
+              <Text style={[
+                dynamicStyles.planName,
+                { fontSize: isSmall ? theme.fontSize.lg : theme.fontSize.xl }
+              ]}>
+                {formatGoWord(currentAccount?.plan[0]?.name) || 'Plan GoNet'}
+              </Text>
+              <Text style={[
+                dynamicStyles.planSpeed,
+                { fontSize: isSmall ? theme.fontSize.md : theme.fontSize.lg }
+              ]}>
+                {currentAccount?.plan[0]?.name?.match(/\d+/) || '100'} Mbps
+              </Text>
+            </View>
+
+            <View style={dynamicStyles.planDetailsContainer}>
+              <PlanInfoRow
+                icon="speedometer-outline"
+                label="Velocidad"
+                value={`${currentAccount?.plan[0]?.name?.match(/\d+/) || '100'} Mbps`}
+                theme={theme}
+                isSmall={isSmall}
+              />
+              <PlanInfoRow
+                icon="calendar-outline"
+                label="Estado"
+                value="Activo"
+                theme={theme}
+                isSmall={isSmall}
+              />
+              <PlanInfoRow
+                icon="card-outline"
+                label="Tipo de Plan"
+                value={formatGoWord(currentAccount?.plan[0]?.name?.split(' ')[0]) || 'GoNet'}
+                theme={theme}
+                isSmall={isSmall}
+                isLast
+              />
+            </View>
+          </Card>
+
+          <View style={dynamicStyles.upgradePlanContainer}>
+            <Button
+              title="Mejorar Plan"
+              onPress={() => router.push('/(protected)/home/servicios')}
+              variant="primary"
+              size={isSmall ? "md" : "lg"}
+              fullWidth
+              icon={
+                <Ionicons
+                  name="arrow-up-circle-outline"
+                  size={20}
+                  color={theme.colors.text.inverse}
+                  style={{ marginRight: theme.spacing.xs }}
+                />
+              }
+            />
+          </View>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -427,6 +506,55 @@ const UserInfoRow: React.FC<UserInfoRowProps> = ({
           {error}
         </Text>
       )}
+    </View>
+  );
+};
+
+interface PlanInfoRowProps {
+  icon: string;
+  label: string;
+  value: string;
+  theme: any;
+  isSmall: boolean;
+  isLast?: boolean;
+}
+
+const PlanInfoRow: React.FC<PlanInfoRowProps> = ({
+  icon,
+  label,
+  value,
+  theme,
+  isSmall,
+  isLast = false
+}) => {
+  const dynamicStyles = createDynamicStyles(theme);
+
+  return (
+    <View style={[
+      dynamicStyles.planInfoRow,
+      !isLast && dynamicStyles.planInfoRowBorder,
+      { paddingVertical: isSmall ? theme.spacing.sm : theme.spacing.md }
+    ]}>
+      <View style={dynamicStyles.planInfoLeft}>
+        <Ionicons
+          name={icon as any}
+          size={20}
+          color={theme.colors.primary}
+          style={dynamicStyles.fieldIcon}
+        />
+        <Text style={[
+          dynamicStyles.planInfoLabel,
+          { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
+        ]}>
+          {label}:
+        </Text>
+      </View>
+      <Text style={[
+        dynamicStyles.planInfoValue,
+        { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md }
+      ]}>
+        {value}
+      </Text>
     </View>
   );
 };
@@ -603,5 +731,56 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.text.inverse,
     fontSize: theme.fontSize.md,
     flex: 1,
+  },
+  planHeader: {
+    alignItems: 'center',
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
+  },
+  planIconContainer: {
+    marginBottom: theme.spacing.sm,
+  },
+  planName: {
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.xs,
+  },
+  planSpeed: {
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primary,
+    textAlign: 'center',
+  },
+  planDetailsContainer: {
+    paddingTop: theme.spacing.md,
+  },
+  planInfoRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.md,
+  },
+  planInfoRowBorder: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
+  },
+  planInfoLeft: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    flex: 1,
+  },
+  planInfoLabel: {
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text.primary,
+  },
+  planInfoValue: {
+    flex: 1,
+    textAlign: 'right',
+    color: theme.colors.primary,
+    fontWeight: theme.fontWeight.semibold,
+  },
+  upgradePlanContainer: {
+    paddingTop: theme.spacing.lg,
+    paddingBottom: theme.spacing.md,
   },
 });

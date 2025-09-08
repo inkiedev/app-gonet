@@ -1,13 +1,13 @@
-import React, { createContext, useContext, useEffect, useState, ReactNode } from 'react';
-import { useRouter, useSegments, useRootNavigationState } from 'expo-router';
-import { useSelector, useDispatch } from 'react-redux';
-import { RootState } from '@/store';
-import { secureStorageService } from '@/services/secure-storage';
-import { authService } from '@/services/auth';
-import { loadBiometricPreferences, restoreSession, completeBiometricVerification } from '@/store/slices/auth-slice';
+import { useTheme } from '@/contexts/theme-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
-import { ActivityIndicator, View, StyleSheet, Text } from 'react-native';
-import { theme } from '@/styles/theme';
+import { authService } from '@/services/auth';
+import { secureStorageService } from '@/services/secure-storage';
+import { RootState } from '@/store';
+import { completeBiometricVerification, loadBiometricPreferences, restoreSession } from '@/store/slices/auth-slice';
+import { useRootNavigationState, useRouter, useSegments } from 'expo-router';
+import React, { createContext, ReactNode, useContext, useEffect, useState } from 'react';
+import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
+import { useDispatch, useSelector } from 'react-redux';
 
 interface AuthRouteContextType {
   isInitialized: boolean;
@@ -26,6 +26,8 @@ export const AuthRouteProvider: React.FC<AuthRouteProviderProps> = ({ children }
   const segments = useSegments();
   const navigationState = useRootNavigationState();
   const dispatch = useDispatch();
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
 
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -156,9 +158,9 @@ export const AuthRouteProvider: React.FC<AuthRouteProviderProps> = ({ children }
   // Show loading screen while initializing or processing biometrics
   if (!isInitialized || isLoading || (isAuthenticated && needsBiometricVerification && biometricPending)) {
     return (
-      <View style={styles.loadingContainer}>
-        <ActivityIndicator size="large" color={theme.colors.primary} />
-        <Text style={styles.loadingText}>
+      <View style={dynamicStyles.loadingContainer}>
+        <ActivityIndicator size="large" color={currentTheme.colors.primary} />
+        <Text style={dynamicStyles.loadingText}>
           {biometricPending ? 'Verificando identidad...' : 'Inicializando...'}
         </Text>
       </View>
@@ -180,7 +182,7 @@ export const useAuthRoute = () => {
   return context;
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',

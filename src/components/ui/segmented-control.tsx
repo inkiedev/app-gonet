@@ -1,6 +1,5 @@
 import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
-import { theme } from '@/styles/theme';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useState } from 'react';
@@ -50,7 +49,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
   contentStyle,
   animated = true,
   size = 'md',
-  tintColor = theme.colors.primary,
+  tintColor,
 }) => {
   // State
   const [activeIndex, setActiveIndex] = useState(() => {
@@ -129,35 +128,39 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 
   // Get styles based on variant and size
   const getContainerStyles = () => {
-    const baseStyle = [styles.container, styles[`container_${size}`]];
+    const baseStyle = [dynamicStyles.container, styles[`container_${size}`]];
     
     switch (variant) {
       case 'material':
-        return [...baseStyle, styles.materialContainer];
+        return [...baseStyle, dynamicStyles.materialContainer];
       case 'glass':
         return [...baseStyle, styles.glassContainer];
       case 'minimal':
-        return [...baseStyle, styles.minimalContainer];
+        return [...baseStyle, dynamicStyles.minimalContainer];
       default: // ios
-        return [...baseStyle, styles.iosContainer];
+        return [...baseStyle, dynamicStyles.iosContainer];
     }
   };
 
   const getSelectorStyles = () => {
     switch (variant) {
       case 'material':
-        return styles.materialSelector;
+        return dynamicStyles.materialSelector;
       case 'glass':
-        return styles.glassSelector;
+        return dynamicStyles.glassSelector;
       case 'minimal':
         return styles.minimalSelector;
       default: // ios
-        return styles.iosSelector;
+        return dynamicStyles.iosSelector;
     }
   };
 
   const { theme: currentTheme } = useTheme();
   const dynamicStyles = createDynamicStyles(currentTheme);
+  
+  if (!tintColor) {
+    tintColor = currentTheme.colors.primary;
+  }
 
 
   // Render segment button
@@ -165,9 +168,9 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     const isActive = index === activeIndex;
     
     const textStyle = [
-      styles.segmentText,
-      styles[`segmentText_${size}`],
-      isActive ? styles.activeSegmentText : dynamicStyles.inactiveSegmentText,
+      dynamicStyles.segmentText,
+      dynamicStyles[`segmentText_${size}`],
+      isActive ? dynamicStyles.activeSegmentText : dynamicStyles.inactiveSegmentText,
       variant === 'minimal' && isActive && { color: tintColor },
     ];
 
@@ -176,12 +179,12 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
         key={segment.id}
         style={[
           styles.segment,
-          styles[`segment_${size}`]
+          dynamicStyles[`segment_${size}`]
         ]}
         onPress={() => handleSegmentPress(index)}
         activeOpacity={0.7}
       >
-        <View style={styles.segmentContent}>
+        <View style={dynamicStyles.segmentContent}>
           {segment.icon && (
             <View style={styles.iconContainer}>
               {segment.icon}
@@ -193,8 +196,8 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
           </Text>
 
           {segment.badge && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
+            <View style={dynamicStyles.badge}>
+              <Text style={dynamicStyles.badgeText}>
                 {segment.badge}
               </Text>
             </View>
@@ -209,7 +212,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     if (variant === 'glass') {
       return (
         <Animated.View style={[getSelectorStyles(), selectorStyle]}>
-          <BlurView intensity={20} style={styles.blurSelector}>
+          <BlurView intensity={20} style={dynamicStyles.blurSelector}>
             <LinearGradient
               colors={['rgba(255, 255, 255, 0.3)', 'rgba(255, 255, 255, 0.1)']}
               style={styles.glassGradient}
@@ -224,7 +227,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
         <Animated.View style={[getSelectorStyles(), selectorStyle]}>
           <LinearGradient
             colors={[tintColor, `${tintColor}CC`]}
-            style={styles.materialGradient}
+            style={dynamicStyles.materialGradient}
           />
         </Animated.View>
       );
@@ -233,7 +236,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
     if (variant === 'minimal') {
       return (
         <Animated.View style={[getSelectorStyles(), selectorStyle, { backgroundColor: 'transparent' }]}>
-          <View style={[styles.minimalLine, { backgroundColor: tintColor }]} />
+          <View style={[dynamicStyles.minimalLine, { backgroundColor: tintColor }]} />
         </Animated.View>
       );
     }
@@ -244,7 +247,7 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
         style={[
           getSelectorStyles(), 
           selectorStyle,
-          { backgroundColor: theme.colors.surface }
+          { backgroundColor: currentTheme.colors.surface }
         ]} 
       />
     );
@@ -274,36 +277,12 @@ export const SegmentedControl: React.FC<SegmentedControlProps> = ({
 };
 
 const createDynamicStyles = (theme: any) => StyleSheet.create({
-  inactiveSegmentText: {
-    color: theme.colors.text.inactive,
-  },
-})
-
-const styles = StyleSheet.create({
-  wrapper: {
-    flex: 1,
-    width: '100%',
-    maxWidth: 1000
-  },
-
-  // Container variants
+  // Container styles with theme dependency
   container: {
     position: 'relative',
     borderRadius: theme.borderRadius.lg,
     padding: 4,
     marginBottom: theme.spacing.lg,
-  },
-
-  container_sm: {
-    padding: 2,
-  },
-
-  container_md: {
-    padding: 4,
-  },
-
-  container_lg: {
-    padding: 6,
   },
 
   iosContainer: {
@@ -321,13 +300,6 @@ const styles = StyleSheet.create({
     borderColor: `${theme.colors.primary}30`,
   },
 
-  glassContainer: {
-    backgroundColor: 'rgba(255, 255, 255, 0.1)',
-    borderWidth: 1,
-    borderColor: 'rgba(255, 255, 255, 0.2)',
-    overflow: 'hidden',
-  },
-
   minimalContainer: {
     backgroundColor: 'transparent',
     borderBottomWidth: 1,
@@ -336,21 +308,7 @@ const styles = StyleSheet.create({
     paddingBottom: 0,
   },
 
-  // Segments container
-  segmentsContainer: {
-    flexDirection: 'row',
-    position: 'relative',
-    zIndex: 2,
-  },
-
-  // Individual segment
-  segment: {
-    flex: 1,
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 3,
-  },
-
+  // Segment styles with theme dependency
   segment_sm: {
     paddingVertical: theme.spacing.xs,
   },
@@ -369,12 +327,7 @@ const styles = StyleSheet.create({
     gap: theme.spacing.xs,
   },
 
-  iconContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-
-  // Segment text
+  // Text styles with theme dependency
   segmentText: {
     fontWeight: theme.fontWeight.medium,
     textAlign: 'center',
@@ -401,7 +354,7 @@ const styles = StyleSheet.create({
     color: theme.colors.text.secondary,
   },
 
-  // Badge
+  // Badge styles with theme dependency
   badge: {
     backgroundColor: theme.colors.error,
     borderRadius: theme.borderRadius.full,
@@ -418,7 +371,7 @@ const styles = StyleSheet.create({
     fontWeight: theme.fontWeight.bold,
   },
 
-  // Selector variants
+  // Selector styles with theme dependency
   iosSelector: {
     position: 'absolute',
     top: 4,
@@ -465,22 +418,9 @@ const styles = StyleSheet.create({
     }),
   } as any,
 
-  minimalSelector: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    height: 3,
-    zIndex: 1,
-  },
-
-  // Gradient styles
   materialGradient: {
     flex: 1,
     borderRadius: theme.borderRadius.md,
-  },
-
-  glassGradient: {
-    flex: 1,
   },
 
   blurSelector: {
@@ -491,6 +431,69 @@ const styles = StyleSheet.create({
   minimalLine: {
     flex: 1,
     borderRadius: theme.borderRadius.sm,
+  },
+});
+
+const styles = StyleSheet.create({
+  wrapper: {
+    flex: 1,
+    width: '100%',
+    maxWidth: 1000
+  },
+
+  // Static container size variants
+  container_sm: {
+    padding: 2,
+  },
+
+  container_md: {
+    padding: 4,
+  },
+
+  container_lg: {
+    padding: 6,
+  },
+
+  // Glass container - no theme dependency (uses fixed RGBA values)
+  glassContainer: {
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+    borderWidth: 1,
+    borderColor: 'rgba(255, 255, 255, 0.2)',
+    overflow: 'hidden',
+  },
+
+  // Segments container
+  segmentsContainer: {
+    flexDirection: 'row',
+    position: 'relative',
+    zIndex: 2,
+  },
+
+  // Individual segment
+  segment: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    zIndex: 3,
+  },
+
+  iconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+
+  // Minimal selector - no theme dependency
+  minimalSelector: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    height: 3,
+    zIndex: 1,
+  },
+
+  // Glass gradient - no theme dependency
+  glassGradient: {
+    flex: 1,
   },
 
   // Content

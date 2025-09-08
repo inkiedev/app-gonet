@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import React from 'react';
 import { Dimensions, ImageBackground, StyleSheet, View } from 'react-native';
 import Carousel from 'react-native-reanimated-carousel';
@@ -29,6 +29,8 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
   style, 
   height = 300 
 }) => {
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
   const renderCarouselItem = ({ item }: { item: typeof carouselData[0] }) => (
     <View style={[styles.carouselItemContainer, { height }]}>
       <ImageBackground
@@ -40,7 +42,7 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
   );
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[dynamicStyles.container, style]}>
       <Carousel
         loop={true}
         width={width}
@@ -59,12 +61,13 @@ export const ImageCarousel: React.FC<ImageCarouselProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
-    borderBottomLeftRadius: theme.borderRadius.xxl,
-    borderBottomRightRadius: theme.borderRadius.xxl,
     overflow: 'hidden',
   },
+});
+
+const styles = StyleSheet.create({
   carouselItemContainer: {
     width: '100%',
   },

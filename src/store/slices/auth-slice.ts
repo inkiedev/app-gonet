@@ -1,4 +1,4 @@
-import { BiometricPreferences, secureStorageService, UserData } from '@/services/secure-storage';
+import { BiometricPreferences, secureStorageService, UserData, ThemePreferences } from '@/services/secure-storage';
 import { Subscription } from '@/types/subscription';
 import { createAsyncThunk, createSlice, PayloadAction } from '@reduxjs/toolkit';
 import { apiService } from '@/services/api';
@@ -53,7 +53,7 @@ const updateStoredPassword = createAsyncThunk(
 
 const saveThemePreferences = createAsyncThunk(
   'auth/saveThemePreferences',
-  async (preferences: { isDark: boolean; followSystem: boolean }) => {
+  async (preferences: ThemePreferences) => {
     await secureStorageService.saveThemePreferences(preferences);
     return preferences;
   }
@@ -110,10 +110,7 @@ interface AuthState {
     useBiometricForPassword: boolean;
     useBiometricForLogin: boolean;
   };
-  themePreferences: {
-    isDark: boolean;
-    followSystem: boolean;
-  };
+  themePreferences: ThemePreferences;
   currentAccount: Subscription | null;
   subscriptions: Subscription[];
   selectedAccountIndex: number;
@@ -133,6 +130,7 @@ const initialState: AuthState = {
   themePreferences: {
     isDark: false,
     followSystem: true,
+    fontSize: 'medium',
   },
   currentAccount: null,
   subscriptions: [],
@@ -183,6 +181,7 @@ const authSlice = createSlice({
       state.themePreferences = {
         isDark: false,
         followSystem: true,
+        fontSize: 'medium',
       };
       state.currentAccount = null;
       state.subscriptions = [];
@@ -208,6 +207,7 @@ const authSlice = createSlice({
         state.themePreferences = {
           isDark: false,
           followSystem: true,
+          fontSize: 'medium',
         };
         state.currentAccount = null;
         state.subscriptions = [];
@@ -279,15 +279,15 @@ const authSlice = createSlice({
         }
       }
     },
-    updateThemePreferences: (state, action: PayloadAction<{
-      isDark?: boolean;
-      followSystem?: boolean;
-    }>) => {
+    updateThemePreferences: (state, action: PayloadAction<Partial<ThemePreferences>>) => {
       if (action.payload.isDark !== undefined) {
         state.themePreferences.isDark = action.payload.isDark;
       }
       if (action.payload.followSystem !== undefined) {
         state.themePreferences.followSystem = action.payload.followSystem;
+      }
+      if (action.payload.fontSize !== undefined) {
+        state.themePreferences.fontSize = action.payload.fontSize;
       }
     },
   },

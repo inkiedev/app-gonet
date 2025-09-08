@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { NotificationModalProps, NotificationType } from '@/types/notification';
 import { Ionicons } from '@expo/vector-icons';
 import React, { useEffect, useRef, useState } from 'react';
@@ -15,35 +15,35 @@ import { Button } from './custom-button';
 
 const { width: SCREEN_WIDTH } = Dimensions.get('window');
 
-const getNotificationConfig = (type: NotificationType) => {
+const getNotificationConfig = (type: NotificationType, themeColors: any) => {
   switch (type) {
     case 'success':
       return {
-        backgroundColor: theme.colors.success,
+        backgroundColor: themeColors.success,
         icon: 'checkmark-circle' as const,
         color: '#ffffff',
       };
     case 'error':
       return {
-        backgroundColor: theme.colors.error,
+        backgroundColor: themeColors.error,
         icon: 'close-circle' as const,
         color: '#ffffff',
       };
     case 'warning':
       return {
-        backgroundColor: theme.colors.warning,
+        backgroundColor: themeColors.warning,
         icon: 'warning' as const,
         color: '#ffffff',
       };
     case 'info':
       return {
-        backgroundColor: theme.colors.primary,
+        backgroundColor: themeColors.primary,
         icon: 'information-circle' as const,
         color: '#ffffff',
       };
     default:
       return {
-        backgroundColor: theme.colors.primary,
+        backgroundColor: themeColors.primary,
         icon: 'information-circle' as const,
         color: '#ffffff',
       };
@@ -54,6 +54,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   notification,
   onClose,
 }) => {
+  const { theme: currentTheme } = useTheme();
   const [isClosing, setIsClosing] = useState(false);
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -131,14 +132,15 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
     return null;
   }
 
-  const config = getNotificationConfig(notification.type);
+  const config = getNotificationConfig(notification.type, currentTheme.colors);
+  const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
     <View style={styles.absoluteContainer} pointerEvents="box-none">
-      <SafeAreaView style={styles.safeAreaContainer} edges={['top']} pointerEvents="box-none">
+      <SafeAreaView style={dynamicStyles.safeAreaContainer} edges={['top']} pointerEvents="box-none">
         <Animated.View
           style={[
-            styles.container,
+            dynamicStyles.container,
             {
               transform: [
                 { translateY: slideAnim },
@@ -148,23 +150,23 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
             },
           ]}
         >
-          <View style={[styles.content, { backgroundColor: config.backgroundColor }]}>
-              <View style={styles.header}>
-                <View style={styles.iconTitleRow}>
-                  <View style={styles.iconContainer}>
+          <View style={[dynamicStyles.content, { backgroundColor: config.backgroundColor }]}>
+              <View style={dynamicStyles.header}>
+                <View style={dynamicStyles.iconTitleRow}>
+                  <View style={dynamicStyles.iconContainer}>
                     <Ionicons
                       name={config.icon}
                       size={24}
                       color={config.color}
                     />
                   </View>
-                  <Text style={[styles.title, { color: config.color }]}>
+                  <Text style={[dynamicStyles.title, { color: config.color }]}>
                     {notification.title}
                   </Text>
                 </View>
                 
                 <TouchableOpacity
-                  style={styles.closeButton}
+                  style={dynamicStyles.closeButton}
                   onPress={handleClose}
                   disabled={isClosing}
                   hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
@@ -174,20 +176,20 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
               </View>
 
               {notification.message && (
-                <Text style={[styles.message, { color: config.color }]}>
+                <Text style={[dynamicStyles.message, { color: config.color }]}>
                   {notification.message}
                 </Text>
               )}
 
               {notification.action && (
-                <View style={styles.actionContainer}>
+                <View style={dynamicStyles.actionContainer}>
                   <Button
                     title={notification.action.label}
                     onPress={notification.action.onPress}
                     variant="outline"
                     size="sm"
                     style={{
-                      ...styles.actionButton,
+                      ...dynamicStyles.actionButton,
                       borderColor: config.color
                     }}
                   />
@@ -200,14 +202,7 @@ export const NotificationModal: React.FC<NotificationModalProps> = ({
   );
 };
 
-const styles = StyleSheet.create({
-  absoluteContainer: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-  },
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   safeAreaContainer: {
     flex: 1,
     justifyContent: 'flex-start',
@@ -259,5 +254,15 @@ const styles = StyleSheet.create({
   },
   actionButton: {
     backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+});
+
+const styles = StyleSheet.create({
+  absoluteContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
   },
 });

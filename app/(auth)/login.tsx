@@ -25,7 +25,7 @@ import { useNotificationContext } from '@/contexts/notification-context';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
 import { loginSuccess, setSubscriptions } from '@/store/slices/auth-slice';
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { FontAwesome } from '@expo/vector-icons';
 
 const loginSchema = z.object({
@@ -41,6 +41,8 @@ export default function LoginScreen() {
   const dispatch = useDispatch();
   const [loginError, setLoginError] = useState<string>('');
   const { showSuccess, showError, showWarning } = useNotificationContext();
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
   const {
     control,
     handleSubmit,
@@ -121,23 +123,23 @@ export default function LoginScreen() {
 
   const renderContent = () => (
     <ScrollView
-      contentContainerStyle={styles.scrollContent}
+      contentContainerStyle={dynamicStyles.scrollContent}
       keyboardShouldPersistTaps="handled"
     >
       <View style={styles.content}>
-        <Text style={styles.welcomeText}>BIENVENIDO</Text>
+        <Text style={dynamicStyles.welcomeText}>BIENVENIDO</Text>
 
         <AppLogo variant="small" />
 
-        <TouchableOpacity style={styles.userSection} onPress={() => router.navigate("./register")}>
-        <FontAwesome name = {"user"} style = {styles.iconFP}/>
-        <View style={styles.userSection}>
-          <Text style={styles.newUserText}>¿Nuevo Usuario?</Text>
-          <Text style={styles.registerText}>Regístrate aquí</Text>
+        <TouchableOpacity style={dynamicStyles.userSection} onPress={() => router.navigate("./register")}>
+        <FontAwesome name = {"user"} style = {dynamicStyles.iconFP}/>
+        <View style={dynamicStyles.userSection}>
+          <Text style={dynamicStyles.newUserText}>¿Nuevo Usuario?</Text>
+          <Text style={dynamicStyles.registerText}>Regístrate aquí</Text>
         </View>
         </TouchableOpacity>
 
-        <View style={styles.divider} />
+        <View style={dynamicStyles.divider} />
 
         <View style={styles.form}>
           <Controller
@@ -178,22 +180,22 @@ export default function LoginScreen() {
             control={control}
             name="rememberMe"
             render={({ field: { onChange, value } }) => (
-              <View style={styles.checkboxContainer}>
+              <View style={dynamicStyles.checkboxContainer}>
                 <Checkbox
                   value={value || false}
                   onValueChange={onChange}
-                  style={styles.checkbox}
-                  color={value ? theme.colors.primary : undefined}
+                  style={dynamicStyles.checkbox}
+                  color={value ? currentTheme.colors.primary : undefined}
                 />
                 <TouchableOpacity onPress={() => onChange(!value)}>
-                  <Text style={styles.checkboxLabel}>Recuérdame</Text>
+                  <Text style={dynamicStyles.checkboxLabel}>Recuérdame</Text>
                 </TouchableOpacity>
               </View>
             )}
           />
 
           {loginError ? (
-            <Text style={styles.errorText} testID="login-error">
+            <Text style={dynamicStyles.errorText} testID="login-error">
               {loginError}
             </Text>
           ) : null}
@@ -233,32 +235,11 @@ export default function LoginScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  background: {
-    flex: 1,
-  },
-  webBackground: {
-    flex: 1,
-    width: '100%',
-    height: '100%',
-    ...(Platform.OS === 'web' && {
-      minHeight: '100vh',
-      minWidth: '100vw',
-    }),
-  } as any,
-  container: {
-    flex: 1,
-  },
-  keyboardView: {
-    flex: 1,
-  },
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   scrollContent: {
     flexGrow: 1,
     justifyContent: 'center',
     paddingHorizontal: theme.spacing.xl,
-  },
-  content: {
-    alignItems: 'center',
   },
   welcomeText: {
     fontSize: theme.fontSize.xxl,
@@ -290,10 +271,6 @@ const styles = StyleSheet.create({
     maxWidth: 500,
     marginBottom: theme.spacing.xxl,
   },
-  form: {
-    width: '100%',
-    maxWidth: 300,
-  },
   iconFP : {
     color: theme.colors.surface,
     fontSize: theme.fontSize.xl*2,
@@ -316,5 +293,33 @@ const styles = StyleSheet.create({
   checkboxLabel: {
     color: theme.colors.text.inverse,
     fontSize: theme.fontSize.sm,
+  },
+});
+
+const styles = StyleSheet.create({
+  background: {
+    flex: 1,
+  },
+  webBackground: {
+    flex: 1,
+    width: '100%',
+    height: '100%',
+    ...(Platform.OS === 'web' && {
+      minHeight: '100vh',
+      minWidth: '100vw',
+    }),
+  } as any,
+  container: {
+    flex: 1,
+  },
+  keyboardView: {
+    flex: 1,
+  },
+  content: {
+    alignItems: 'center',
+  },
+  form: {
+    width: '100%',
+    maxWidth: 300,
   },
 });

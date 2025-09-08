@@ -20,7 +20,8 @@ const lightColors: ThemeColors = {
     inverse: '#ffffff',
     disabled: '#999999',
     inactive: '#666666',
-    button: '#009a94'
+    button: '#009a94',
+    placeholder: '#999999'
   },
   border: {
     light: '#e0e0e0',

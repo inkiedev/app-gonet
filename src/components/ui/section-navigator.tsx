@@ -1,4 +1,4 @@
-import { theme } from '@/styles/theme';
+import { useTheme } from '@/contexts/theme-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import React, { useCallback, useState } from 'react';
 import {
@@ -49,6 +49,8 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
   animated = true,
   animateContent = false, // Default to false for smoother experience
 }) => {
+  const { theme: currentTheme } = useTheme();
+  const dynamicStyles = createDynamicStyles(currentTheme);
   // State
   const [activeIndex, setActiveIndex] = useState(() => {
     if (initialSectionId) {
@@ -114,7 +116,7 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
     
     return {
       transform: [{ translateX: indicatorPosition.value }],
-      width: sectionWidth - theme.spacing.sm,
+      width: sectionWidth - currentTheme.spacing.sm,
     };
   });
 
@@ -139,21 +141,21 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
       switch (variant) {
         case 'pill':
           return [
-            styles.pillButton,
-            isActive && styles.pillButtonActive,
+            dynamicStyles.pillButton,
+            isActive && dynamicStyles.pillButtonActive,
           ];
         case 'minimal':
           return [
-            styles.minimalButton,
-            isActive && styles.minimalButtonActive,
+            dynamicStyles.minimalButton,
+            isActive && dynamicStyles.minimalButtonActive,
           ];
         case 'underline':
           return [
-            styles.underlineButton,
+            dynamicStyles.underlineButton,
           ];
         default: // modern
           return [
-            styles.modernButton,
+            dynamicStyles.modernButton,
           ];
       }
     })();
@@ -162,23 +164,23 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
       switch (variant) {
         case 'pill':
           return [
-            styles.pillButtonText,
-            isActive && styles.pillButtonTextActive,
+            dynamicStyles.pillButtonText,
+            isActive && dynamicStyles.pillButtonTextActive,
           ];
         case 'minimal':
           return [
-            styles.minimalButtonText,
-            isActive && styles.minimalButtonTextActive,
+            dynamicStyles.minimalButtonText,
+            isActive && dynamicStyles.minimalButtonTextActive,
           ];
         case 'underline':
           return [
-            styles.underlineButtonText,
-            isActive && styles.underlineButtonTextActive,
+            dynamicStyles.underlineButtonText,
+            isActive && dynamicStyles.underlineButtonTextActive,
           ];
         default: // modern
           return [
-            styles.modernButtonText,
-            isActive && styles.modernButtonTextActive,
+            dynamicStyles.modernButtonText,
+            isActive && dynamicStyles.modernButtonTextActive,
           ];
       }
     })();
@@ -190,9 +192,9 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
         onPress={() => handleSectionPress(index)}
         activeOpacity={0.7}
       >
-        <View style={styles.buttonContent}>
+        <View style={dynamicStyles.buttonContent}>
           {section.icon && (
-            <View style={styles.iconContainer}>
+            <View style={dynamicStyles.iconContainer}>
               {section.icon}
             </View>
           )}
@@ -200,8 +202,8 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
             {section.label}
           </Text>
           {section.badge && (
-            <View style={styles.badge}>
-              <Text style={styles.badgeText}>
+            <View style={dynamicStyles.badge}>
+              <Text style={dynamicStyles.badgeText}>
                 {section.badge}
               </Text>
             </View>
@@ -217,18 +219,18 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
 
     if (variant === 'underline') {
       return (
-        <Animated.View style={[styles.underlineIndicator, indicatorStyle]} />
+        <Animated.View style={[dynamicStyles.underlineIndicator, indicatorStyle]} />
       );
     }
 
     // Modern variant with gradient indicator
     return (
-      <Animated.View style={[styles.modernIndicator, indicatorStyle]}>
+      <Animated.View style={[dynamicStyles.modernIndicator, indicatorStyle]}>
         <LinearGradient
-          colors={[theme.colors.primary, theme.colors.primaryDark]}
+          colors={[currentTheme.colors.primary, currentTheme.colors.primaryDark]}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 0 }}
-          style={styles.modernIndicatorGradient}
+          style={dynamicStyles.modernIndicatorGradient}
         />
       </Animated.View>
     );
@@ -238,37 +240,37 @@ export const SectionNavigator: React.FC<SectionNavigatorProps> = ({
   const getHeaderContainerStyle = () => {
     switch (variant) {
       case 'pill':
-        return styles.pillHeader;
+        return dynamicStyles.pillHeader;
       case 'minimal':
-        return styles.minimalHeader;
+        return dynamicStyles.minimalHeader;
       case 'underline':
-        return styles.underlineHeader;
+        return dynamicStyles.underlineHeader;
       default:
-        return styles.modernHeader;
+        return dynamicStyles.modernHeader;
     }
   };
 
   const activeSection = sections[activeIndex];
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[dynamicStyles.container, containerStyle]}>
       {/* Header with navigation */}
       <View style={[getHeaderContainerStyle(), headerStyle]}>
-        <View style={styles.sectionButtons}>
+        <View style={dynamicStyles.sectionButtons}>
           {sections.map(renderSectionButton)}
         </View>
         {renderIndicator()}
       </View>
 
       {/* Content */}
-      <Animated.View style={[styles.content, contentAnimatedStyle, contentStyle]}>
+      <Animated.View style={[dynamicStyles.content, contentAnimatedStyle, contentStyle]}>
         {activeSection?.content}
       </Animated.View>
     </View>
   );
 };
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: 'transparent',

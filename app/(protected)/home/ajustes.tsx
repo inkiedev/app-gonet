@@ -1,14 +1,15 @@
 import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from '@/components/layout/header';
 import { Input } from '@/components/ui/custom-input';
+import { Select, SelectOption } from '@/components/ui/custom-select';
 import Text from '@/components/ui/custom-text';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
+import { FontSize } from '@/services/secure-storage';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, loadSubscriptionsData, saveBiometricPreferences, updateBiometricPreferences, updateStoredPassword, loadThemePreferences, saveThemePreferences, updateThemePreferences } from '@/store/slices/auth-slice';
-import { theme } from '@/styles/theme';
+import { loadBiometricPreferences, loadSubscriptionsData, loadThemePreferences, saveBiometricPreferences, saveThemePreferences, updateBiometricPreferences, updateStoredPassword, updateThemePreferences } from '@/store/slices/auth-slice';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useMemo, useState } from "react";
 import {
@@ -30,7 +31,7 @@ const AjustesContent = () => {
   const { rememberMe, biometricPreferences, themePreferences } = useSelector((state: RootState) => state.auth);
   const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
   const { showError } = useNotificationContext();
-  const { theme: currentTheme, isDark, toggleTheme, setFollowSystem } = useTheme();
+  const { theme: currentTheme, isDark, toggleTheme, setFollowSystem, fontSize, setFontSize } = useTheme();
   
   useEffect(() => {
     if (rememberMe) {
@@ -87,23 +88,34 @@ const AjustesContent = () => {
     dispatch(updateThemePreferences({ followSystem: newFollowSystem }));
     dispatch(saveThemePreferences({ 
       isDark: themePreferences.isDark, 
-      followSystem: newFollowSystem 
+      followSystem: newFollowSystem,
+      fontSize: themePreferences.fontSize || 'medium'
     }) as any);
     
     // Update theme context
     setFollowSystem(newFollowSystem);
   }
 
+  const fontSizeOptions: SelectOption<FontSize>[] = [
+    { value: 'small' },
+    { value: 'medium' },
+    { value: 'large' }
+  ];
+
+  const handleFontSizeChange = (selectedFontSize: FontSize) => {
+    setFontSize(selectedFontSize);
+  };
+
   const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
-    <ScrollView style={styles.tabContent} showsVerticalScrollIndicator={false}>
-      <View style={styles.sectionContainer}>
+    <ScrollView style={dynamicStyles.tabContent} showsVerticalScrollIndicator={false}>
+      <View style={dynamicStyles.sectionContainer}>
         <Text style={dynamicStyles.subTitle}>Sesión</Text>
         <Text style={dynamicStyles.centerText}>Administrar dispositivos activos</Text>
       </View>
 
-      <View style={styles.sectionContainer}>
+      <View style={dynamicStyles.sectionContainer}>
         <Text style={dynamicStyles.subTitle}>Apariencia</Text>
         <View style={dynamicStyles.switchRow}>
           <TouchableOpacity onPress={handleSystemThemeChange} style={styles.themeChangeContainer}>
@@ -123,37 +135,58 @@ const AjustesContent = () => {
             {isDark ? 'Tema Oscuro' : 'Tema Claro'}
           </Text>
         </View>
+
+        <View style={dynamicStyles.selectContainer}>
+          <Text style={dynamicStyles.selectLabel}>Tamaño de letra</Text>
+          <Select<FontSize>
+            options={fontSizeOptions}
+            value={fontSize}
+            onValueChange={handleFontSizeChange}
+            placeholder="Seleccionar tamaño"
+            renderItem={(option, index, isSelected) => (
+              <Text style={[
+                dynamicStyles.selectOption,
+                isSelected && dynamicStyles.selectOptionSelected
+              ]}>
+                {option.value === 'small' ? 'Pequeño' : 
+                 option.value === 'medium' ? 'Mediano' : 
+                 'Grande'}
+              </Text>
+            )}
+            style={dynamicStyles.select}
+          />
+        </View>
       </View>
 
-      <View style={styles.sectionContainer}>
+      <View style={dynamicStyles.sectionContainer}>
         <Text style={dynamicStyles.subTitle}>Seguridad</Text>
         
         {!rememberMe && (
-          <Text style={[styles.disabledNotice, { color: currentTheme.colors.text.secondary }]}>
+          <Text style={[dynamicStyles.disabledNotice, { color: currentTheme.colors.text.secondary }]}>
             Active "Recuérdame" en el login para habilitar las opciones biométricas
           </Text>
         )}
         
-        <View style={[dynamicStyles.switchRow, !rememberMe && styles.switchRowDisabled]}>
+        <View style={[dynamicStyles.switchRow, !rememberMe && dynamicStyles.switchRowDisabled]}>
           <Switch 
             value={biometricPreferences.useBiometricForPassword} 
             onValueChange={handleBiometricPasswordChange}
             disabled={!rememberMe}
             trackColor={{ false: currentTheme.colors.border.medium, true: currentTheme.colors.primary }}
           />
-          <Text style={[dynamicStyles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
+          <Text style={[dynamicStyles.switchLabel, !rememberMe && dynamicStyles.switchLabelDisabled]}>
             Usar Huella o Face ID en lugar de su contraseña
           </Text>
         </View>
 
-        <View style={[dynamicStyles.switchRow, !rememberMe && styles.switchRowDisabled]}>
+        <View style={[dynamicStyles.switchRow, !rememberMe && dynamicStyles.switchRowDisabled]}>
           <Switch 
             value={biometricPreferences.useBiometricForLogin} 
             onValueChange={handleBiometricLoginChange}
             disabled={!rememberMe}
             trackColor={{ false: currentTheme.colors.border.medium, true: currentTheme.colors.primary }}
           />
-          <Text style={[dynamicStyles.switchLabel, !rememberMe && styles.switchLabelDisabled]}>
+          <Text style={[dynamicStyles.switchLabel, !rememberMe && dynamicStyles.switchLabelDisabled]}>
             Inicio de sesión con Huella o Face ID
           </Text>
         </View>
@@ -217,10 +250,10 @@ const ActualizarDatosContent = () => {
   // Mostrar loading mientras se inicializa para evitar flash
   if (!isInitialized) {
     return (
-      <View style={styles.tabContent}>
+      <View style={dynamicStyles.tabContent}>
         <Text style={dynamicStyles.tabTitle}>Perfil</Text>
-        <View style={styles.loadingContainer}>
-          <Text style={styles.loadingText}>Cargando...</Text>
+        <View style={dynamicStyles.loadingContainer}>
+          <Text style={dynamicStyles.loadingText}>Cargando...</Text>
         </View>
       </View>
     );
@@ -228,17 +261,17 @@ const ActualizarDatosContent = () => {
 
   if (!isVerified) {
     return (
-      <ScrollView style={styles.tabContent}>
-        <Text style={styles.tabTitle}>Perfil</Text>
-        <View style={styles.verificationContainer}>
-          <View style={styles.verificationCard}>
-            <Text style={styles.verificationText}>
+      <ScrollView style={dynamicStyles.tabContent}>
+        <Text style={dynamicStyles.tabTitle}>Perfil</Text>
+        <View style={dynamicStyles.verificationContainer}>
+          <View style={dynamicStyles.verificationCard}>
+            <Text style={dynamicStyles.verificationText}>
               Esta acción requiere verificación de identidad
             </Text>
             <Button 
               title={biometricPreferences.useBiometricForPassword ? 'Verificar con biometría' : 'Continuar'}
               onPress={handleSecureAction}
-              style={styles.verificationButton}
+              style={dynamicStyles.verificationButton}
             />
           </View>
         </View>
@@ -247,10 +280,10 @@ const ActualizarDatosContent = () => {
   }
 
   return (
-    <ScrollView style={styles.tabContent}>
-      <View style={styles.sectionContainer}>
+    <ScrollView style={dynamicStyles.tabContent}>
+      <View style={dynamicStyles.sectionContainer}>
         <Text style={dynamicStyles.subTitle}>Actualizar Datos</Text>
-        <View style={styles.formContainer}>
+        <View style={dynamicStyles.formContainer}>
           <Input placeholder="Contraseña actual" secureTextEntry />
           <Input placeholder="Correo" value={currentAccount?.partner?.email || ''} />
           <Input placeholder="Teléfono móvil" value={currentAccount?.partner?.mobile || ''} />
@@ -293,7 +326,6 @@ const CambiarContrasenaContent = () => {
       
 
       if (credentials.password !=currentPassword ) {
-        console.log(credentials.password, currentPassword)
         showError('Contraseña incorrecta', 'La contraseña actual ingresada no es correcta.');
         return;
       }
@@ -335,10 +367,10 @@ const CambiarContrasenaContent = () => {
   const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
-    <View style={styles.tabContent}>
-      <View style={styles.sectionContainer}>
+    <View style={dynamicStyles.tabContent}>
+      <View style={dynamicStyles.sectionContainer}>
         <Text style={dynamicStyles.subTitle}>Cambiar contraseña</Text>
-        <View style={styles.formContainer}>
+        <View style={dynamicStyles.formContainer}>
           <Input
             placeholder="Contraseña actual"
             secureTextEntry
@@ -377,7 +409,7 @@ export default function PerfilScreen() {
   const dynamicStyles = createDynamicStyles(currentTheme);
 
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: currentTheme.colors.background }]} edges={['top']}>
+    <SafeAreaView style={[dynamicStyles.container, { backgroundColor: currentTheme.colors.background }]} edges={['top']}>
       <Header
         title="Ajustes"
         leftAction={{
@@ -387,7 +419,7 @@ export default function PerfilScreen() {
         variant="default"
       />
 
-      <View style={[styles.segmentedContainer, isTablet && { marginTop: 10 } ]}>
+      <View style={[dynamicStyles.segmentedContainer, isTablet && { marginTop: 10 } ]}>
         <SegmentedControl
           segments={[
             {
@@ -410,58 +442,14 @@ export default function PerfilScreen() {
           animated={true}
           size="md"
           tintColor={currentTheme.colors.primary}
-          contentStyle={styles.segmentContent}
+          contentStyle={dynamicStyles.segmentContent}
         />
       </View>
     </SafeAreaView>
   );
 }
 
-/* --- Estilos dinámicos --- */
 const createDynamicStyles = (theme: any) => StyleSheet.create({
-  tabTitle: { 
-    fontSize: theme.fontSize.xl, 
-    fontWeight: theme.fontWeight.bold, 
-    color: theme.colors.text.primary,
-    textAlign: "center",
-    marginBottom: theme.spacing.md,
-  },
-  subTitle: { 
-    fontSize: theme.fontSize.lg, 
-    fontWeight: theme.fontWeight.bold, 
-    marginTop: theme.spacing.lg, 
-    marginBottom: theme.spacing.md,
-    color: theme.colors.primaryDark,
-  },
-  centerText: { 
-    textAlign: "center", 
-    marginBottom: theme.spacing.lg, 
-    color: theme.colors.text.secondary,
-    fontSize: theme.fontSize.sm,
-    fontStyle: "italic",
-  },
-  switchRow: {
-    flexDirection: "row", 
-    alignItems: "center", 
-    backgroundColor: theme.colors.surface, 
-    padding: theme.spacing.lg, 
-    borderRadius: theme.borderRadius.md, 
-    marginBottom: theme.spacing.md,
-    ...theme.shadows.sm,
-    borderWidth: 1,
-    borderColor: theme.colors.border.light
-  },
-  switchLabel: { 
-    flex: 1, 
-    fontSize: theme.fontSize.md, 
-    marginLeft: theme.spacing.md, 
-    color: theme.colors.text.primary,
-    lineHeight: 20,
-  },
-});
-
-/* --- Estilos estáticos --- */
-const styles = StyleSheet.create({
   container: { 
     flex: 1, 
     backgroundColor: theme.colors.background,
@@ -481,7 +469,6 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
     fontWeight: theme.fontWeight.medium
   },
-
   infoContainer: {
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.lg,
@@ -518,27 +505,24 @@ const styles = StyleSheet.create({
   tabTitle: { 
     fontSize: theme.fontSize.xl, 
     fontWeight: theme.fontWeight.bold, 
-    color: theme.colors.primaryDark,
+    color: theme.colors.text.primary,
     textAlign: "center",
-    marginBottom: theme.spacing.xl
-    
+    marginBottom: theme.spacing.md,
   },
   subTitle: { 
     fontSize: theme.fontSize.lg, 
     fontWeight: theme.fontWeight.bold, 
     marginTop: theme.spacing.lg, 
     marginBottom: theme.spacing.md,
-    color: theme.colors.primaryDark
+    color: theme.colors.primaryDark,
   },
   centerText: { 
     textAlign: "center", 
     marginBottom: theme.spacing.lg, 
     color: theme.colors.text.secondary,
     fontSize: theme.fontSize.sm,
-    fontStyle: "italic"
+    fontStyle: "italic",
   },
-
-  /* Switch */
   switchRow: {
     flexDirection: "row", 
     alignItems: "center", 
@@ -559,7 +543,7 @@ const styles = StyleSheet.create({
     fontSize: theme.fontSize.md, 
     marginLeft: theme.spacing.md, 
     color: theme.colors.text.primary,
-    lineHeight: 20
+    lineHeight: 20,
   },
   switchLabelDisabled: {
     color: theme.colors.text.secondary,
@@ -580,46 +564,35 @@ const styles = StyleSheet.create({
     fontStyle: "italic",
     paddingHorizontal: theme.spacing.md
   },
-
-  /* Segmented Container */
   segmentedContainer: {
     flex: 1,
     paddingHorizontal: theme.spacing.md,
     flexDirection: 'column',
     alignItems: 'center',
   },
-  
   segmentContent: {
     width: '100%'
   },
-
   content: {
     padding: theme.spacing.lg,
     flexGrow: 1,
   },
-
-  /* Tab Content */
   tabContent: {
     flex: 1,
     paddingVertical: theme.spacing.md,
     paddingHorizontal: theme.spacing.md,
   },
-  
   sectionContainer: {
   },
-  
   formContainer: {
     gap: theme.spacing.md,
   },
-
-  /* Verification */
   verificationContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: theme.spacing.xl,
   },
-  
   verificationCard: {
     backgroundColor: theme.colors.surface,
     padding: theme.spacing.xl,
@@ -630,7 +603,6 @@ const styles = StyleSheet.create({
     borderColor: theme.colors.border.light,
     maxWidth: 320,
   },
-  
   verificationText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.text.primary,
@@ -638,25 +610,52 @@ const styles = StyleSheet.create({
     marginBottom: theme.spacing.lg,
     lineHeight: 20,
   },
-  
   verificationButton: {
     width: '100%',
   },
-  
-  /* Loading */
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: theme.spacing.xl,
   },
-  
   loadingText: {
     fontSize: theme.fontSize.md,
     color: theme.colors.text.secondary,
     textAlign: 'center',
   },
+  selectContainer: {
+    backgroundColor: theme.colors.surface,
+    padding: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.md,
+    ...theme.shadows.sm,
+    borderWidth: 1,
+    borderColor: theme.colors.border.light,
+  },
+  selectLabel: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.primary,
+    marginBottom: theme.spacing.sm,
+  },
+  select: {
+    flex: 1,
+  },
+  selectOption: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.primary,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.md,
+  },
+  selectOptionSelected: {
+    color: theme.colors.text.primary,
+    fontWeight: theme.fontWeight.bold,
+  },
+});
 
+/* --- Estilos estáticos --- */
+const styles = StyleSheet.create({
   themeChangeContainer: {
     flexDirection: "row", 
     alignItems: "center", 

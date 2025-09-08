@@ -9,6 +9,7 @@ import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { Header } from '@/components/layout/header';
 import { ImageCarousel } from '@/components/ui/image-carousel';
+import { NotificationsModal, type Notification } from '@/components/ui/notifications-modal';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
@@ -49,19 +50,65 @@ const iconOptions = [
   },
 ];
 
+// Mock notifications data
+const mockNotifications: Notification[] = [
+  {
+    id: '1',
+    title: 'Pago procesado exitosamente',
+    message: 'Tu pago de $25.50 ha sido procesado correctamente. El servicio se activará en los próximos minutos.',
+    type: 'success',
+    timestamp: new Date(Date.now() - 5 * 60 * 1000), // 5 minutes ago
+    read: false,
+  },
+  {
+    id: '2',
+    title: 'Nueva promoción disponible',
+    message: '¡Aprovecha 20% de descuento en todos nuestros planes hasta fin de mes!',
+    type: 'info',
+    timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
+    read: false,
+  },
+  {
+    id: '3',
+    title: 'Mantenimiento programado',
+    message: 'El sistema estará en mantenimiento el domingo de 2:00 AM a 6:00 AM. Disculpa las molestias.',
+    type: 'warning',
+    timestamp: new Date(Date.now() - 24 * 60 * 60 * 1000), // 1 day ago
+    read: true,
+  },
+  {
+    id: '4',
+    title: 'Factura disponible',
+    message: 'Tu factura del mes de enero ya está disponible para descarga en la sección de pagos.',
+    type: 'info',
+    timestamp: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
+    read: true,
+  },
+  {
+    id: '5',
+    title: 'Velocidad mejorada',
+    message: 'Hemos mejorado tu velocidad de internet. Ahora disfrutas de hasta 1000 Mbps.',
+    type: 'success',
+    timestamp: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 1 week ago
+    read: true,
+  },
+];
+
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
+  const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const opacity = useSharedValue(1);
   const heightAnimation = useSharedValue(60);
   const router = useRouter();
   const dispatch = useDispatch();
   const { currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
-  const { showSuccess, showError, showInfo } = useNotificationContext();
+  const { showSuccess, showError } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
   const { height } = useResponsive();
   const { theme } = useTheme();
+  const styles = createDynamicStyles(theme);
 
-  console.log(currentAccount)
 
   useEffect(() => {
     const backAction = () => {
@@ -144,6 +191,31 @@ export default function HomeScreen() {
     }
   };
 
+  const handleNotificationsPress = () => {
+    setNotificationsVisible(true);
+  };
+
+  const handleNotificationPress = (notification: Notification) => {
+    showSuccess(
+      'Notificación seleccionada',
+      notification.title,
+      2000
+    );
+  };
+
+  const handleMarkAsRead = (notificationId: string) => {
+    setNotifications(prev =>
+      prev.map(notification =>
+        notification.id === notificationId
+          ? { ...notification, read: true }
+          : notification
+      )
+    );
+  };
+
+  // Calculate unread notifications count
+  const unreadCount = notifications.filter(n => !n.read).length;
+
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -184,24 +256,38 @@ export default function HomeScreen() {
           {iconOptions.map((option, index) => (
             <IconWithBadge
               key={index}
-              size={60}
+              size={55}
               SvgComponent={option.SvgComponent}
               label={option.label}
-              badgeCount={option.badgeCount}
-              onPress={() => showSuccess(
-                '¡Bienvenido!',
-                'lol',
-                3000
-              )}
+              badgeCount={option.label === 'Mensajes' ? unreadCount : option.badgeCount}
+              onPress={() => {
+                if (option.label === 'Mensajes') {
+                  handleNotificationsPress();
+                } else {
+                  showSuccess(
+                    '¡Bienvenido!',
+                    `Presionaste ${option.label}`,
+                    2000
+                  );
+                }
+              }}
             />
           ))}
         </Animated.View>
+
+        <NotificationsModal
+          visible={notificationsVisible}
+          onClose={() => setNotificationsVisible(false)}
+          notifications={notifications}
+          onNotificationPress={handleNotificationPress}
+          onMarkAsRead={handleMarkAsRead}
+        />
       </View>
     </SafeAreaView>
   );
 }
 
-const styles = StyleSheet.create({
+const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
   },
@@ -209,6 +295,8 @@ const styles = StyleSheet.create({
     position: 'relative',
   },
   banner: {
+    borderBottomLeftRadius: theme.borderRadius.xxl,
+    borderBottomRightRadius: theme.borderRadius.xxl
   },
   fixedHeader: {
     position: 'absolute',

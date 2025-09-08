@@ -1,9 +1,12 @@
-import LogoMensaje from "@/assets/images/iconos gonet app svg_mensaje.svg";
 import LogoUbicacion from "@/assets/images/iconos gonet app svg_ubicacion.svg";
 import Back from "@/assets/images/iconos gonet back.svg";
 import LogoNaviagation from "@/assets/images/icons/navigation.svg";
-import LogoCall from "@/assets/images/icons/phone.svg";
 import LogoSearch from "@/assets/images/icons/search.svg";
+import LogoCall from '@/assets/icons/phone.svg';
+import LogoMensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
+import IconCiudad from "@/assets/images/iconos gonet app svg_ubicacion.svg";
+import LogoWhatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { BOTTOM_SHEET_MIN_HEIGHT, BottomSheet, BottomSheetRef } from "@/components/ui/bottom-sheet";
 import { Input as CustomInput } from "@/components/ui/custom-input";
