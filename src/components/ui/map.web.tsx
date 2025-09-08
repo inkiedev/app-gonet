@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 
 // Dynamically import leaflet only on web
 let MapContainer: any, TileLayer: any, LeafletMarker: any, Popup: any, Polygon: any, CircleMarker: any, L: any;
@@ -29,6 +29,7 @@ interface MapProps {
     fillColor?: string;
   }[];
   markers?: {
+    id: string;
     coordinate: { latitude: number; longitude: number };
     title?: string;
     description?: string;
@@ -38,7 +39,22 @@ interface MapProps {
     userLocation?: { latitude: number; longitude: number } | null;
 }
 
-export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, markers, onMarkerPress, userLocation }) => {
+export interface MapRef {
+  animateToRegion: (region: { latitude: number; longitude: number; }, duration?: number) => void;
+}
+
+export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, userLocation }, ref) => {
+  const mapRef = useRef<any>(null);
+
+  useImperativeHandle(ref, () => ({
+    animateToRegion: (region, duration = 1000) => {
+      mapRef.current?.flyTo([region.latitude, region.longitude], 15, {
+        animate: true,
+        duration: duration / 1000,
+      });
+    }
+  }));
+
   // Return null if not on web platform
   if (typeof window === 'undefined' || !MapContainer || !TileLayer) {
     return null;
@@ -60,6 +76,7 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
         center={center}
         zoom={zoom}
         style={{ width: '100%', height: '100%' }}
+        whenCreated={(mapInstance: any) => { mapRef.current = mapInstance; }}
       >
         <TileLayer
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -72,21 +89,28 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
             pathOptions={{ color: polygon.strokeColor, fillColor: polygon.fillColor, fillOpacity: 0.5 }}
           />
         ))}
-        {markers?.map((marker, index) => (
-          <LeafletMarker 
-            key={index} 
-            position={[marker.coordinate.latitude, marker.coordinate.longitude]}
-            icon={gonetIcon}
-            eventHandlers={{
-                click: () => {
-                    if (onMarkerPress) {
-                        onMarkerPress(marker);
-                    }
-                }
-            }}
-          >
-          </LeafletMarker>
-        ))}
+        {markers?.map((marker, index) => {
+          const icon = marker.image ? L.icon({
+            iconUrl: marker.image,
+            iconSize: [40, 40],
+          }) : gonetIcon;
+
+          return (
+            <LeafletMarker 
+              key={index} 
+              position={[marker.coordinate.latitude, marker.coordinate.longitude]}
+              icon={icon}
+              eventHandlers={{
+                  click: () => {
+                      if (onMarkerPress) {
+                          onMarkerPress(marker);
+                      }
+                  }
+              }}
+            >
+            </LeafletMarker>
+          )
+        })}
         {userLocation && (
             <CircleMarker center={[userLocation.latitude, userLocation.longitude]} radius={8} color="blue">
                 <Popup>You are here</Popup>
@@ -95,4 +119,4 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
       </MapContainer>
     </div>
   );
-};
+});

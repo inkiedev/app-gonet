@@ -1,15 +1,16 @@
 import LogoMensaje from "@/assets/images/iconos gonet app svg_mensaje.svg";
-import LogoWhatsapp from "@/assets/images/iconos gonet app svg_wpp.svg";
+import LogoUbicacion from "@/assets/images/iconos gonet app svg_ubicacion.svg";
 import Back from "@/assets/images/iconos gonet back.svg";
+import LogoNaviagation from "@/assets/images/icons/navigation.svg";
 import LogoCall from "@/assets/images/icons/phone.svg";
+import LogoSearch from "@/assets/images/icons/search.svg";
 import { Header } from "@/components/layout/header";
-import { BOTTOM_SHEET_MIN_HEIGHT, BottomSheet } from "@/components/ui/bottom-sheet";
-import { Button as CustomButton } from "@/components/ui/custom-button";
+import { BOTTOM_SHEET_MIN_HEIGHT, BottomSheet, BottomSheetRef } from "@/components/ui/bottom-sheet";
 import { Input as CustomInput } from "@/components/ui/custom-input";
 import Text from "@/components/ui/custom-text";
-import { Map } from "@/components/ui/map";
+import { Map, MapRef } from "@/components/ui/map";
 import { useTheme } from "@/contexts/theme-context";
-import { AgencyData, getAgencies } from "@/services/public-api";
+import { AgencyData, getAgencies, getImageLink } from "@/services/public-api";
 import * as Location from "expo-location";
 import { useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
@@ -21,6 +22,7 @@ import {
   ScrollView,
   StyleSheet,
   TouchableOpacity,
+  TouchableWithoutFeedback,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -62,11 +64,11 @@ const useUserLocation = () => {
 
 const TitleWithLines = ({ text, theme }: { text: string; theme: any }) => (
   <View style={styles.titleContainer}>
-    <View style={[styles.line, { backgroundColor: theme.colors.primary }]} />
-    <Text style={[styles.titleText, { color: theme.colors.text.primary }]}>
+    <View style={[styles.line, { backgroundColor: theme.colors.primaryDark }]} />
+    <Text style={[styles.titleText, { color: theme.colors.primaryDark }]}>
       {text}
     </Text>
-    <View style={[styles.line, { backgroundColor: theme.colors.primary }]} />
+    <View style={[styles.line, { backgroundColor: theme.colors.primaryDark }]} />
   </View>
 );
 
@@ -82,46 +84,47 @@ const AgencyInfo = ({ agency, style, onClose }: { agency: Agency; style?: any; o
     Linking.openURL(url);
   };
 
-  const DetailItem = ({ label, value, icons }: { label: string; value: string | boolean | undefined; icons?: { icon: React.ReactNode; onPress: () => void }[] }) => {
-    if (typeof value !== "string" || !value) return null;
-    return (
-      <View style={dynamicStyles.detailItem}>
-        <Text style={dynamicStyles.detailLabel}>{label}:</Text>
-        <Text style={dynamicStyles.detailValue}>{value}</Text>
-        <View style={dynamicStyles.iconsContainer}>
-          {icons &&
-            icons.map((iconData, index) => (
-              <TouchableOpacity key={index} onPress={iconData.onPress} style={dynamicStyles.iconContainer}>
-                {iconData.icon}
-              </TouchableOpacity>
-            ))}
-        </View>
-      </View>
-    );
+  const handlePhonePress = () => {
+    if (agency.phone) {
+      Linking.openURL(`tel:${agency.phone}`);
+    }
+  };
+
+  const handleEmailPress = () => {
+    if (agency.email) {
+      Linking.openURL(`mailto:${agency.email}`);
+    }
   };
 
   return (
-    <Animated.View style={[dynamicStyles.agencyInfoContainer, style]}>
-      <Text style={dynamicStyles.agencyTitle}>{agency.name}</Text>
-      <DetailItem label="Dirección" value={agency.address} />
-      <DetailItem
-        label="Teléfono"
-        value={agency.phone}
-        icons={[
-          { icon: <LogoCall width={24} height={24} color={theme.colors.text.primary} />, onPress: () => Linking.openURL(`tel:${agency.phone}`) },
-          { icon: <LogoWhatsapp width={24} height={24} fill={theme.colors.text.primary} color={theme.colors.text.primary} />, onPress: () => Linking.openURL(`whatsapp://send?phone=${agency.phone}`) },
-        ]}
-      />
-      <DetailItem
-        label="Correo"
-        value={agency.email}
-        icons={[{ icon: <LogoMensaje width={24} height={24} color={theme.colors.text.primary} />, onPress: () => Linking.openURL(`mailto:${agency.email}`) }]}
-      />
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', marginTop: 10, gap: 10 }}>
-            <CustomButton title="Enviar Ruta a Mapas" onPress={handleSendToMaps} style={{ flex: 1 }} />
-            <CustomButton title="Cerrar" onPress={onClose} variant="secondary" style={{ flex: 1 }} />
-      </View>
-    </Animated.View>
+    <TouchableWithoutFeedback>
+      <Animated.View style={[dynamicStyles.agencyInfoContainer, style]}>
+        <Text style={dynamicStyles.agencyTitle}>{agency.name}</Text>
+        <View style={dynamicStyles.detailItem}>
+          <LogoUbicacion width={24} height={24} color={theme.colors.primaryDark} fill = {theme.colors.primaryDark}/>
+          <Text style={dynamicStyles.detailValue}>{agency.address}</Text>
+        </View>
+        <TouchableOpacity onPress={handlePhonePress}>
+          <View style={dynamicStyles.detailItem}>
+            <LogoCall width={24} height={24} color={theme.colors.primaryDark} />
+            <Text style={dynamicStyles.detailValue}>{agency.phone}</Text>
+          </View>
+        </TouchableOpacity>
+        <TouchableOpacity onPress={handleEmailPress}>
+          <View style={dynamicStyles.detailItem}>
+            <LogoMensaje width={24} height={24} color={theme.colors.primaryDark} />
+            <Text style={dynamicStyles.detailValue}>{agency.email}</Text>
+          </View>
+        </TouchableOpacity>
+        
+        <View style={dynamicStyles.separator} />
+
+        <TouchableOpacity onPress={handleSendToMaps} style={dynamicStyles.mapsButton}>
+          <LogoNaviagation width={24} height={16} color={theme.colors.primaryDark} fill = {theme.colors.primaryDark} />
+          <Text style={dynamicStyles.mapsButtonText}>Enviar ruta a Maps</Text>
+        </TouchableOpacity>
+      </Animated.View>
+    </TouchableWithoutFeedback>
   );
 };
 
@@ -186,11 +189,15 @@ export default function AgenciesScreen() {
   const dynamicStyles = createDynamicStyles(theme);
   const router = useRouter();
 
+  const bottomSheetRef = useRef<BottomSheetRef>(null);
+  const mapRef = useRef<MapRef>(null);
+
   const [agencies, setAgencies] = useState<Agency[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
 
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
+  const [visibleAgency, setVisibleAgency] = useState<Agency | null>(null);
   const animatedValue = useRef(new Animated.Value(0)).current;
 
   const { userLocation } = useUserLocation();
@@ -242,6 +249,7 @@ export default function AgenciesScreen() {
         title: agency.name,
         description: typeof agency.address === "string" ? agency.address : "",
         coordinate: { latitude: agency.latitude, longitude: agency.longitude },
+        image: typeof agency.id_img === 'number' ? getImageLink(agency.id_img) : undefined,
       })),
     [agencies]
   );
@@ -251,6 +259,7 @@ export default function AgenciesScreen() {
       const agency = agencies.find((a) => a.id.toString() === marker.id);
       if (agency) {
         setSelectedAgency(agency);
+        bottomSheetRef.current?.snapTo("down");
       }
     },
     [agencies]
@@ -258,6 +267,12 @@ export default function AgenciesScreen() {
 
   const handleAgencyListPress = (agency: Agency) => {
     setSelectedAgency(agency);
+    bottomSheetRef.current?.snapTo("down");
+    mapRef.current?.animateToRegion({
+      latitude: agency.latitude,
+      longitude: agency.longitude,
+    });
+    console.log(agency)
   };
 
   const handleCitySelect = (city: string) => {
@@ -265,11 +280,18 @@ export default function AgenciesScreen() {
   };
 
   useEffect(() => {
+    if (selectedAgency) {
+      setVisibleAgency(selectedAgency);
+    }
     Animated.timing(animatedValue, {
       toValue: selectedAgency ? 1 : 0,
       duration: 300,
       useNativeDriver: true,
-    }).start();
+    }).start(() => {
+      if (!selectedAgency) {
+        setVisibleAgency(null);
+      }
+    });
   }, [selectedAgency]);
 
   const animatedStyle = {
@@ -313,30 +335,39 @@ export default function AgenciesScreen() {
       ) : (
         <>
           <Map
+            ref={mapRef}
             initialRegion={initialRegion}
             style={styles.map}
             markers={markers}
             userLocation={userLocation}
             onMarkerPress={handleMarkerPress}
-            onPress={() => {
-              setSelectedAgency(null);
-            }}
           />
 
-          {selectedAgency && (
-            <AgencyInfo
-              agency={selectedAgency}
-              style={animatedStyle}
-              onClose={() => {
-                setSelectedAgency(null);
-              }}
-            />
+          {visibleAgency && (
+            <TouchableOpacity
+              style={StyleSheet.absoluteFill}
+              activeOpacity={1}
+              onPress={() => setSelectedAgency(null)}
+            >
+              <AgencyInfo
+                agency={visibleAgency}
+                style={animatedStyle}
+                onClose={() => {
+                  setSelectedAgency(null);
+                }}
+              />
+            </TouchableOpacity>
           )}
 
-          <BottomSheet>
+          <BottomSheet ref={bottomSheetRef}>
             <View style={styles.bottomSheetContent}>
               <TitleWithLines text="Buscar Agencia" theme={theme} />
-              <CustomInput placeholder="Escribe el nombre de la agencia..." value={searchQuery} onChangeText={setSearchQuery} />
+              <CustomInput 
+                placeholder="Escribe el nombre de la agencia..." 
+                value={searchQuery} 
+                onChangeText={setSearchQuery}
+                leftIcon={<LogoSearch width={40} height={20} color={theme.colors.text.secondary} />}
+              />
               <TitleWithLines text="Listado General" theme={theme} />
               {loading ? (
                 <ActivityIndicator size="large" color={theme.colors.primary} />
@@ -398,10 +429,10 @@ const createDynamicStyles = (theme: any) =>
     agencyInfoContainer: {
       position: "absolute",
       bottom: BOTTOM_SHEET_MIN_HEIGHT + 20,
-      left: 20,
-      right: 20,
+      alignSelf: "center",
       backgroundColor: theme.colors.background,
-      padding: 20,
+      paddingVertical: 5,
+      paddingHorizontal: 15,
       borderRadius: 15,
       shadowColor: "#000",
       shadowOffset: { width: 0, height: 4 },
@@ -410,11 +441,29 @@ const createDynamicStyles = (theme: any) =>
       elevation: 10,
       borderWidth: 1,
       borderColor: theme.colors.primary,
+      minWidth: 250,
     },
-    agencyTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 12, color: theme.colors.text.primary },
-    detailItem: { flexDirection: "row", marginBottom: 4, alignItems: "center" },
-    detailLabel: { fontWeight: "bold", marginRight: 5, color: theme.colors.text.primary },
-    detailValue: { flex: 1, color: theme.colors.text.primary },
+
+    agencyTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 5, color: "#009a92", textAlign: "center" },
+    detailItem: { flexDirection: "row", marginBottom: 8, alignItems: "center", justifyContent: "center", columnGap: 10 },
+    detailValue: { color: theme.colors.primaryDark, textAlign: "center" },
+    separator: {
+      height: 1,
+      backgroundColor: 'white',
+      width: '100%',
+      marginVertical: 0,
+    },
+    mapsButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      marginTop: 10,
+      justifyContent: 'center',
+    },
+    mapsButtonText: {
+      color: "#009a92",
+      marginLeft: 10,
+      fontWeight: 'bold',
+    },
     iconsContainer: { flexDirection: "row" },
     iconContainer: { marginLeft: 10 },
   });

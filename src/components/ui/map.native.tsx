@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Platform, StyleSheet } from 'react-native';
 import MapView, { Marker, Polygon, UrlTile } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
@@ -17,6 +17,7 @@ interface MapProps {
     fillColor?: string;
   }[];
   markers?: {
+    id: string;
     coordinate: { latitude: number; longitude: number };
     title?: string;
     description?: string;
@@ -26,7 +27,29 @@ interface MapProps {
     userLocation?: { latitude: number; longitude: number } | null;
 }
 
-export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, markers, onMarkerPress, userLocation }) => {
+export interface MapRef {
+  animateToRegion: (region: { latitude: number; longitude: number; }, duration?: number) => void;
+}
+
+export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, userLocation }, ref) => {
+  const mapRef = useRef<MapView>(null);
+  const webviewRef = useRef<WebView>(null);
+
+  useImperativeHandle(ref, () => ({
+    animateToRegion: (region, duration = 1000) => {
+      if (Platform.OS === 'android') {
+        const script = `map.flyTo([${region.latitude}, ${region.longitude}], 15, { animate: true, duration: ${duration / 1000} });`;
+        webviewRef.current?.injectJavaScript(script);
+      } else {
+        mapRef.current?.animateToRegion({
+          ...region,
+          latitudeDelta: 0.01,
+          longitudeDelta: 0.01,
+        }, duration);
+      }
+    }
+  }));
+
   if (Platform.OS === 'android') {
     const htmlContent = `
       <!DOCTYPE html>
@@ -77,6 +100,7 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
     
     return (
       <WebView
+        ref={webviewRef}
         originWhitelist={['*']}
         source={{ html: htmlContent }}
         style={[styles.map, style]}
@@ -93,6 +117,7 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
 
   return (
     <MapView
+      ref={mapRef}
       initialRegion={initialRegion}
       style={[styles.map, style]}
       mapType="none"
@@ -127,7 +152,7 @@ export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, marker
       ))}
     </MapView>
   );
-};
+});
 
 const styles = StyleSheet.create({
   map: { flex: 1 },

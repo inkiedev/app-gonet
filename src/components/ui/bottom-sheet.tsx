@@ -1,6 +1,6 @@
 
 import { useTheme } from "@/contexts/theme-context";
-import React, { useRef } from "react";
+import React, { useImperativeHandle, useRef } from "react";
 import {
   Animated,
   Dimensions,
@@ -10,15 +10,37 @@ import {
 } from "react-native";
 
 const { height: SCREEN_HEIGHT } = Dimensions.get("window");
-const BOTTOM_SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.8;
+const BOTTOM_SHEET_MAX_HEIGHT = SCREEN_HEIGHT * 0.7;
 export const BOTTOM_SHEET_MIN_HEIGHT = SCREEN_HEIGHT * 0.15;
 
-export const BottomSheet = ({ children }: { children: React.ReactNode }) => {
+export type BottomSheetRef = {
+  snapTo: (direction: "up" | "down") => void;
+};
+
+export const BottomSheet = React.forwardRef<
+  BottomSheetRef,
+  { children: React.ReactNode }
+>(({ children }, ref) => {
   const { theme } = useTheme();
   const animatedValue = useRef(
     new Animated.Value(BOTTOM_SHEET_MIN_HEIGHT)
   ).current;
   const lastY = useRef(0);
+
+  const springAnimation = (direction: "up" | "down") => {
+    const toValue =
+      direction === "up"
+        ? BOTTOM_SHEET_MAX_HEIGHT
+        : BOTTOM_SHEET_MIN_HEIGHT;
+    Animated.spring(animatedValue, {
+      toValue,
+      useNativeDriver: false,
+    }).start();
+  };
+
+  useImperativeHandle(ref, () => ({
+    snapTo: springAnimation,
+  }));
 
   const panResponder = useRef(
     PanResponder.create({
@@ -67,17 +89,6 @@ export const BottomSheet = ({ children }: { children: React.ReactNode }) => {
     })
   ).current;
 
-  const springAnimation = (direction: "up" | "down") => {
-    const toValue =
-      direction === "up"
-        ? BOTTOM_SHEET_MAX_HEIGHT
-        : BOTTOM_SHEET_MIN_HEIGHT;
-    Animated.spring(animatedValue, {
-      toValue,
-      useNativeDriver: false,
-    }).start();
-  };
-
   const animatedStyle = {
     height: animatedValue,
   };
@@ -98,7 +109,7 @@ export const BottomSheet = ({ children }: { children: React.ReactNode }) => {
       {children}
     </Animated.View>
   );
-};
+});
 
 const styles = StyleSheet.create({
   container: {

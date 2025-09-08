@@ -1,5 +1,10 @@
-import React, { ComponentType, useEffect, useState } from 'react';
+import React, { ComponentType, useEffect, useState, forwardRef } from 'react';
 import { Platform } from 'react-native';
+import { MapRef as NativeMapRef } from './map.native';
+import { MapRef as WebMapRef } from './map.web';
+
+// Define a unified MapRef that can hold refs for both native and web maps
+export type MapRef = NativeMapRef & WebMapRef;
 
 interface MapProps {
   initialRegion: {
@@ -15,6 +20,7 @@ interface MapProps {
     fillColor?: string;
   }[];
   markers?: {
+    id: string;
     coordinate: { latitude: number; longitude: number };
     title?: string;
     description?: string;
@@ -24,8 +30,8 @@ interface MapProps {
     userLocation?: { latitude: number; longitude: number } | null;
 }
 
-export const Map: React.FC<MapProps> = (props) => {
-  const [MapComponent, setMapComponent] = useState<ComponentType<MapProps> | null>(null);
+export const Map = forwardRef<MapRef, MapProps>((props, ref) => {
+  const [MapComponent, setMapComponent] = useState<ComponentType<any> | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -52,5 +58,5 @@ export const Map: React.FC<MapProps> = (props) => {
     return null;
   }
 
-  return <MapComponent {...props} />;
-};
+  return <MapComponent {...props} ref={ref} />;
+});

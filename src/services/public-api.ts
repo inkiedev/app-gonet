@@ -114,5 +114,6 @@ export const getAgencies = async (): Promise<AgencyData[]> => {
 };
 
 export const getImageLink = (fileId: number): string => {
+    console.log(`${API_URL}/app/img_link/${fileId}`)
     return `${API_URL}/app/img_link/${fileId}`;
 };
