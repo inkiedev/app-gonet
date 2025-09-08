@@ -1,14 +1,16 @@
 import { useTheme } from '@/contexts/theme-context';
 import { StatusBar as ExpoStatusBar } from 'expo-status-bar';
-import React, { useEffect } from 'react';
-import { StatusBar as RNStatusBar } from 'react-native';
+import React from 'react';
 
 export const ThemedStatusBar: React.FC = () => {
-  const { isDark } = useTheme();
+  const { isDark, theme } = useTheme();
 
-  useEffect(() => {
-    RNStatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content', true);
-  }, [isDark]);
-
-  return <ExpoStatusBar style={isDark ? 'light' : 'dark'} />;
+  return (
+    <ExpoStatusBar
+      style={isDark ? 'light' : 'dark'}
+      animated
+      backgroundColor={isDark ? theme.colors.background : theme.colors.surface}
+      translucent={false}
+    />
+  );
 };

@@ -6,8 +6,8 @@ import Text from '@/components/ui/custom-text';
 import { SegmentedControl } from '@/components/ui/segmented-control';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
-import { FontSize } from '@/services/secure-storage';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
+import { FontSize } from '@/services/secure-storage';
 import { RootState } from '@/store';
 import { loadBiometricPreferences, loadSubscriptionsData, loadThemePreferences, saveBiometricPreferences, saveThemePreferences, updateBiometricPreferences, updateStoredPassword, updateThemePreferences } from '@/store/slices/auth-slice';
 import { useRouter } from 'expo-router';
@@ -449,7 +449,6 @@ export default function PerfilScreen() {
   );
 }
 
-/* --- Estilos dinámicos --- */
 const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: { 
     flex: 1, 
@@ -650,7 +649,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     paddingHorizontal: theme.spacing.md,
   },
   selectOptionSelected: {
-    color: theme.colors.primary,
+    color: theme.colors.text.primary,
     fontWeight: theme.fontWeight.bold,
   },
 });
