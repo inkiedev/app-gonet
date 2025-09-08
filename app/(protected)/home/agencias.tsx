@@ -1,10 +1,12 @@
 import LogoCall from '@/assets/icons/phone.svg';
 import LogoMensaje from '@/assets/images/iconos gonet app svg_mensaje.svg';
+import IconCiudad from "@/assets/images/iconos gonet app svg_ubicacion.svg";
 import LogoWhatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
 import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Button as CustomButton } from "@/components/ui/custom-button";
 import Text from '@/components/ui/custom-text';
+import Loading from '@/components/ui/loading';
 import { Map } from "@/components/ui/map";
 import { useTheme } from "@/contexts/theme-context";
 import { neighborhoods, polygons, regionCoordinates } from "@/data/agencies";
@@ -12,7 +14,7 @@ import { AgencyData, getAgencies, getImageLink } from "@/services/public-api";
 import * as Location from 'expo-location';
 import { Router, useRouter } from "expo-router";
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Linking, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
+import { Animated, Linking, ScrollView, StyleSheet, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 // --- Types ---
@@ -81,9 +83,13 @@ const useUserLocation = () => {
 
 // --- UI Components ---
 
-const CitySelector = ({ onCitySelect, router, cities }: { onCitySelect: (city: City) => void, router: Router, cities: City[] }) => {
+const CitySelector = ({ onCitySelect, router, cities, loading }: { onCitySelect: (city: City) => void, router: Router, cities: City[], loading: boolean }) => {
     const { theme } = useTheme();
     const dynamicStyles = createDynamicStyles(theme);
+
+    if (loading) {
+        return <Loading />;
+    }
     
     return (
         <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
@@ -95,12 +101,14 @@ const CitySelector = ({ onCitySelect, router, cities }: { onCitySelect: (city: C
                 title="Seleccionar Ciudad"
             />
             <View style={dynamicStyles.citySelectionContainer}>
+                <Text style={dynamicStyles.subtitle}>Elige una ciudad para ver las agencias disponibles.</Text>
                 {cities.map(city => (
                     <CustomButton 
                         key={city.value} 
                         title={city.label} 
                         onPress={() => onCitySelect(city)} 
                         style={dynamicStyles.cityButton}
+                        icon={<IconCiudad width={40} height={24} color={theme.colors.text.primary}  />}
                     />
                 ))}
             </View>
@@ -111,7 +119,7 @@ const CitySelector = ({ onCitySelect, router, cities }: { onCitySelect: (city: C
 const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect }: { city: City, selectedNeighborhood: Neighborhood | null, onNeighborhoodSelect: (neighborhood: Neighborhood | null) => void }) => {
     const { theme } = useTheme();
     const dynamicStyles = createDynamicStyles(theme);
-    const availableNeighborhoods = neighborhoods[city.value] || [];
+    const availableNeighborhoods = (neighborhoods as any)[city.value] || [];
     const [showRightArrow, setShowRightArrow] = useState(false);
     const [showLeftArrow, setShowLeftArrow] = useState(false);
     const [containerWidth, setContainerWidth] = useState(0);
@@ -177,7 +185,7 @@ const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect
                     scrollEventThrottle={16}
                     contentContainerStyle={dynamicStyles.neighborhoodButtonsContainer}
                 >
-                    {availableNeighborhoods.map(neighborhood => (
+                    {availableNeighborhoods.map((neighborhood: Neighborhood) => (
                         <CustomButton
                             key={neighborhood.value}
                             title={neighborhood.label}
@@ -203,7 +211,7 @@ const NeighborhoodSelector = ({ city, selectedNeighborhood, onNeighborhoodSelect
     );
 };
 
-const AgencyInfo = ({ agency, onClose }: { agency: Agency; onClose: () => void }) => {
+const AgencyInfo = ({ agency, onClose, style }: { agency: Agency; onClose: () => void; style?: any }) => {
     const { theme } = useTheme();
     const dynamicStyles = createDynamicStyles(theme);
     const weekDays: { [key: string]: string } = {
@@ -234,7 +242,7 @@ const AgencyInfo = ({ agency, onClose }: { agency: Agency; onClose: () => void }
     };
     
     return (
-        <View style={dynamicStyles.agencyInfoContainer}>
+        <Animated.View style={[dynamicStyles.agencyInfoContainer, style]}>
             <Text style={dynamicStyles.agencyTitle}>{agency.name}</Text>
             <DetailItem label="Dirección" value={agency.address} />
             <DetailItem 
@@ -275,7 +283,7 @@ const AgencyInfo = ({ agency, onClose }: { agency: Agency; onClose: () => void }
                 </View>
             )}
             <CustomButton title="Cerrar" onPress={onClose} style={{marginTop: 10}}/>
-        </View>
+        </Animated.View>
     );
 };
 
@@ -288,6 +296,8 @@ export default function AgenciesScreen() {
     const [selectedCity, setSelectedCity] = useState<City | null>(null);
     const [selectedNeighborhood, setSelectedNeighborhood] = useState<Neighborhood | null>(null);
     const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
+    const [renderedAgency, setRenderedAgency] = useState<Agency | null>(null);
+    const animatedValue = useRef(new Animated.Value(0)).current;
     const [showCityPolygon, setShowCityPolygon] = useState(true);
     const { userLocation } = useUserLocation();
     const router = useRouter();
@@ -326,9 +336,44 @@ export default function AgenciesScreen() {
     const handleMarkerPress = useCallback((marker: MarkerData) => {
         const agency = agenciesData.find(a => a.id.toString() === marker.id);
         if (agency) {
+            setRenderedAgency(agency);
             setSelectedAgency(agency);
         }
     }, [agenciesData]);
+
+    const handleCloseAgencyInfo = () => {
+        setSelectedAgency(null);
+    };
+
+    useEffect(() => {
+        if (selectedAgency) {
+            Animated.timing(animatedValue, {
+                toValue: 1,
+                duration: 300,
+                useNativeDriver: true,
+            }).start();
+        } else {
+            Animated.timing(animatedValue, {
+                toValue: 0,
+                duration: 300,
+                useNativeDriver: true,
+            }).start(() => {
+                setRenderedAgency(null);
+            });
+        }
+    }, [selectedAgency, animatedValue]);
+
+    const animatedStyle = {
+        opacity: animatedValue,
+        transform: [
+            {
+                translateY: animatedValue.interpolate({
+                    inputRange: [0, 1],
+                    outputRange: [100, 0],
+                }),
+            },
+        ],
+    };
 
     const handleCitySelect = (city: City) => {
         setSelectedCity(city);
@@ -363,15 +408,15 @@ export default function AgenciesScreen() {
                 strokeColor: 'rgba(255, 165, 0, 0.8)',
             }];
         }
-        if (showCityPolygon && selectedCity && polygons[selectedCity.value]) {
+        if (showCityPolygon && selectedCity && (polygons as any)[selectedCity.value]) {
             return [{
-                coordinates: polygons[selectedCity.value],
+                coordinates: (polygons as any)[selectedCity.value],
                 fillColor: 'rgba(164, 192, 37, 0.5)',
                 strokeColor: 'rgba(0, 255, 72, 0.8)',
             }];
         }
         return [];
-    }, [selectedCity, selectedNeighborhood, showCityPolygon]);
+    }, [selectedCity, selectedNeighborhood, showCityPolygon, polygons]);
 
         const mapRegion = useMemo(() => {
         if (selectedNeighborhood) return selectedNeighborhood.region;
@@ -410,7 +455,7 @@ export default function AgenciesScreen() {
     }, [selectedCity, selectedNeighborhood, agenciesData]);
 
     if (!selectedCity) {
-        return <CitySelector onCitySelect={handleCitySelect} router={router} cities={availableCities} />;
+        return <CitySelector onCitySelect={handleCitySelect} router={router} cities={availableCities} loading={loadingAgencies} />;
     }
 
     return (
@@ -439,8 +484,12 @@ export default function AgenciesScreen() {
                 onMarkerPress={handleMarkerPress}
             />
 
-            {selectedAgency && (
-                <AgencyInfo agency={selectedAgency} onClose={() => setSelectedAgency(null)} />
+            {renderedAgency && (
+                <AgencyInfo
+                    agency={renderedAgency}
+                    onClose={handleCloseAgencyInfo}
+                    style={animatedStyle}
+                />
             )}
         </SafeAreaView>
     );
@@ -458,13 +507,18 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     },
     citySelectionContainer: {
         flex: 1,
-        justifyContent: 'center',
-        alignItems: 'center',
+        alignItems: 'stretch',
         padding: 20,
+        paddingTop: 40,
     },
     cityButton: {
         marginVertical: 8,
-        width: '80%',
+    },
+    subtitle: {
+        fontSize: 16,
+        textAlign: 'center',
+        marginBottom: 20,
+        color: theme.colors.text.secondary,
     },
     neighborhoodSelectorContainer: {
         paddingVertical: 10,

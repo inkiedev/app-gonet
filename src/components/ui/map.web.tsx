@@ -35,10 +35,7 @@ interface MapProps {
     image?: any;
   }[];
   onMarkerPress?: (marker: any) => void;
-  userLocation?: {
-    latitude: number;
-    longitude: number;
-  };
+    userLocation?: { latitude: number; longitude: number } | null;
 }
 
 export const Map: React.FC<MapProps> = ({ initialRegion, style, polygons, markers, onMarkerPress, userLocation }) => {
