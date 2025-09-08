@@ -16,13 +16,16 @@ import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
 import { authService } from '@/services/auth';
 import { RootState } from '@/store';
-import { loadSubscriptionsData, logout } from '@/store/slices/auth-slice';
+import { loadSubscriptionsData, logout, selectAccount } from '@/store/slices/auth-slice';
+import { formatGoWord } from '@/utils';
+import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
-import { BackHandler, StyleSheet, View } from 'react-native';
+import { BackHandler, Modal, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
+import Text from '@/components/ui/custom-text';
 
 
 const iconOptions = [
@@ -97,12 +100,15 @@ const mockNotifications: Notification[] = [
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
+  const [accountSelectorVisible, setAccountSelectorVisible] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
   const opacity = useSharedValue(1);
   const heightAnimation = useSharedValue(60);
   const router = useRouter();
   const dispatch = useDispatch();
-  const { currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
+  
+  const { currentAccount, subscriptions, selectedAccountIndex } = useSelector((state: RootState) => state.auth);
+  
   const { showSuccess, showError } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
   const { height } = useResponsive();
@@ -213,6 +219,22 @@ export default function HomeScreen() {
     );
   };
 
+  const handleAccountSelectorPress = () => {
+    if (subscriptions.length > 1) {
+      setAccountSelectorVisible(true);
+    }
+  };
+
+  const handleAccountChange = (accountIndex: number) => {
+    dispatch(selectAccount(accountIndex));
+    setAccountSelectorVisible(false);
+    showSuccess(
+      'Cuenta cambiada',
+      `Ahora usando: ${subscriptions[accountIndex].partner.name}`,
+      2000
+    );
+  };
+
   // Calculate unread notifications count
   const unreadCount = notifications.filter(n => !n.read).length;
 
@@ -225,6 +247,25 @@ export default function HomeScreen() {
           height={height * 0.55}
         />
         <Header
+          leftAction={
+            subscriptions.length > 1 ? {
+              icon: (
+                <View style={styles.accountBadgeContainer}>
+                  <Ionicons 
+                    name="people-outline" 
+                    size={20} 
+                    color={theme.colors.text.primary}
+                  />
+                  <View style={styles.accountBadge}>
+                    <Text style={styles.accountBadgeText}>
+                      {subscriptions.length}
+                    </Text>
+                  </View>
+                </View>
+              ),
+              onPress: handleAccountSelectorPress,
+            } : undefined
+          }
           rightAction={{
             icon: <Menu width={24} height={24} fill={theme.colors.primary} />,
             onPress: toggleMenu,
@@ -282,6 +323,57 @@ export default function HomeScreen() {
           onNotificationPress={handleNotificationPress}
           onMarkAsRead={handleMarkAsRead}
         />
+
+        {/* Account Selector Modal */}
+        <Modal
+          visible={accountSelectorVisible}
+          transparent
+          animationType="fade"
+          onRequestClose={() => setAccountSelectorVisible(false)}
+        >
+          <TouchableWithoutFeedback onPress={() => setAccountSelectorVisible(false)}>
+            <View style={styles.modalOverlay}>
+              <TouchableWithoutFeedback>
+                <View style={styles.accountModal}>
+                  <Text style={styles.accountModalTitle}>Seleccionar Cuenta</Text>
+                  {subscriptions.map((account, index) => (
+                    <TouchableOpacity
+                      key={account.id}
+                      style={[
+                        styles.accountModalItem,
+                        index === selectedAccountIndex && styles.accountModalItemSelected
+                      ]}
+                      onPress={() => handleAccountChange(index)}
+                      activeOpacity={0.7}
+                    >
+                      <View style={styles.accountModalItemContent}>
+                        <Text style={[
+                          styles.accountModalItemName,
+                          index === selectedAccountIndex && styles.accountModalItemNameSelected
+                        ]}>
+                          {account.partner.name}
+                        </Text>
+                        <Text style={[
+                          styles.accountModalItemPlan,
+                          index === selectedAccountIndex && styles.accountModalItemPlanSelected
+                        ]}>
+                          {formatGoWord(account.plan[0]?.name)} - ${account.residual} pendiente
+                        </Text>
+                      </View>
+                      {index === selectedAccountIndex && (
+                        <Ionicons 
+                          name="checkmark-circle" 
+                          size={24} 
+                          color={theme.colors.primary}
+                        />
+                      )}
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </TouchableWithoutFeedback>
+            </View>
+          </TouchableWithoutFeedback>
+        </Modal>
       </View>
     </SafeAreaView>
   );
@@ -325,5 +417,81 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     justifyContent: 'space-around',
     alignItems: 'center',
     maxWidth: 700
+  },
+  accountBadgeContainer: {
+    position: 'relative',
+  },
+  accountBadge: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: theme.colors.primary,
+    borderRadius: 10,
+    minWidth: 18,
+    height: 18,
+    justifyContent: 'center',
+    alignItems: 'center',
+    borderWidth: 2,
+    borderColor: 'white',
+  },
+  accountBadgeText: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.bold,
+    color: 'white',
+    textAlign: 'center',
+  },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0, 0, 0, 0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  accountModal: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.lg,
+    padding: theme.spacing.lg,
+    margin: theme.spacing.lg,
+    maxHeight: '70%',
+    minWidth: 300,
+    maxWidth: 400,
+    ...theme.shadows.lg,
+  },
+  accountModalTitle: {
+    fontSize: theme.fontSize.xl,
+    fontWeight: theme.fontWeight.bold,
+    color: theme.colors.text.primary,
+    textAlign: 'center',
+    marginBottom: theme.spacing.lg,
+  },
+  accountModalItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.sm,
+    borderRadius: theme.borderRadius.md,
+    marginBottom: theme.spacing.sm,
+  },
+  accountModalItemSelected: {
+    backgroundColor: theme.colors.primary + '15',
+  },
+  accountModalItemContent: {
+    flex: 1,
+  },
+  accountModalItemName: {
+    fontSize: theme.fontSize.md,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.text.primary,
+  },
+  accountModalItemNameSelected: {
+    color: theme.colors.primary,
+  },
+  accountModalItemPlan: {
+    fontSize: theme.fontSize.sm,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing.xs,
+  },
+  accountModalItemPlanSelected: {
+    color: theme.colors.primary,
   },
 });
