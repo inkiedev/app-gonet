@@ -9,8 +9,6 @@ export const ThemedStatusBar: React.FC = () => {
     <ExpoStatusBar
       style={isDark ? 'light' : 'dark'}
       animated
-      backgroundColor={isDark ? theme.colors.background : theme.colors.surface}
-      translucent={false}
     />
   );
 };
