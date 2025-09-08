@@ -459,14 +459,13 @@ const UserInfoRow: React.FC<UserInfoRowProps> = ({
             <Ionicons
               name={field.icon as any}
               size={20}
-              color={field.editable ? theme.colors.primary : theme.colors.secondary}
+              color={theme.colors.primary}
               style={dynamicStyles.fieldIcon}
             />
           )}
           <Text style={[
             dynamicStyles.fieldLabel,
             { fontSize: isSmall ? theme.fontSize.sm : theme.fontSize.md },
-            !field.editable && { color: theme.colors.text.secondary }
           ]}>
             {field.label}:
           </Text>
@@ -629,7 +628,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   fieldLabel: {
     fontWeight: theme.fontWeight.medium,
-    color: theme.colors.secondary,
+    color: theme.colors.text.primary,
   },
   fieldValue: {
     flex: 1.5,

@@ -37,22 +37,22 @@ export const Footer: React.FC<FooterProps> = ({
   const socialMediaItems: SocialMediaItem[] = [
     {
       icon: <Facebook width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
-      url: 'https://www.facebook.com',
+      url: 'https://www.facebook.com/gonet.ec',
       name: 'Facebook',
     },
     {
       icon: <Instagram width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
-      url: 'https://www.instagram.com',
+      url: 'https://www.instagram.com/gonet.ec',
       name: 'Instagram',
     },
     {
       icon: <Web width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
-      url: 'https://www.gonet.com',
+      url: 'https://www.gonet.ec',
       name: 'Website',
     },
     {
       icon: <Whatsapp width={SVG_SIZE} height={SVG_SIZE} fill={iconColor} />,
-      url: 'https://www.whatsapp.com',
+      url: 'https://wa.me/593962925555',
       name: 'WhatsApp',
     },
     {

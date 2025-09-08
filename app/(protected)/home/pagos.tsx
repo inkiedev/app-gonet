@@ -2,34 +2,24 @@ import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/custom-button";
-import { Select, SelectOption } from "@/components/ui/custom-select";
+import { Select } from "@/components/ui/custom-select";
 import Text from "@/components/ui/custom-text";
 import { ExpandableCard } from "@/components/ui/expandable-card";
 import { useTheme } from "@/contexts/theme-context";
+import { RootState } from '@/store';
+import { Subscription } from '@/types/subscription';
 import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
+  Linking,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
-
-interface Account {
-  id: string;
-  name: string;
-  address: string;
-  pendingAmount: number;
-}
-
-interface PaymentMethod {
-  id: string;
-  type: string;
-  details: string;
-  isDefault: boolean;
-}
+import { useSelector } from 'react-redux';
 
 interface PaymentHistory {
   id: string;
@@ -38,54 +28,6 @@ interface PaymentHistory {
   status: 'completed' | 'pending' | 'failed';
   method: string;
 }
-
-const accounts: SelectOption<Account>[] = [
-  {
-    value: { 
-      id: "800030", 
-      name: "GoEssencial 250Mbps", 
-      address: "Av Paseo de los Cañaris y Yanaurco",
-      pendingAmount: 29.90
-    }
-  },
-  {
-    value: { 
-      id: "800040", 
-      name: "GoPlus 450Mbps", 
-      address: "Av Gonzales Suarez y Max Uhle",
-      pendingAmount: 45.50
-    }
-  },
-  {
-    value: { 
-      id: "800050", 
-      name: "Fibra 1000", 
-      address: "Av de la Prensa y Av. 10 de Agosto",
-      pendingAmount: 0.00
-    }
-  },
-];
-
-const paymentMethods: PaymentMethod[] = [
-  {
-    id: "1",
-    type: "Tarjeta de Credito",
-    details: "**** **** **** 1234",
-    isDefault: true
-  },
-  {
-    id: "2", 
-    type: "Transferencia Bancaria",
-    details: "Banco Pichincha - Cuenta ****5678",
-    isDefault: false
-  },
-  {
-    id: "3",
-    type: "PayPal",
-    details: "usuario@email.com",
-    isDefault: false
-  }
-];
 
 const paymentHistory: PaymentHistory[] = [
   {
@@ -114,12 +56,33 @@ const paymentHistory: PaymentHistory[] = [
 export default function PaymentsScreen() {
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
-  const [selectedAccount, setSelectedAccount] = useState<Account>();
   const router = useRouter();
+  
+  const { subscriptions, currentAccount } = useSelector((state: RootState) => ({
+    subscriptions: state.auth.subscriptions,
+    currentAccount: state.auth.currentAccount
+  }));
+
+  const [selectedAccount, setSelectedAccount] = useState<Subscription | undefined>(currentAccount || undefined);
 
   const handleGoBack = () => {
     router.back();
   };
+
+  
+const handlePaymentPress = async () => {
+    try {
+      await console.log(selectedAccount)
+      const supported = await Linking.canOpenURL(`https://pagos.gonet.ec/payment/${selectedAccount?.partner.dni}`);
+      if (supported) {
+        await Linking.openURL(`https://pagos.gonet.ec/payment/${selectedAccount?.partner.dni}`);
+      } else {
+        console.warn(`Cannot open URL: `);
+      }
+    } catch (error) {
+      console.error(`Error opening ${name}:`, error);
+    }
+};
 
   const handleInvoiceConsultation = () => {
     console.log('Navegando a consulta de facturas');
@@ -158,19 +121,20 @@ export default function PaymentsScreen() {
         <View style={dynamicStyles.headerContent}>
           <Text style={dynamicStyles.contentTitle}>Valor Pendiente</Text>
           <Text style={dynamicStyles.pendingAmount}>
-            ${selectedAccount ? selectedAccount.pendingAmount.toFixed(2) : "0.00"}
+            ${selectedAccount ? selectedAccount.residual : "0.00"}
           </Text>
 
           <Select
-            options={accounts}
+            options={subscriptions.map(subscription => ({ value: subscription }))}
             value={selectedAccount}
             onValueChange={(value, index) => setSelectedAccount(value)}
             renderItem={(option, index, isSelected) => {
               return (
                 <View>
-                  <Text style={dynamicStyles.selectText}># {option.value.id}</Text>
-                  <Text style={dynamicStyles.selectText}>{option.value.name}</Text>
-                  <Text style={dynamicStyles.selectText}>{option.value.address}</Text>
+                  <Text style={dynamicStyles.selectText}>#{option.value.id}</Text>
+                  <Text style={dynamicStyles.selectText}>{option.value.partner.name}</Text>
+                  <Text style={dynamicStyles.selectText}>{option.value.partner.street}</Text>
+                  
                 </View>
               );
             }}
@@ -198,23 +162,10 @@ export default function PaymentsScreen() {
               />
             }
           >
-            {paymentMethods.map((method) => (
-              <View key={method.id} style={dynamicStyles.paymentMethodItem}>
-                <View style={dynamicStyles.paymentMethodInfo}>
-                  <Text style={dynamicStyles.paymentMethodType}>{method.type}</Text>
-                  <Text style={dynamicStyles.paymentMethodDetails}>{method.details}</Text>
-                </View>
-                {method.isDefault && (
-                  <View style={dynamicStyles.defaultBadge}>
-                    <Text style={dynamicStyles.defaultBadgeText}>Por defecto</Text>
-                  </View>
-                )}
-              </View>
-            ))}
             <View style={dynamicStyles.cardActions}>
               <Button
-                title="Agregar Método"
-                onPress={() => console.log('Agregar método')}
+                title="Ir al enlace de pago"
+                onPress={() => handlePaymentPress()}
                 size="sm"
               />
             </View>
