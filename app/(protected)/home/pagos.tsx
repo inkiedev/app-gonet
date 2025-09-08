@@ -6,12 +6,13 @@ import { Select } from "@/components/ui/custom-select";
 import Text from "@/components/ui/custom-text";
 import { ExpandableCard } from "@/components/ui/expandable-card";
 import { useTheme } from "@/contexts/theme-context";
+import { apiService, Payment, PaymentsResponse, Invoice, InvoicesResponse } from '@/services/api';
 import { RootState } from '@/store';
 import { Subscription } from '@/types/subscription';
 import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { createSelector } from '@reduxjs/toolkit';
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Linking,
   ScrollView,
@@ -30,30 +31,6 @@ interface PaymentHistory {
   method: string;
 }
 
-const paymentHistory: PaymentHistory[] = [
-  {
-    id: "1",
-    date: "2024-01-15",
-    amount: 29.90,
-    status: 'completed',
-    method: "Tarjeta de Credito"
-  },
-  {
-    id: "2", 
-    date: "2024-01-10",
-    amount: 45.50,
-    status: 'completed',
-    method: "Transferencia Bancaria"
-  },
-  {
-    id: "3",
-    date: "2024-01-05",
-    amount: 29.90,
-    status: 'pending',
-    method: "PayPal"
-  }
-];
-
 const selectAuthData = createSelector(
   (state: RootState) => state.auth.subscriptions,
   (state: RootState) => state.auth.currentAccount,
@@ -71,6 +48,10 @@ export default function PaymentsScreen() {
   const { subscriptions, currentAccount } = useSelector(selectAuthData);
 
   const [selectedAccount, setSelectedAccount] = useState<Subscription | undefined>(currentAccount || undefined);
+  const [payments, setPayments] = useState<Payment[]>([]);
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [isLoadingPayments, setIsLoadingPayments] = useState(false);
+  const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
 
   const handleGoBack = () => {
     router.back();
@@ -90,25 +71,92 @@ const handlePaymentPress = async () => {
     }
 };
 
-  const handleInvoiceConsultation = () => {
-    console.log('Navegando a consulta de facturas');
+  // Cargar pagos cuando cambie la cuenta seleccionada
+  useEffect(() => {
+    if (selectedAccount?.partner_invoice?.id) {
+      loadPayments();
+    }
+  }, [selectedAccount]);
+
+  const loadPayments = async () => {
+    if (!selectedAccount?.partner_invoice?.id) return;
+    
+    setIsLoadingPayments(true);
+    try {
+      const response: PaymentsResponse = await apiService.getPaymentsByInvoicePartner(
+        'enterprise',
+        selectedAccount.partner_invoice.id,
+        10 // Limitar a 10 pagos recientes
+      );
+      
+      if (response.success) {
+        setPayments(response.payments);
+      }
+    } catch (error) {
+      console.error('Error loading payments:', error);
+    } finally {
+      setIsLoadingPayments(false);
+    }
   };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'completed': return theme.colors.success || '#10B981';
-      case 'pending': return theme.colors.warning || '#F59E0B';
-      case 'failed': return theme.colors.error;
+  const loadInvoices = async () => {
+    if (!selectedAccount?.partner_invoice?.id) return;
+    
+    setIsLoadingInvoices(true);
+    try {
+      const response: InvoicesResponse = await apiService.getInvoicesByPartner(
+        'enterprise',
+        selectedAccount.partner_invoice.id,
+        10 // Limitar a 10 facturas recientes
+      );
+      
+      if (response.success) {
+        setInvoices(response.invoices);
+      }
+    } catch (error) {
+      console.error('Error loading invoices:', error);
+    } finally {
+      setIsLoadingInvoices(false);
+    }
+  };
+
+  const handleInvoiceConsultation = () => {
+    loadInvoices();
+  };
+
+  const getPaymentStatusColor = (state: string) => {
+    switch (state) {
+      case 'posted': return theme.colors.success || '#10B981';
+      case 'draft': return theme.colors.warning || '#F59E0B';
+      case 'cancelled': return theme.colors.error;
       default: return theme.colors.text.secondary;
     }
   };
 
-  const getStatusText = (status: string) => {
-    switch (status) {
-      case 'completed': return 'Completado';
-      case 'pending': return 'Pendiente';
-      case 'failed': return 'Fallido';
-      default: return status;
+  const getPaymentStatusText = (state: string) => {
+    switch (state) {
+      case 'posted': return 'Confirmado';
+      case 'draft': return 'Borrador';
+      case 'cancelled': return 'Cancelado';
+      default: return state;
+    }
+  };
+
+  const getInvoiceStatusColor = (paymentState: string) => {
+    switch (paymentState) {
+      case 'paid': return theme.colors.success || '#10B981';
+      case 'partial': return theme.colors.warning || '#F59E0B';
+      case 'not_paid': return theme.colors.error;
+      default: return theme.colors.text.secondary;
+    }
+  };
+
+  const getInvoiceStatusText = (paymentState: string) => {
+    switch (paymentState) {
+      case 'paid': return 'Pagado';
+      case 'partial': return 'Parcial';
+      case 'not_paid': return 'Pendiente';
+      default: return paymentState;
     }
   };
 
@@ -188,22 +236,37 @@ const handlePaymentPress = async () => {
               />
             }
           >
-            {paymentHistory.map((payment) => (
-              <View key={payment.id} style={dynamicStyles.historyItem}>
-                <View style={dynamicStyles.historyInfo}>
-                  <Text style={dynamicStyles.historyDate}>{payment.date}</Text>
-                  <Text style={dynamicStyles.historyMethod}>{payment.method}</Text>
-                </View>
-                <View style={dynamicStyles.historyAmountContainer}>
-                  <Text style={dynamicStyles.historyAmount}>${payment.amount.toFixed(2)}</Text>
-                  <View style={[dynamicStyles.statusBadge, { backgroundColor: getStatusColor(payment.status) + '20' }]}>
-                    <Text style={[dynamicStyles.statusText, { color: getStatusColor(payment.status) }]}>
-                      {getStatusText(payment.status)}
+            {isLoadingPayments ? (
+              <View style={dynamicStyles.loadingContainer}>
+                <Text style={dynamicStyles.loadingText}>Cargando pagos...</Text>
+              </View>
+            ) : payments.length > 0 ? (
+              payments.map((payment) => (
+                <View key={payment.payment_id} style={dynamicStyles.historyItem}>
+                  <View style={dynamicStyles.historyInfo}>
+                    <Text style={dynamicStyles.historyDate}>{payment.payment_date}</Text>
+                    <Text style={dynamicStyles.historyMethod}>{payment.payment_method}</Text>
+                    <Text style={dynamicStyles.historyReference}>
+                      Factura: {payment.invoice_number}
                     </Text>
                   </View>
+                  <View style={dynamicStyles.historyAmountContainer}>
+                    <Text style={dynamicStyles.historyAmount}>
+                      ${payment.amount.toFixed(2)} {payment.currency}
+                    </Text>
+                    <View style={[dynamicStyles.statusBadge, { backgroundColor: getPaymentStatusColor(payment.state) + '20' }]}>
+                      <Text style={[dynamicStyles.statusText, { color: getPaymentStatusColor(payment.state) }]}>
+                        {getPaymentStatusText(payment.state)}
+                      </Text>
+                    </View>
+                  </View>
                 </View>
+              ))
+            ) : (
+              <View style={dynamicStyles.emptyContainer}>
+                <Text style={dynamicStyles.emptyText}>No hay pagos registrados</Text>
               </View>
-            ))}
+            )}
             <View style={dynamicStyles.cardActions}>
               <Button
                 title="Ver Todo el Historial"
@@ -213,31 +276,61 @@ const handlePaymentPress = async () => {
             </View>
           </ExpandableCard>
 
-          <TouchableOpacity
-            onPress={handleInvoiceConsultation}
-            activeOpacity={0.8}
+          <ExpandableCard
+            title="Facturas"
+            style={dynamicStyles.expandableCard}
+            icon={
+              <AntDesign 
+                name="filetext1" 
+                size={24} 
+                color={theme.colors.primary} 
+              />
+            }
           >
-            <Card>
-              <View style={dynamicStyles.cardHeader}>
-                <View style={dynamicStyles.cardTitleContainer}>
-                  <AntDesign 
-                    name="filetext1" 
-                    size={24} 
-                    color={theme.colors.primary} 
-                  />
-                  <Text style={dynamicStyles.cardTitle}>Consulta de Facturas</Text>
-                </View>
-                <Ionicons
-                  name="chevron-forward"
-                  size={20}
-                  color={theme.colors.text.secondary}
-                />
+            {isLoadingInvoices ? (
+              <View style={dynamicStyles.loadingContainer}>
+                <Text style={dynamicStyles.loadingText}>Cargando facturas...</Text>
               </View>
-              <Text style={dynamicStyles.invoiceDescription}>
-                Consulta y descarga tus facturas pendientes y pagadas
-              </Text>
-            </Card>
-          </TouchableOpacity>
+            ) : invoices.length > 0 ? (
+              invoices.map((invoice) => (
+                <View key={invoice.invoice_id} style={dynamicStyles.historyItem}>
+                  <View style={dynamicStyles.historyInfo}>
+                    <Text style={dynamicStyles.historyDate}>{invoice.invoice_date}</Text>
+                    <Text style={dynamicStyles.historyMethod}>
+                      {invoice.invoice_number}
+                    </Text>
+                    <Text style={dynamicStyles.historyReference}>
+                      Vencimiento: {invoice.due_date || 'Sin fecha'}
+                    </Text>
+                  </View>
+                  <View style={dynamicStyles.historyAmountContainer}>
+                    <Text style={dynamicStyles.historyAmount}>
+                      ${invoice.amount_total.toFixed(2)} {invoice.currency}
+                    </Text>
+                    <Text style={[dynamicStyles.historyAmount, { fontSize: theme.fontSize.xs, marginTop: 2 }]}>
+                      Pendiente: ${invoice.amount_residual.toFixed(2)}
+                    </Text>
+                    <View style={[dynamicStyles.statusBadge, { backgroundColor: getInvoiceStatusColor(invoice.payment_state) + '20' }]}>
+                      <Text style={[dynamicStyles.statusText, { color: getInvoiceStatusColor(invoice.payment_state) }]}>
+                        {getInvoiceStatusText(invoice.payment_state)}
+                      </Text>
+                    </View>
+                  </View>
+                </View>
+              ))
+            ) : (
+              <View style={dynamicStyles.emptyContainer}>
+                <Text style={dynamicStyles.emptyText}>No hay facturas registradas</Text>
+              </View>
+            )}
+            <View style={dynamicStyles.cardActions}>
+              <Button
+                title={invoices.length > 0 ? "Actualizar Facturas" : "Cargar Facturas"}
+                onPress={handleInvoiceConsultation}
+                size="sm"
+              />
+            </View>
+          </ExpandableCard>
         </View>
       </ScrollView>
     </SafeAreaView>
@@ -390,6 +483,28 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     fontSize: theme.fontSize.sm,
     color: theme.colors.text.secondary,
     marginTop: theme.spacing.sm,
+    textAlign: 'center',
+  },
+  historyReference: {
+    fontSize: theme.fontSize.xs,
+    color: theme.colors.text.secondary,
+    marginTop: theme.spacing.xs,
+  },
+  loadingContainer: {
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
+  },
+  loadingText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.secondary,
+  },
+  emptyContainer: {
+    paddingVertical: theme.spacing.lg,
+    alignItems: 'center',
+  },
+  emptyText: {
+    fontSize: theme.fontSize.md,
+    color: theme.colors.text.secondary,
     textAlign: 'center',
   },
 });

@@ -31,6 +31,48 @@ destinatary?: string;
 signup_url?: string;
 }
 
+interface Payment {
+  payment_id: number;
+  payment_date: string;
+  amount: number;
+  currency: string;
+  payment_method: string;
+  state: string;
+  reference?: string;
+  invoice_id: number;
+  invoice_number: string;
+  invoice_date: string;
+  invoice_amount: number;
+}
+
+interface Invoice {
+  invoice_id: number;
+  invoice_number: string;
+  invoice_date: string;
+  due_date?: string;
+  amount_untaxed: number;
+  amount_tax: number;
+  amount_total: number;
+  amount_residual: number;
+  currency: string;
+  state: string;
+  payment_state: string;
+  move_type: string;
+  reference?: string;
+}
+
+interface PaymentsResponse {
+  success: boolean;
+  payments: Payment[];
+  total_payments: number;
+}
+
+interface InvoicesResponse {
+  success: boolean;
+  invoices: Invoice[];
+  total_invoices: number;
+}
+
 
 interface OdooJsonRpcResponse {
   jsonrpc: string;
@@ -216,11 +258,77 @@ class ApiService {
 
     return result;
   }
+
+  async getPaymentsByInvoicePartner(database: string, partnerInvoiceId: number, limit?: number): Promise<PaymentsResponse> {
+    if (!database || typeof database !== 'string' || database.trim() === '' ||
+        !partnerInvoiceId || typeof partnerInvoiceId !== 'number') {
+      throw new Error('Database and partnerInvoiceId are required');
+    }
+
+    const args = [database, 2, 'admin', 'my.app.api', 'get_payments_by_invoice_partner', partnerInvoiceId];
+    if (limit) {
+      args.push(limit);
+    }
+
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute',
+      args: args
+    });
+
+    if (!result || typeof result !== 'object') {
+      return {
+        success: false,
+        payments: [],
+        total_payments: 0
+      };
+    }
+
+    return result;
+  }
+
+  async getInvoicesByPartner(database: string, partnerInvoiceId: number, limit?: number): Promise<InvoicesResponse> {
+    if (!database || typeof database !== 'string' || database.trim() === '' ||
+        !partnerInvoiceId || typeof partnerInvoiceId !== 'number') {
+      throw new Error('Database and partnerInvoiceId are required');
+    }
+
+    const args = [database, 2, 'admin', 'my.app.api', 'get_invoices_by_partner', partnerInvoiceId];
+    if (limit) {
+      args.push(limit);
+    }
+
+    const result = await this.makeJsonRpcRequest('call', {
+      service: 'object',
+      method: 'execute',
+      args: args
+    });
+
+    if (!result || typeof result !== 'object') {
+      return {
+        success: false,
+        invoices: [],
+        total_invoices: 0
+      };
+    }
+
+    return result;
+  }
 }
 
 export const apiService = new ApiService(
   process.env.EXPO_PUBLIC_API_URL || 'http://192.168.70.123:8069'
 );
 
-export type { OdooAuthResult, OdooJsonRegisterRpcRequest, OdooJsonRpcResponse, OdooUserData, Subscription };
+export type { 
+  OdooAuthResult, 
+  OdooJsonRegisterRpcRequest, 
+  OdooJsonRpcResponse, 
+  OdooUserData, 
+  Subscription,
+  Payment,
+  Invoice,
+  PaymentsResponse,
+  InvoicesResponse
+};
 
