@@ -9,6 +9,7 @@ import { useTheme } from "@/contexts/theme-context";
 import { RootState } from '@/store';
 import { Subscription } from '@/types/subscription';
 import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { createSelector } from '@reduxjs/toolkit';
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import {
@@ -53,15 +54,21 @@ const paymentHistory: PaymentHistory[] = [
   }
 ];
 
+const selectAuthData = createSelector(
+  (state: RootState) => state.auth.subscriptions,
+  (state: RootState) => state.auth.currentAccount,
+  (subscriptions, currentAccount) => ({
+    subscriptions,
+    currentAccount,
+  })
+);
+
 export default function PaymentsScreen() {
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
   const router = useRouter();
   
-  const { subscriptions, currentAccount } = useSelector((state: RootState) => ({
-    subscriptions: state.auth.subscriptions,
-    currentAccount: state.auth.currentAccount
-  }));
+  const { subscriptions, currentAccount } = useSelector(selectAuthData);
 
   const [selectedAccount, setSelectedAccount] = useState<Subscription | undefined>(currentAccount || undefined);
 
@@ -72,7 +79,6 @@ export default function PaymentsScreen() {
   
 const handlePaymentPress = async () => {
     try {
-      await console.log(selectedAccount)
       const supported = await Linking.canOpenURL(`https://pagos.gonet.ec/payment/${selectedAccount?.partner.dni}`);
       if (supported) {
         await Linking.openURL(`https://pagos.gonet.ec/payment/${selectedAccount?.partner.dni}`);

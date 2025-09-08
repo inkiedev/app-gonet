@@ -8,6 +8,7 @@ import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { Header } from '@/components/layout/header';
+import Text from '@/components/ui/custom-text';
 import { ImageCarousel } from '@/components/ui/image-carousel';
 import { NotificationsModal, type Notification } from '@/components/ui/notifications-modal';
 import { useCardExpansion } from '@/contexts/card-expansion-container';
@@ -25,7 +26,6 @@ import { BackHandler, Modal, StyleSheet, TouchableOpacity, TouchableWithoutFeedb
 import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
-import Text from '@/components/ui/custom-text';
 
 
 const iconOptions = [
@@ -107,7 +107,29 @@ export default function HomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   
-  const { currentAccount, subscriptions, selectedAccountIndex } = useSelector((state: RootState) => state.auth);
+  const { currentAccount, subscriptions: storeSubscriptions, selectedAccountIndex } = useSelector((state: RootState) => state.auth);
+  
+  // ========== MOCK PARA TESTING - REMOVER EN PRODUCCIÓN ==========
+  const mockSubscriptions = storeSubscriptions.length > 0 ? [
+    ...storeSubscriptions,
+    {
+      ...storeSubscriptions[0],
+      id: 'mock-account-demo-home',
+      partner: {
+        ...storeSubscriptions[0].partner,
+        name: 'EMPRESA DEMO S.A.',
+        dni: '0987654321001',
+        street: 'Av. Demo 123',
+      },
+      plan: [{
+        ...storeSubscriptions[0].plan[0],
+        name: 'GoNet Pro 1000',
+      }],
+      residual: '45.99',
+    }
+  ] : storeSubscriptions;
+  const subscriptions = mockSubscriptions;
+  // ============== FIN DEL MOCK - REMOVER HASTA AQUÍ ==============
   
   const { showSuccess, showError } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
@@ -253,7 +275,7 @@ export default function HomeScreen() {
                 <View style={styles.accountBadgeContainer}>
                   <Ionicons 
                     name="people-outline" 
-                    size={20} 
+                    size={24} 
                     color={theme.colors.text.primary}
                   />
                   <View style={styles.accountBadge}>
