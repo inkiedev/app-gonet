@@ -14,7 +14,19 @@ export default function AuthLayout() {
         <Stack.Screen
           name="login"
           options={{
-            title: 'Iniciar Sesión',
+            title: 'Iniciar Sesión - GoNet | Accede a tu cuenta',
+          }}
+        />
+        <Stack.Screen
+          name="register"
+          options={{
+            title: 'Registro - GoNet | Crear cuenta nueva',
+          }}
+        />
+        <Stack.Screen
+          name="contact-form"
+          options={{
+            title: 'Contáctanos - GoNet | Solicita información',
           }}
         />
       </Stack>

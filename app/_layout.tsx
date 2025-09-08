@@ -6,6 +6,7 @@ import { AuthRouteProvider } from '@/providers/auth-route-provider';
 import { StoreProvider } from '@/providers/store-provider';
 import { Montserrat_400Regular, Montserrat_500Medium, Montserrat_600SemiBold, Montserrat_700Bold, Montserrat_800ExtraBold, useFonts } from '@expo-google-fonts/montserrat';
 import { Stack } from 'expo-router';
+import Head from "expo-router/head";
 import * as SplashScreen from 'expo-splash-screen';
 import React, { useEffect } from 'react';
 import { StyleSheet, View } from 'react-native';
@@ -36,6 +37,10 @@ export default function RootLayout() {
   return (
     <StoreProvider>
       <ThemeProvider>
+        <Head>
+          <title>GoNet - Internet de Fibra Óptica</title>
+          <meta name="description" content="GoNet - La mejor conexión de internet de fibra óptica para tu hogar y empresa" />
+        </Head>
         <StatusBar />
         <GestureHandlerRootView>
           <NotificationProvider>
@@ -52,12 +57,14 @@ export default function RootLayout() {
                     <Stack.Screen 
                       name="index" 
                       options={{
+                        title: 'GoNet - Bienvenido | Internet de Fibra Óptica',
                         animation: 'fade',
                       }}
                     />
                     <Stack.Screen 
                       name="(auth)" 
                       options={{
+                        title: 'Autenticación - GoNet',
                         animation: 'slide_from_bottom',
                         animationDuration: 350,
                       }}
@@ -65,8 +72,15 @@ export default function RootLayout() {
                     <Stack.Screen 
                       name="(protected)" 
                       options={{
+                        title: 'GoNet - Panel de Control',
                         animation: 'slide_from_right',
                         animationDuration: 300,
+                      }}
+                    />
+                    <Stack.Screen 
+                      name="+not-found" 
+                      options={{
+                        title: 'Página no encontrada - GoNet | Error 404',
                       }}
                     />
                   </Stack>

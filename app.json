@@ -32,17 +32,17 @@
     "web": {
       "bundler": "metro",
       "output": "static",
-      "favicon": "src/assets/images/iconos gonet app svg_backing.png"
+      "favicon": "src/assets/images/iconos gonet app svg_GoneetLogo.png"
     },
     "plugins": [
       "expo-router",
       [
         "expo-splash-screen",
         {
-          "image": "src/assets/images/icono-gonet.png",
-          "imageWidth": 200,
+          "image": "src/assets/images/iconos gonet app svg_GoneetLogo.png",
+          "imageWidth": 129,
           "resizeMode": "contain",
-          "backgroundColor": "#000000"
+          "backgroundColor": "#ffffff"
         }
       ],
       "expo-local-authentication",
