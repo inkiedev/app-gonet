@@ -89,26 +89,6 @@ export const Select = <T,>({
           useNativeDriver: true,
         }),
       ]).start();
-    } else {
-      Animated.parallel([
-        Animated.timing(animatedHeight, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(animatedOpacity, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(animatedRotation, {
-          toValue: 0,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start(() => {
-        if (!isOpen) setIsFocused(false);
-      });
     }
   }, [isOpen, dropdownHeight]);
 
@@ -148,14 +128,58 @@ export const Select = <T,>({
           setIsOpen(true);
         });
       } else {
-        setIsOpen(false);
+        closeDropdown();
       }
     }
   };
 
   const handleOptionSelect = (option: SelectOption<T>, index: number) => {
-    onValueChange(option.value, index);
-    setIsOpen(false);
+    // Primero ejecutar la animación de cierre
+    Animated.parallel([
+      Animated.timing(animatedHeight, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedRotation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsOpen(false);
+      setIsFocused(false);
+      // Ejecutar onValueChange después de que termine la animación
+      onValueChange(option.value, index);
+    });
+  };
+
+  const closeDropdown = () => {
+    Animated.parallel([
+      Animated.timing(animatedHeight, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedOpacity, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: false,
+      }),
+      Animated.timing(animatedRotation, {
+        toValue: 0,
+        duration: 200,
+        useNativeDriver: true,
+      }),
+    ]).start(() => {
+      setIsOpen(false);
+      setIsFocused(false);
+    });
   };
 
   const handleItemLayout = (index: number, height: number) => {
@@ -210,7 +234,7 @@ export const Select = <T,>({
 
         {isOpen && (
           <Modal transparent visible={isOpen} animationType="none">
-            <TouchableWithoutFeedback onPress={() => setIsOpen(false)}>
+            <TouchableWithoutFeedback onPress={closeDropdown}>
               <View style={dynamicStyles.modalOverlay}>
                 <TouchableWithoutFeedback>
                   <View
@@ -327,7 +351,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     backgroundColor: 'rgba(0, 0, 0, 0.1)',
   },
   dropdownWrapper: {
-    maxWidth: 400,
   },
   dropdown: {
     backgroundColor: theme.colors.surface,
