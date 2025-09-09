@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import { Platform, StyleSheet } from 'react-native';
+import { Platform, StyleSheet, Image } from 'react-native';
 import MapView, { Marker, Polygon, UrlTile } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 
@@ -22,6 +22,8 @@ interface MapProps {
     title?: string;
     description?: string;
     image?: string; // Changed to string
+    width?: number;
+    height?: number;
   }[];
   onMarkerPress?: (marker: any) => void;
     userLocation?: { latitude: number; longitude: number } | null;
@@ -85,7 +87,7 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
             ${markers?.map(marker => `
               const markerIcon_${marker.id} = L.icon({
                   iconUrl: '${marker.image}',
-                  iconSize: [38, 38], // size of the icon
+                  iconSize: [${marker.width || 38}, ${marker.height || 38}], // size of the icon
               });
               L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}], {icon: markerIcon_${marker.id}})
                 .addTo(map)
@@ -146,9 +148,10 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
           coordinate={marker.coordinate}
           title={marker.title}
           description={marker.description}
-          image={{ uri: marker.image }} // Use { uri: string } for react-native-maps
           onPress={() => onMarkerPress && onMarkerPress(marker)}
-        />
+        >
+          <Image source={{ uri: marker.image }} style={{ width: marker.width || 40, height: marker.height || 40 }} />
+        </Marker>
       ))}
     </MapView>
   );

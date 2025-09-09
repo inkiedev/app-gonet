@@ -17,6 +17,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from "react"
 import {
   ActivityIndicator,
   Animated,
+  Easing,
   LayoutAnimation,
   Linking,
   ScrollView,
@@ -35,7 +36,20 @@ type MarkerData = {
   description: string;
   coordinate: { latitude: number; longitude: number };
   image?: any;
+  width?: number;
+  height?: number;
 };
+const DAYS_MAP: Record<string, string> = {
+  "0": "Lunes",
+  "1": "Martes",
+  "2": "Miércoles",
+  "3": "Jueves",
+  "4": "Viernes",
+  "5": "Sábado",
+  "6": "Domingo",
+};
+
+
 
 // --- Custom Hook for User Location ---
 const useUserLocation = () => {
@@ -116,7 +130,20 @@ const AgencyInfo = ({ agency, style, onClose }: { agency: Agency; style?: any; o
             <Text style={dynamicStyles.detailValue}>{agency.email}</Text>
           </View>
         </TouchableOpacity>
+        <View style={dynamicStyles.separator} />
         
+          <Text style={dynamicStyles.scheduleTitle}>Horario</Text>  
+        
+        <View style={dynamicStyles.scheduleContainer}>
+          {agency.days_schedule.map((dia, index) => (
+            <View key={index} style={dynamicStyles.scheduleItem}>
+              <Text style={dynamicStyles.scheduleDay}>{DAYS_MAP[dia.dia]}</Text>
+              <Text style={dynamicStyles.scheduleTime}>
+                {dia.start_time}:00 - {dia.end_time}:00
+              </Text>
+            </View>
+          ))}
+        </View>
         <View style={dynamicStyles.separator} />
 
         <TouchableOpacity onPress={handleSendToMaps} style={dynamicStyles.mapsButton}>
@@ -131,18 +158,18 @@ const AgencyInfo = ({ agency, style, onClose }: { agency: Agency; style?: any; o
 const CityGroup = ({ city, agencies, onCitySelect, onAgencyPress }: { city: string; agencies: Agency[]; onCitySelect: (city: string) => void; onAgencyPress: (agency: Agency) => void; }) => {
   const { theme } = useTheme();
   const [expanded, setExpanded] = useState(false);
-  const rotation = useRef(new Animated.Value(0)).current;
+  const animation = useRef(new Animated.Value(0)).current;
 
   const toggleExpand = () => {
     const toValue = expanded ? 0 : 1;
-    Animated.timing(rotation, {
+    setExpanded(!expanded);
+
+    Animated.timing(animation, {
       toValue,
       duration: 300,
-      useNativeDriver: true,
+      easing: Easing.inOut(Easing.ease),
+      useNativeDriver: false,
     }).start();
-
-    LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setExpanded(!expanded);
 
     if (!expanded) {
       onCitySelect(city);
@@ -152,12 +179,20 @@ const CityGroup = ({ city, agencies, onCitySelect, onAgencyPress }: { city: stri
   const rotateStyle = {
     transform: [
       {
-        rotate: rotation.interpolate({
+        rotate: animation.interpolate({
           inputRange: [0, 1],
           outputRange: ["0deg", "90deg"],
         }),
       },
     ],
+  };
+
+  const animatedStyle = {
+    maxHeight: animation.interpolate({
+      inputRange: [0, 1],
+      outputRange: [0, 1000], // A large enough value to show all content
+    }),
+    opacity: animation,
   };
 
   return (
@@ -168,7 +203,7 @@ const CityGroup = ({ city, agencies, onCitySelect, onAgencyPress }: { city: stri
           <Text style={{ color: theme.colors.primary, fontSize: 20 }}>▶</Text>
         </Animated.View>
       </TouchableOpacity>
-      {expanded && (
+      <Animated.View style={[{ overflow: 'hidden' }, animatedStyle]}>
         <View style={styles.agencyListContainer}>
           {agencies.map((agency) => (
             <TouchableOpacity key={agency.id} style={styles.agencyListItem} onPress={() => onAgencyPress(agency)}>
@@ -177,7 +212,7 @@ const CityGroup = ({ city, agencies, onCitySelect, onAgencyPress }: { city: stri
             </TouchableOpacity>
           ))}
         </View>
-      )}
+      </Animated.View>
     </View>
   );
 };
@@ -250,6 +285,8 @@ export default function AgenciesScreen() {
         description: typeof agency.address === "string" ? agency.address : "",
         coordinate: { latitude: agency.latitude, longitude: agency.longitude },
         image: typeof agency.id_img === 'number' ? getImageLink(agency.id_img) : undefined,
+        width: 40,
+        height: 40,
       })),
     [agencies]
   );
@@ -447,6 +484,29 @@ const createDynamicStyles = (theme: any) =>
     agencyTitle: { fontSize: 20, fontWeight: "bold", marginBottom: 5, color: "#009a92", textAlign: "center" },
     detailItem: { flexDirection: "row", marginBottom: 8, alignItems: "center", justifyContent: "center", columnGap: 10 },
     detailValue: { color: theme.colors.primaryDark, textAlign: "center" },
+    scheduleTitle: {
+      fontSize: 16,
+      fontWeight: "bold",
+      color: theme.colors.primaryDark,
+      textAlign: "center",
+      marginVertical: 5,
+    },
+    scheduleContainer: {
+      marginHorizontal: 10,
+      marginBottom: 5,
+    },
+    scheduleItem: {
+      flexDirection: "row",
+      justifyContent: "space-between",
+      paddingVertical: 2,
+    },
+    scheduleDay: {
+      color: theme.colors.text.primary,
+      fontWeight: "bold",
+    },
+    scheduleTime: {
+      color: theme.colors.text.secondary,
+    },
     separator: {
       height: 1,
       backgroundColor: 'white',
