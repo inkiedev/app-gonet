@@ -69,7 +69,6 @@ const handlePaymentPress = async () => {
     }
 };
 
-  // Cargar pagos cuando cambie la cuenta seleccionada
   useEffect(() => {
     if (selectedAccount?.partner_invoice?.id) {
       loadPayments();
@@ -379,7 +378,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     marginBottom: theme.spacing.xs,
   },
   selectText: {
-    fontSize: theme.fontSize.sm,
+    fontSize: theme.fontSize.xs,
     textTransform: 'uppercase',
     color: theme.colors.text.primary,
   },

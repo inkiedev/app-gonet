@@ -2,9 +2,8 @@ import Text from '@/components/ui/custom-text';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { Ionicons } from '@expo/vector-icons';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import {
-  Animated,
   Modal,
   ScrollView,
   StyleSheet,
@@ -13,6 +12,13 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
+import Animated, {
+  runOnJS,
+  useAnimatedStyle,
+  useSharedValue,
+  withSpring,
+  withTiming,
+} from 'react-native-reanimated';
 
 export interface SelectOption<T = any> {
   value: T;
@@ -53,44 +59,76 @@ export const Select = <T,>({
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
   const MAX_MODAL_HEIGHT = 300;
+
   const [isOpen, setIsOpen] = useState(false);
-  const [isFocused, setIsFocused] = useState(false);
   const [dropdownPos, setDropdownPos] = useState({ top: 0, left: 0, width: 0 });
-  const [itemHeights, setItemHeights] = useState<number[]>([]);
 
   const selectRef = useRef<View>(null);
-  const animatedHeight = useRef(new Animated.Value(0)).current;
-  const animatedOpacity = useRef(new Animated.Value(0)).current;
-  const animatedRotation = useRef(new Animated.Value(0)).current;
+  
+  // Reanimated shared values
+  const chevronRotation = useSharedValue(0);
+  const dropdownScale = useSharedValue(0.9);
+  const dropdownOpacity = useSharedValue(0);
 
   const hasError = Boolean(error);
   const selectedOption = options.find(option => option.value === value);
 
-  const totalHeight = itemHeights.reduce((sum, h) => sum + h, 0);
-  const dropdownHeight = Math.min(totalHeight, MAX_MODAL_HEIGHT);
+  // Animated styles
+  const animatedChevronStyle = useAnimatedStyle(() => ({
+    transform: [{ rotate: `${chevronRotation.value * 180}deg` }]
+  }));
 
-  useEffect(() => {
+  const animatedDropdownStyle = useAnimatedStyle(() => ({
+    opacity: dropdownOpacity.value,
+    transform: [
+      { scale: dropdownScale.value },
+      { translateY: withTiming(dropdownOpacity.value > 0 ? 0 : -8) }
+    ]
+  }));
+
+  const openDropdown = useCallback(() => {
+    if (disabled) return;
+    
+    selectRef.current?.measureInWindow((x, y, width, height) => {
+      setDropdownPos({
+        top: y + height + 4,
+        left: x,
+        width,
+      });
+      setIsOpen(true);
+      
+      // Start animations
+      chevronRotation.value = withSpring(1, { damping: 15, stiffness: 200 });
+      dropdownScale.value = withSpring(1, { damping: 15, stiffness: 200 });
+      dropdownOpacity.value = withTiming(1, { duration: 150 });
+    });
+  }, [disabled]);
+
+  const closeDropdown = useCallback(() => {
+    chevronRotation.value = withSpring(0, { damping: 15, stiffness: 200 });
+    dropdownScale.value = withTiming(0.9, { duration: 120 });
+    dropdownOpacity.value = withTiming(0, { duration: 120 }, (finished) => {
+      if (finished) {
+        runOnJS(setIsOpen)(false);
+      }
+    });
+  }, []);
+
+  const handleToggle = useCallback(() => {
     if (isOpen) {
-      setIsFocused(true);
-      Animated.parallel([
-        Animated.timing(animatedHeight, {
-          toValue: dropdownHeight,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(animatedOpacity, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: false,
-        }),
-        Animated.timing(animatedRotation, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
+      closeDropdown();
+    } else {
+      openDropdown();
     }
-  }, [isOpen, dropdownHeight]);
+  }, [isOpen, openDropdown, closeDropdown]);
+
+  const handleOptionSelect = useCallback((option: SelectOption<T>, index: number) => {
+    closeDropdown();
+    // Delay the callback to allow animation to complete
+    setTimeout(() => {
+      onValueChange(option.value, index);
+    }, 100);
+  }, [closeDropdown, onValueChange]);
 
   const containerStyle: ViewStyle[] = [
     dynamicStyles.selectContainer,
@@ -98,7 +136,6 @@ export const Select = <T,>({
     dynamicStyles[`${size}Container`],
   ];
 
-  if (isFocused) containerStyle.push(dynamicStyles.focused);
   if (hasError) containerStyle.push(dynamicStyles.error);
   if (disabled) containerStyle.push(dynamicStyles.disabled);
 
@@ -116,88 +153,11 @@ export const Select = <T,>({
 
   const sizeStyles = getSizeStyles();
 
-  const handleToggle = () => {
-    if (!disabled) {
-      if (!isOpen) {
-        selectRef.current?.measureInWindow((x, y, width, height) => {
-          setDropdownPos({
-            top: y + height + 8, 
-            left: x + width / 2,
-            width,
-          });
-          setIsOpen(true);
-        });
-      } else {
-        closeDropdown();
-      }
-    }
-  };
-
-  const handleOptionSelect = (option: SelectOption<T>, index: number) => {
-    // Primero ejecutar la animación de cierre
-    Animated.parallel([
-      Animated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(animatedOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(animatedRotation, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setIsOpen(false);
-      setIsFocused(false);
-      // Ejecutar onValueChange después de que termine la animación
-      onValueChange(option.value, index);
-    });
-  };
-
-  const closeDropdown = () => {
-    Animated.parallel([
-      Animated.timing(animatedHeight, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(animatedOpacity, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: false,
-      }),
-      Animated.timing(animatedRotation, {
-        toValue: 0,
-        duration: 200,
-        useNativeDriver: true,
-      }),
-    ]).start(() => {
-      setIsOpen(false);
-      setIsFocused(false);
-    });
-  };
-
-  const handleItemLayout = (index: number, height: number) => {
-    setItemHeights(prev => {
-      const newHeights = [...prev];
-      newHeights[index] = height;
-      return newHeights;
-    });
-  };
-
-  const rotation = animatedRotation.interpolate({
-    inputRange: [0, 1],
-    outputRange: ['0deg', '180deg'],
-  });
-
   return (
     <View style={mainContainerStyle} testID={testID}>
-      {label && <Text style={dynamicStyles.label}>{label}</Text>}
+      {label && (
+        <Text style={dynamicStyles.label}>{label}</Text>
+      )}
 
       <View style={dynamicStyles.dropdownContainer}>
         <TouchableOpacity
@@ -207,23 +167,29 @@ export const Select = <T,>({
           disabled={disabled}
           activeOpacity={0.8}
         >
-          {leftIcon && <View style={dynamicStyles.leftIcon}>{leftIcon}</View>}
+          {leftIcon && (
+            <View style={dynamicStyles.leftIcon}>
+              {leftIcon}
+            </View>
+          )}
 
           <View style={dynamicStyles.inputContainer}>
             {selectedOption ? (
               renderItem(selectedOption, options.findIndex(opt => opt.value === value), true)
             ) : (
-              <Text style={[
-                dynamicStyles.inputText,
-                { fontSize: sizeStyles.fontSize },
-                dynamicStyles.placeholderText
-              ]}>
+              <Text
+                style={[
+                  dynamicStyles.inputText,
+                  { fontSize: sizeStyles.fontSize },
+                  dynamicStyles.placeholderText,
+                ]}
+              >
                 {placeholder}
               </Text>
             )}
           </View>
 
-          <Animated.View style={[dynamicStyles.iconContainer, { transform: [{ rotate: rotation }] }]}>
+          <Animated.View style={[dynamicStyles.iconContainer, animatedChevronStyle]}>
             <Ionicons
               name="chevron-down"
               size={size === 'sm' ? 16 : size === 'md' ? 18 : 20}
@@ -243,19 +209,13 @@ export const Select = <T,>({
                       {
                         position: 'absolute',
                         top: dropdownPos.top,
-                        left: dropdownPos.left - dropdownPos.width / 2,
+                        left: dropdownPos.left,
                         width: dropdownPos.width,
                       },
                     ]}
                   >
                     <Animated.View
-                      style={[
-                        dynamicStyles.dropdown,
-                        {
-                          height: animatedHeight,
-                          opacity: animatedOpacity,
-                        },
-                      ]}
+                      style={[dynamicStyles.dropdown, animatedDropdownStyle]}
                     >
                       <ScrollView
                         style={{ maxHeight: MAX_MODAL_HEIGHT }}
@@ -267,7 +227,6 @@ export const Select = <T,>({
                           return (
                             <TouchableOpacity
                               key={index}
-                              onLayout={e => handleItemLayout(index, e.nativeEvent.layout.height)}
                               style={[
                                 dynamicStyles.option,
                                 option.disabled && dynamicStyles.optionDisabled,
@@ -275,6 +234,7 @@ export const Select = <T,>({
                               ]}
                               onPress={() => handleOptionSelect(option, index)}
                               disabled={option.disabled}
+                              activeOpacity={0.7}
                             >
                               {renderItem(option, index, isSelected)}
                             </TouchableOpacity>
@@ -299,86 +259,90 @@ export const Select = <T,>({
   );
 };
 
-const createDynamicStyles = (theme: any) => StyleSheet.create({
-  container: {},
-  label: {
-    fontSize: theme.fontSize.sm,
-    fontWeight: theme.fontWeight.medium,
-    color: theme.colors.text.primary,
-    marginBottom: theme.spacing.xs,
-  },
-  dropdownContainer: {
-    position: 'relative',
-    zIndex: 1000,
-  },
-  selectContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    paddingVertical: theme.spacing.sm,
-    borderRadius: theme.borderRadius.md,
-    backgroundColor: theme.colors.surface,
-    position: 'relative',
-  },
-  default: { borderColor: theme.colors.border.light },
-  outline: {
-    borderColor: theme.colors.primary,
-    borderWidth: 2,
-    backgroundColor: 'transparent',
-  },
-  filled: {
-    backgroundColor: theme.colors.background,
-    borderColor: theme.colors.border.light,
-  },
-  focused: { borderColor: theme.colors.primary, borderWidth: 2 },
-  error: { borderColor: theme.colors.error },
-  disabled: { opacity: 0.5, backgroundColor: theme.colors.border.light },
-  smContainer: { minHeight: 36 },
-  mdContainer: { minHeight: 48 },
-  lgContainer: { minHeight: 56 },
-  inputContainer: { flex: 1, justifyContent: 'center', paddingLeft: theme.spacing.md, paddingRight: theme.spacing.xs },
-  inputText: { color: theme.colors.text.primary, fontSize: theme.fontSize.md },
-  placeholderText: { color: theme.colors.text.secondary },
-  leftIcon: { paddingLeft: theme.spacing.md, paddingRight: theme.spacing.xs },
-  iconContainer: {
-    position: 'absolute',
-    right: theme.spacing.md,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  dropdownWrapper: {
-  },
-  dropdown: {
-    backgroundColor: theme.colors.surface,
-    borderRadius: theme.borderRadius.md,
-    borderWidth: 1,
-    borderColor: theme.colors.border.light,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-    elevation: 5,
-    overflow: 'hidden',
-  },
-  option: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: theme.spacing.md,
-    paddingVertical: theme.spacing.sm,
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border.light,
-  },
-  selectedOption: { backgroundColor: theme.colors.primary + '10' },
-  optionDisabled: { opacity: 0.5 },
-  helperText: {
-    fontSize: theme.fontSize.xs,
-    color: theme.colors.text.secondary,
-    marginTop: theme.spacing.xs,
-  },
-  errorText: { color: theme.colors.error },
-});
+const createDynamicStyles = (theme: any) =>
+  StyleSheet.create({
+    container: {},
+    label: {
+      fontSize: theme.fontSize.sm,
+      fontWeight: theme.fontWeight.medium,
+      color: theme.colors.text.primary,
+      marginBottom: theme.spacing.xs,
+    },
+    dropdownContainer: {
+      position: 'relative',
+      zIndex: 1000,
+    },
+    selectContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      borderWidth: 1,
+      paddingVertical: theme.spacing.sm,
+      borderRadius: theme.borderRadius.md,
+      backgroundColor: theme.colors.surface,
+      position: 'relative',
+    },
+    default: { borderColor: theme.colors.border.light },
+    outline: {
+      borderColor: theme.colors.primary,
+      borderWidth: 2,
+      backgroundColor: 'transparent',
+    },
+    filled: {
+      backgroundColor: theme.colors.background,
+      borderColor: theme.colors.border.light,
+    },
+    error: { borderColor: theme.colors.error },
+    disabled: { opacity: 0.5, backgroundColor: theme.colors.border.light },
+    smContainer: { minHeight: 36 },
+    mdContainer: { minHeight: 48 },
+    lgContainer: { minHeight: 56 },
+    inputContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      paddingLeft: theme.spacing.md,
+      paddingRight: theme.spacing.xs,
+    },
+    inputText: { color: theme.colors.text.primary, fontSize: theme.fontSize.md },
+    placeholderText: { color: theme.colors.text.secondary },
+    leftIcon: { paddingLeft: theme.spacing.md, paddingRight: theme.spacing.xs },
+    iconContainer: {
+      position: 'absolute',
+      right: theme.spacing.md,
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    modalOverlay: {
+      flex: 1,
+      backgroundColor: 'rgba(0, 0, 0, 0.1)',
+    },
+    dropdownWrapper: {},
+    dropdown: {
+      backgroundColor: theme.colors.surface,
+      borderRadius: theme.borderRadius.md,
+      borderWidth: 1,
+      borderColor: theme.colors.border.light,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 4 },
+      shadowOpacity: 0.15,
+      shadowRadius: 8,
+      elevation: 8,
+      overflow: 'hidden',
+    },
+    option: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      paddingHorizontal: theme.spacing.md,
+      paddingVertical: theme.spacing.sm,
+      borderBottomWidth: 1,
+      borderBottomColor: theme.colors.border.light,
+    },
+    selectedOption: { backgroundColor: theme.colors.primary + '10' },
+    optionDisabled: { opacity: 0.5 },
+    helperText: {
+      fontSize: theme.fontSize.xs,
+      color: theme.colors.text.secondary,
+      marginTop: theme.spacing.xs,
+    },
+    errorText: { color: theme.colors.error },
+  });
