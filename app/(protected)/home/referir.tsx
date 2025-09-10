@@ -5,16 +5,14 @@ import { Button } from "@/components/ui/custom-button";
 import { Input } from "@/components/ui/custom-input";
 import { Select } from "@/components/ui/custom-select";
 import Text from '@/components/ui/custom-text';
-import { Map, MapRef } from "@/components/ui/map";
+import LocationPicker, { LocationPickerRef } from "@/components/ui/location-picker";
 import { useTheme } from "@/contexts/theme-context";
-import { useCoverage } from "@/hooks/useCoverage";
-import { useLocation } from "@/hooks/useLocation";
+import { Coordinate } from "@/hooks/useCoverage";
 import { Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { router } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
 import {
   Linking,
-  Modal,
   ScrollView,
   StyleSheet,
   TouchableOpacity,
@@ -63,9 +61,8 @@ export default function ReferirScreen() {
   
   const [termsAccepted, setTermsAccepted] = useState(false);
   
-  const [selectedLocation, setSelectedLocation] = useState<{latitude: number, longitude: number} | null>(null);
+  const [selectedLocation, setSelectedLocation] = useState<Coordinate | null>(null);
   const [locationVerified, setLocationVerified] = useState(false);
-  const [showExpandedMap, setShowExpandedMap] = useState(false);
   
   const [formData, setFormData] = useState<ReferidoForm>({
     nombre: '',
@@ -79,71 +76,20 @@ export default function ReferirScreen() {
   const [errors, setErrors] = useState<FormErrors>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const { coordinates, hasPermission, getLocationWithPermission } = useLocation();
-  const { isPointCovered } = useCoverage({ polygons: COVERAGE_POLYGONS });
-  
-  const mapRef = useRef<MapRef>(null);
-  const expandedMapRef = useRef<MapRef>(null);
+  const locationPickerRef = useRef<LocationPickerRef>(null);
 
   const handleTermsPress = useCallback(() => {
     Linking.openURL('https://example.com/terminos-condiciones');
   }, []);
 
-  const handleLocationSelect = useCallback((event: any) => {
-    console.log('Location select event:', event);
-    
-    if (!event || !event.coordinate || typeof event.coordinate.latitude === 'undefined' || typeof event.coordinate.longitude === 'undefined') {
-      console.warn('Invalid coordinate data:', event);
-      return;
-    }
-    
-    const { coordinate } = event;
+  const handleLocationSelect = useCallback((coordinate: Coordinate, isVerified: boolean) => {
     setSelectedLocation(coordinate);
-    
-    const covered = isPointCovered(coordinate);
-    setLocationVerified(covered);
-    
-    if (!covered) {
-      setErrors(prev => ({ ...prev, location: 'Esta ubicación no está dentro del área de cobertura' }));
-    } else {
-      setErrors(prev => ({ ...prev, location: undefined }));
-    }
+    setLocationVerified(isVerified);
+  }, []);
 
-    setTimeout(() => {
-      mapRef.current?.animateToRegion({
-        latitude: coordinate.latitude,
-        longitude: coordinate.longitude,
-      });
-    }, 100);
-  }, [isPointCovered]);
-
-  const handleGetCurrentLocation = useCallback(async (useExpandedMap = false) => {
-    const location = await getLocationWithPermission();
-    if (location && location.coords) {
-      const coordinate = {
-        latitude: location.coords.latitude,
-        longitude: location.coords.longitude,
-      };
-
-      if (useExpandedMap) {
-        expandedMapRef.current?.animateToRegion({
-          latitude: coordinate.latitude,
-          longitude: coordinate.longitude,
-        });
-        setTimeout(() => {
-          mapRef.current?.animateToRegion({
-            latitude: coordinate.latitude,
-            longitude: coordinate.longitude,
-          });
-        }, 100);
-      } else {
-        mapRef.current?.animateToRegion({
-          latitude: coordinate.latitude,
-          longitude: coordinate.longitude,
-        });
-      }
-    }
-  }, [getLocationWithPermission, isPointCovered]);
+  const handleLocationError = useCallback((error: string | undefined) => {
+    setErrors(prev => ({ ...prev, location: error }));
+  }, []);
 
   const validateForm = useCallback((): boolean => {
     const newErrors: FormErrors = {};
@@ -225,44 +171,15 @@ export default function ReferirScreen() {
         Selecciona la ubicación donde vive el referido para verificar la cobertura.
       </Text>
 
-      <View style={dynamicStyles.mapContainer}>
-        <Map
-          ref={mapRef}
-          style={dynamicStyles.map}
-          initialRegion={{
-            latitude: coordinates?.latitude || -2.8700,
-            longitude: coordinates?.longitude || -78.9900,
-            latitudeDelta: 0.05,
-            longitudeDelta: 0.05,
-          }}
-          polygons={COVERAGE_POLYGONS}
-          onPress={handleLocationSelect}
-          markers={selectedLocation ? [{
-            id: 'selected',
-            coordinate: selectedLocation,
-            title: 'Ubicación seleccionada',
-            description: locationVerified ? 'Área con cobertura' : 'Sin cobertura',
-          }] : []}
-          userLocation={coordinates}
-        />
-        
-        <View style={dynamicStyles.mapControls}>
-          <TouchableOpacity
-            style={dynamicStyles.mapButton}
-            onPress={() => handleGetCurrentLocation()}
-            disabled={!hasPermission}
-          >
-            <Ionicons name="locate" size={20} color={theme.colors.primary} />
-          </TouchableOpacity>
-          
-          <TouchableOpacity
-            style={dynamicStyles.mapButton}
-            onPress={() => setShowExpandedMap(true)}
-          >
-            <Ionicons name="expand" size={20} color={theme.colors.primary} />
-          </TouchableOpacity>
-        </View>
-      </View>
+      <LocationPicker
+        ref={locationPickerRef}
+        polygons={COVERAGE_POLYGONS}
+        onLocationSelect={handleLocationSelect}
+        onLocationError={handleLocationError}
+        selectedLocation={selectedLocation}
+        mapHeight={200}
+        style={dynamicStyles.locationPickerContainer}
+      />
 
       {selectedLocation && (
         <View style={[
@@ -380,73 +297,7 @@ export default function ReferirScreen() {
       </View>
     </Card>
   );
-
-  const renderExpandedMap = () => (
-    <Modal visible={showExpandedMap} animationType="slide" presentationStyle="pageSheet">
-      <SafeAreaView style={{ flex: 1, backgroundColor: theme.colors.background }}>
-        <Header
-          leftAction={{
-            icon: <Ionicons name="close" size={24} color={theme.colors.text.primary} />,
-            onPress: () => setShowExpandedMap(false),
-          }}
-          title="Seleccionar Ubicación"
-        />
-        
-        <View style={{ flex: 1 }}>
-          <Map
-            ref={expandedMapRef}
-            style={{ flex: 1 }}
-            initialRegion={{
-              latitude: selectedLocation?.latitude || coordinates?.latitude || -2.8700,
-              longitude: selectedLocation?.longitude || coordinates?.longitude || -78.9900,
-              latitudeDelta: 0.02,
-              longitudeDelta: 0.02,
-            }}
-            polygons={COVERAGE_POLYGONS}
-            onPress={handleLocationSelect}
-            markers={selectedLocation ? [{
-              id: 'selected',
-              coordinate: selectedLocation,
-              title: 'Ubicación seleccionada',
-              description: locationVerified ? 'Área con cobertura' : 'Sin cobertura',
-            }] : []}
-            userLocation={coordinates}
-          />
-          
-          <View style={dynamicStyles.expandedMapControls}>
-            <TouchableOpacity
-              style={dynamicStyles.floatingButton}
-              onPress={() => handleGetCurrentLocation(true)}
-              disabled={!hasPermission}
-            >
-              <Ionicons name="locate" size={24} color={theme.colors.text.button} />
-            </TouchableOpacity>
-          </View>
-
-          {selectedLocation && (
-            <View style={dynamicStyles.expandedMapStatus}>
-              <View style={[
-                dynamicStyles.statusCard,
-              ]}>
-                <Ionicons
-                  name={locationVerified ? "checkmark-circle" : "close-circle"}
-                  size={24}
-                  color={locationVerified ? theme.colors.success : theme.colors.error}
-                />
-                <Text style={[
-                  dynamicStyles.statusText,
-                  { color: locationVerified ? theme.colors.success : theme.colors.error }
-                ]}>
-                  {locationVerified ? 'Ubicación con cobertura' : 'Ubicación sin cobertura'}
-                </Text>
-              </View>
-            </View>
-          )}
-        </View>
-      </SafeAreaView>
-    </Modal>
-  );
-
+  
   const canProceed = termsAccepted && locationVerified && selectedLocation;
 
   return (
@@ -484,7 +335,6 @@ export default function ReferirScreen() {
         )}
       </ScrollView>
 
-      {renderExpandedMap()}
     </SafeAreaView>
   );
 }
@@ -553,34 +403,8 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   
   // Location Section
-  mapContainer: {
-    position: 'relative',
-    height: 200,
-    borderRadius: theme.borderRadius.md,
-    overflow: 'hidden',
+  locationPickerContainer: {
     marginBottom: theme.spacing.md,
-  },
-  map: {
-    flex: 1,
-  },
-  mapControls: {
-    position: 'absolute',
-    top: theme.spacing.sm,
-    right: theme.spacing.sm,
-    gap: theme.spacing.xs,
-  },
-  mapButton: {
-    width: 40,
-    height: 40,
-    backgroundColor: theme.colors.surface,
-    borderRadius: 20,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
   },
   coverageStatus: {
     flexDirection: 'row',
@@ -617,50 +441,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   input: {
     marginBottom: 0
-  },
-  
-  // Expanded Map
-  expandedMapControls: {
-    position: 'absolute',
-    bottom: theme.spacing.xl,
-    right: theme.spacing.lg,
-  },
-  floatingButton: {
-    width: 56,
-    height: 56,
-    backgroundColor: theme.colors.primary,
-    borderRadius: 28,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.3,
-    shadowRadius: 8,
-    elevation: 8,
-  },
-  expandedMapStatus: {
-    position: 'absolute',
-    bottom: theme.spacing.lg,
-    left: theme.spacing.lg,
-    right: 80,
-  },
-  statusCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: theme.spacing.md,
-    borderRadius: theme.borderRadius.md,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
-    elevation: 3,
-    backgroundColor: theme.colors.surface,
-    width: '80%'
-  },
-  statusText: {
-    fontSize: theme.fontSize.md,
-    fontWeight: theme.fontWeight.medium,
-    marginLeft: theme.spacing.sm,
   },
   
   // Submit Section
