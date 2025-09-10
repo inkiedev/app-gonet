@@ -1,4 +1,4 @@
-import React, { ReactNode } from 'react';
+import React, { ReactNode, useMemo } from 'react';
 import { View, ViewStyle } from 'react-native';
 import { Circle, G, Mask, Rect, Svg } from 'react-native-svg';
 
@@ -17,7 +17,10 @@ const MaskedBadge: React.FC<MaskedBadgeProps> = ({
   children,
   iconSize = 30
 }) => {
-  const maskId = `mask-${Math.random().toString(36).substr(2, 9)}`;
+  const maskId = useMemo(() => 
+    `mask-${Math.random().toString(36).substr(2, 9)}`, 
+    []
+  );
   
   return (
     <View style={[{ width: size, height: size }, style]}>
@@ -34,7 +37,12 @@ const MaskedBadge: React.FC<MaskedBadgeProps> = ({
         </Mask>
 
         {/* Fondo recortado por la máscara */}
-        <Rect width={size} height={size} fill={backgroundColor} mask={`url(#${maskId})`} />
+        <Rect 
+          width={size} 
+          height={size} 
+          fill={backgroundColor} 
+          mask={`url(#${maskId})`}
+        />
       </Svg>
     </View>
   );

@@ -47,7 +47,7 @@ export const Button: React.FC<ButtonProps> = ({
   }
 
   if (style) {
-    buttonStyle.push(style);
+    buttonStyle.push(style as ViewStyle);
   }
 
   const textStyle: TextStyle[] = [

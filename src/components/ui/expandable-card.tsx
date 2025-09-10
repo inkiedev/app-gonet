@@ -95,7 +95,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   });
 
   const cardStyle: ViewStyle[] = [dynamicStyles.card];
-  if (style) cardStyle.push(style);
+  if (style) cardStyle.push(style as ViewStyle);
 
   const renderDefaultHeader = () => (
     <View style={[dynamicStyles.cardHeader, headerStyle]}>

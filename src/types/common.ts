@@ -1,12 +1,12 @@
-import { TextStyle, ViewStyle } from 'react-native';
+import { StyleProp, TextStyle, ViewStyle } from 'react-native';
 
 export interface BaseComponentProps {
-  style?: ViewStyle;
+  style?: StyleProp<ViewStyle>;
   testID?: string;
 }
 
 export interface BaseTextProps {
-  style?: TextStyle;
+  style?: StyleProp<TextStyle>;
   testID?: string;
 }
 

@@ -10,9 +10,12 @@ import { RootState } from '@/store';
 import { Subscription } from '@/types/subscription';
 import { AntDesign, Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
 import { createSelector } from '@reduxjs/toolkit';
+import * as FileSystem from 'expo-file-system';
 import { useRouter } from "expo-router";
+import * as Sharing from 'expo-sharing';
 import React, { useEffect, useState } from "react";
 import {
+  Alert,
   Linking,
   ScrollView,
   StyleSheet,
@@ -157,6 +160,44 @@ const handlePaymentPress = async () => {
     }
   };
 
+  const downloadPDF = async (invoice: Invoice) => {
+    if (!invoice.pdf_data || !invoice.pdf_filename) {
+      Alert.alert('Error', 'PDF no disponible para esta factura');
+      return;
+    }
+
+    try {
+      // Crear el directorio de descargas si no existe
+      const downloadDir = FileSystem.documentDirectory + 'Downloads/';
+      const dirInfo = await FileSystem.getInfoAsync(downloadDir);
+      if (!dirInfo.exists) {
+        await FileSystem.makeDirectoryAsync(downloadDir, { intermediates: true });
+      }
+
+      // Generar nombre único para el archivo
+      const fileName = `${invoice.pdf_filename}_${invoice.invoice_id}.pdf`;
+      const fileUri = downloadDir + fileName;
+
+      // Decodificar base64 y guardar archivo
+      await FileSystem.writeAsStringAsync(fileUri, invoice.pdf_data, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+
+      // Compartir el archivo
+      if (await Sharing.isAvailableAsync()) {
+        await Sharing.shareAsync(fileUri, {
+          mimeType: 'application/pdf',
+          dialogTitle: 'Descargar Factura PDF',
+        });
+      } else {
+        Alert.alert('Éxito', `PDF guardado en: ${fileUri}`);
+      }
+    } catch (error) {
+      console.error('Error downloading PDF:', error);
+      Alert.alert('Error', 'No se pudo descargar el PDF');
+    }
+  };
+
   return (
     <SafeAreaView style={dynamicStyles.container} edges={["top"]}>
       <Header
@@ -290,29 +331,42 @@ const handlePaymentPress = async () => {
               </View>
             ) : invoices.length > 0 ? (
               invoices.map((invoice) => (
-                <View key={invoice.invoice_id} style={dynamicStyles.historyItem}>
-                  <View style={dynamicStyles.historyInfo}>
-                    <Text style={dynamicStyles.historyDate}>{invoice.invoice_date}</Text>
-                    <Text style={dynamicStyles.historyMethod}>
-                      {invoice.invoice_number}
-                    </Text>
-                    <Text style={dynamicStyles.historyReference}>
-                      Vencimiento: {invoice.due_date || 'Sin fecha'}
-                    </Text>
-                  </View>
-                  <View style={dynamicStyles.historyAmountContainer}>
-                    <Text style={dynamicStyles.historyAmount}>
-                      ${invoice.amount_total.toFixed(2)} {invoice.currency}
-                    </Text>
-                    <Text style={[dynamicStyles.historyAmount, { fontSize: theme.fontSize.xs, marginTop: 2 }]}>
-                      Pendiente: ${invoice.amount_residual.toFixed(2)}
-                    </Text>
-                    <View style={[dynamicStyles.statusBadge, { backgroundColor: getInvoiceStatusColor(invoice.payment_state) + '20' }]}>
-                      <Text style={[dynamicStyles.statusText, { color: getInvoiceStatusColor(invoice.payment_state) }]}>
-                        {getInvoiceStatusText(invoice.payment_state)}
+                <View key={invoice.invoice_id} style={dynamicStyles.invoiceItem}>
+                  <View style={dynamicStyles.invoiceMainContent}>
+                    <View style={dynamicStyles.historyInfo}>
+                      <Text style={dynamicStyles.historyDate}>{invoice.invoice_date}</Text>
+                      <Text style={dynamicStyles.historyMethod}>
+                        {invoice.invoice_number}
+                      </Text>
+                      <Text style={dynamicStyles.historyReference}>
+                        Vencimiento: {invoice.due_date || 'Sin fecha'}
                       </Text>
                     </View>
+                    <View style={dynamicStyles.historyAmountContainer}>
+                      <Text style={dynamicStyles.historyAmount}>
+                        ${invoice.amount_total.toFixed(2)} {invoice.currency}
+                      </Text>
+                      <Text style={[dynamicStyles.historyAmount, { fontSize: theme.fontSize.xs, marginTop: 2 }]}>
+                        Pendiente: ${invoice.amount_residual.toFixed(2)}
+                      </Text>
+                      <View style={[dynamicStyles.statusBadge, { backgroundColor: getInvoiceStatusColor(invoice.payment_state) + '20' }]}>
+                        <Text style={[dynamicStyles.statusText, { color: getInvoiceStatusColor(invoice.payment_state) }]}>
+                          {getInvoiceStatusText(invoice.payment_state)}
+                        </Text>
+                      </View>
+                    </View>
                   </View>
+                  {invoice.pdf_data && invoice.pdf_filename && (
+                    <View style={dynamicStyles.invoiceActions}>
+                      <Button
+                        title="Descargar PDF"
+                        onPress={() => downloadPDF(invoice)}
+                        size="sm"
+                        variant="outline"
+                        style={dynamicStyles.downloadButton}
+                      />
+                    </View>
+                  )}
                 </View>
               ))
             ) : (
@@ -512,5 +566,23 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     fontSize: theme.fontSize.md,
     color: theme.colors.text.secondary,
     textAlign: 'center',
+  },
+  invoiceItem: {
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
+    paddingVertical: theme.spacing.sm,
+  },
+  invoiceMainContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  invoiceActions: {
+    marginTop: theme.spacing.sm,
+    alignItems: 'flex-start',
+  },
+  downloadButton: {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.xs,
   },
 });

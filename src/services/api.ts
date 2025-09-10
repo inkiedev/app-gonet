@@ -59,6 +59,8 @@ interface Invoice {
   payment_state: string;
   move_type: string;
   reference?: string;
+  pdf_data?: string;
+  pdf_filename?: string;
 }
 
 interface PaymentsResponse {

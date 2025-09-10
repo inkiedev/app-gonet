@@ -33,27 +33,35 @@ const iconOptions = [
     SvgComponent: Mensaje,
     label: 'Mensajes',
     badgeCount: 2,
+    action: 'notifications'
   },
   {
     SvgComponent: Pagos,
     label: 'Pagos',
+    action: 'navigate',
+    route: '/(protected)/home/pagos'
   },
   {
     SvgComponent: Servicios,
     label: '+Servicios',
     badgeCount: '+',
+    action: 'message',
+    message: { title: '¡Próximamente!', content: 'Nuevos servicios estarán disponibles pronto' }
   },
   {
     SvgComponent: Soporte,
     label: 'Soporte',
+    action: 'navigate',
+    route: '/(protected)/home/soporte'
   },
   {
     SvgComponent: Beneficios,
     label: 'Beneficios',
+    action: 'navigate',
+    route: '/(protected)/home/goclub'
   },
 ];
 
-// Mock notifications data
 const mockNotifications: Notification[] = [
   {
     id: '1',
@@ -107,29 +115,8 @@ export default function HomeScreen() {
   const router = useRouter();
   const dispatch = useDispatch();
   
-  const { currentAccount, subscriptions: storeSubscriptions, selectedAccountIndex } = useSelector((state: RootState) => state.auth);
-  
-  // ========== MOCK PARA TESTING - REMOVER EN PRODUCCIÓN ==========
-  const mockSubscriptions = storeSubscriptions.length > 0 ? [
-    ...storeSubscriptions,
-    {
-      ...storeSubscriptions[0],
-      id: 'mock-account-demo-home',
-      partner: {
-        ...storeSubscriptions[0].partner,
-        name: 'EMPRESA DEMO S.A.',
-        dni: '0987654321001',
-        street: 'Av. Demo 123',
-      },
-      plan: [{
-        ...storeSubscriptions[0].plan[0],
-        name: 'GoNet Pro 1000',
-      }],
-      residual: '45.99',
-    }
-  ] : storeSubscriptions;
-  const subscriptions = mockSubscriptions;
-  // ============== FIN DEL MOCK - REMOVER HASTA AQUÍ ==============
+  const { currentAccount, subscriptions, selectedAccountIndex } = useSelector((state: RootState) => state.auth);
+  console.log(subscriptions)
   
   const { showSuccess, showError } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();
@@ -257,9 +244,35 @@ export default function HomeScreen() {
     );
   };
 
-  // Calculate unread notifications count
   const unreadCount = notifications.filter(n => !n.read).length;
 
+  const handleIconPress = (option: any) => {
+    switch (option.action) {
+      case 'notifications':
+        handleNotificationsPress();
+        break;
+      case 'navigate':
+        if (option.route) {
+          router.push(option.route);
+        }
+        break;
+      case 'message':
+        if (option.message) {
+          showSuccess(
+            option.message.title,
+            option.message.content,
+            2000
+          );
+        }
+        break;
+      default:
+        showSuccess(
+          '¡Bienvenido!',
+          `Presionaste ${option.label}`,
+          2000
+        );
+    }
+  };
 
   return (
     <SafeAreaView style={[styles.container, { backgroundColor: theme.colors.background }]}>
@@ -276,7 +289,7 @@ export default function HomeScreen() {
                   <Ionicons 
                     name="people-outline" 
                     size={24} 
-                    color={theme.colors.text.primary}
+                    color={'white'}
                   />
                   <View style={styles.accountBadge}>
                     <Text style={styles.accountBadgeText}>
@@ -323,17 +336,7 @@ export default function HomeScreen() {
               SvgComponent={option.SvgComponent}
               label={option.label}
               badgeCount={option.label === 'Mensajes' ? unreadCount : option.badgeCount}
-              onPress={() => {
-                if (option.label === 'Mensajes') {
-                  handleNotificationsPress();
-                } else {
-                  showSuccess(
-                    '¡Bienvenido!',
-                    `Presionaste ${option.label}`,
-                    2000
-                  );
-                }
-              }}
+              onPress={() => handleIconPress(option)}
             />
           ))}
         </Animated.View>
@@ -446,20 +449,20 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   accountBadge: {
     position: 'absolute',
     top: -4,
-    right: -4,
-    backgroundColor: theme.colors.primary,
+    right: -10,
+    backgroundColor: theme.colors.background,
     borderRadius: 10,
     minWidth: 18,
     height: 18,
     justifyContent: 'center',
     alignItems: 'center',
     borderWidth: 2,
-    borderColor: 'white',
+    borderColor: theme.colors.primary,
   },
   accountBadgeText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.bold,
-    color: 'white',
+    color: theme.colors.text.primary,
     textAlign: 'center',
   },
   modalOverlay: {
@@ -495,7 +498,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     marginBottom: theme.spacing.sm,
   },
   accountModalItemSelected: {
-    backgroundColor: theme.colors.primary + '15',
+    backgroundColor: theme.colors.primary + '30',
   },
   accountModalItemContent: {
     flex: 1,
@@ -506,7 +509,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     color: theme.colors.text.primary,
   },
   accountModalItemNameSelected: {
-    color: theme.colors.primary,
+    color: theme.colors.primaryDark,
   },
   accountModalItemPlan: {
     fontSize: theme.fontSize.sm,
@@ -514,6 +517,6 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     marginTop: theme.spacing.xs,
   },
   accountModalItemPlanSelected: {
-    color: theme.colors.primary,
+    color: theme.colors.primaryDark,
   },
 });
