@@ -7,8 +7,6 @@ export type ProtectedRoutes =
   | '/(protected)/home/planes'
   | '/(protected)/home/pagos'
   | '/(protected)/home/soporte'
-  | '/(protected)/home/calificanos'
-  | '/(protected)/home/goclub'
   | '/(protected)/home/promociones'
   | '/(protected)/home/agencias';
 

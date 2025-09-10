@@ -36,18 +36,21 @@ interface MapProps {
     image?: any;
   }[];
   onMarkerPress?: (marker: any) => void;
-    userLocation?: { latitude: number; longitude: number } | null;
+  onPress?: (event: { coordinate: { latitude: number; longitude: number } }) => void;
+  userLocation?: { latitude: number; longitude: number } | null;
+  onMapReady?: () => void;
 }
 
 export interface MapRef {
   animateToRegion: (region: { latitude: number; longitude: number; }, duration?: number) => void;
 }
 
-export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, userLocation }, ref) => {
+export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, onPress, userLocation, onMapReady }, ref) => {
   const mapRef = useRef<any>(null);
 
   useImperativeHandle(ref, () => ({
     animateToRegion: (region, duration = 1000) => {
+      console.log('Map.web animateToRegion called with:', region, duration);
       mapRef.current?.flyTo([region.latitude, region.longitude], 15, {
         animate: true,
         duration: duration / 1000,
@@ -76,7 +79,24 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
         center={center}
         zoom={zoom}
         style={{ width: '100%', height: '100%' }}
-        whenCreated={(mapInstance: any) => { mapRef.current = mapInstance; }}
+        whenCreated={(mapInstance: any) => { 
+          mapRef.current = mapInstance;
+          console.log('Web map created');
+          
+          // Add click event listener for onPress
+          if (onPress) {
+            mapInstance.on('click', (e: any) => {
+              onPress({
+                coordinate: {
+                  latitude: e.latlng.lat,
+                  longitude: e.latlng.lng
+                }
+              });
+            });
+          }
+          
+          onMapReady?.();
+        }}
       >
         <TileLayer
           url="https://tile.openstreetmap.org/{z}/{x}/{y}.png"

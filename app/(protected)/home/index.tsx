@@ -58,7 +58,7 @@ const iconOptions = [
     SvgComponent: Beneficios,
     label: 'Beneficios',
     action: 'navigate',
-    route: '/(protected)/home/goclub'
+    route: '/(protected)/home/beneficios'
   },
 ];
 
@@ -116,7 +116,6 @@ export default function HomeScreen() {
   const dispatch = useDispatch();
   
   const { currentAccount, subscriptions, selectedAccountIndex } = useSelector((state: RootState) => state.auth);
-  console.log(subscriptions)
   
   const { showSuccess, showError } = useNotificationContext();
   const { toggleExpansion } = useCardExpansion();

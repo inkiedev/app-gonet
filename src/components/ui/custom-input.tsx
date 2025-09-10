@@ -75,7 +75,7 @@ export const Input = forwardRef<TextInput, InputProps>(({
 
   const mainContainerStyle: ViewStyle[] = [dynamicStyles.container];
   if (style) {
-    mainContainerStyle.push(style);
+    mainContainerStyle.push(style as ViewStyle);
   }
 
   return (

@@ -1,4 +1,4 @@
-import React, { ComponentType, useEffect, useState, forwardRef } from 'react';
+import React, { ComponentType, forwardRef, useEffect, useState } from 'react';
 import { Platform } from 'react-native';
 import { MapRef as NativeMapRef } from './map.native';
 import { MapRef as WebMapRef } from './map.web';
@@ -27,7 +27,9 @@ interface MapProps {
     image?: any;
   }[];
   onMarkerPress?: (marker: any) => void;
-    userLocation?: { latitude: number; longitude: number } | null;
+  onPress?: (event: { coordinate: { latitude: number; longitude: number } }) => void;
+  userLocation?: { latitude: number; longitude: number } | null;
+  onMapReady?: () => void;
 }
 
 export const Map = forwardRef<MapRef, MapProps>((props, ref) => {
@@ -39,15 +41,19 @@ export const Map = forwardRef<MapRef, MapProps>((props, ref) => {
       try {
         if (Platform.OS === 'web') {
           const { Map: WebMap } = await import('./map.web');
-          setMapComponent(() => WebMap);
+          setMapComponent(() => forwardRef<MapRef, MapProps>((props, ref) => <WebMap {...props} ref={ref} />));
         } else {
           const { Map: NativeMap } = await import('./map.native');
-          setMapComponent(() => NativeMap);
+          setMapComponent(() => forwardRef<MapRef, MapProps>((props, ref) => <NativeMap {...props} ref={ref} />));
         }
       } catch (error) {
         console.warn('Failed to load map component:', error);
       } finally {
         setIsLoading(false);
+        // Llamar onMapReady después de un breve delay para asegurar que el componente esté montado
+        setTimeout(() => {
+          props.onMapReady?.();
+        }, 100);
       }
     };
 
@@ -55,8 +61,10 @@ export const Map = forwardRef<MapRef, MapProps>((props, ref) => {
   }, []);
 
   if (isLoading || !MapComponent) {
+    console.log('Map component loading...', { isLoading, hasComponent: !!MapComponent });
     return null;
   }
 
+  console.log('Rendering Map component with ref:', !!ref);
   return <MapComponent {...props} ref={ref} />;
 });

@@ -80,18 +80,6 @@ export default function ProtectedHomeLayout() {
         }}
       />
       <Stack.Screen 
-        name="calificanos" 
-        options={{
-          title: 'Calíficanos - GoNet | Tu opinión nos importa',
-        }}
-      />
-      <Stack.Screen 
-        name="goclub" 
-        options={{
-          title: 'GoClub - GoNet | Beneficios y descuentos',
-        }}
-      />
-      <Stack.Screen 
         name="promociones" 
         options={{
           title: 'Promociones - GoNet | Ofertas especiales',

@@ -140,7 +140,7 @@ export const Select = <T,>({
   if (disabled) containerStyle.push(dynamicStyles.disabled);
 
   const mainContainerStyle: ViewStyle[] = [dynamicStyles.container];
-  if (style) mainContainerStyle.push(style);
+  if (style) mainContainerStyle.push(style as ViewStyle);
 
   const getSizeStyles = () => {
     switch (size) {

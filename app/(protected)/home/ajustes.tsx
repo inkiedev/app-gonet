@@ -1,17 +1,15 @@
 import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from '@/components/layout/header';
-import { Input } from '@/components/ui/custom-input';
 import { Select, SelectOption } from '@/components/ui/custom-select';
 import Text from '@/components/ui/custom-text';
-import { SegmentedControl } from '@/components/ui/segmented-control';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useBiometricAuth } from '@/hooks/use-biometric-auth';
 import { FontSize } from '@/services/secure-storage';
 import { RootState } from '@/store';
-import { loadBiometricPreferences, loadSubscriptionsData, loadThemePreferences, saveBiometricPreferences, saveThemePreferences, updateBiometricPreferences, updateStoredPassword, updateThemePreferences } from '@/store/slices/auth-slice';
+import { loadBiometricPreferences, loadThemePreferences, saveBiometricPreferences, saveThemePreferences, updateBiometricPreferences, updateThemePreferences } from '@/store/slices/auth-slice';
 import { useRouter } from 'expo-router';
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect } from "react";
 import {
   StyleSheet,
   Switch,
@@ -20,7 +18,6 @@ import {
 } from "react-native";
 import { useDispatch, useSelector } from 'react-redux';
 
-import { Button } from '@/components/ui/custom-button';
 import { useResponsive } from '@/hooks/use-responsive';
 import Checkbox from 'expo-checkbox';
 import { ScrollView } from 'react-native-gesture-handler';
@@ -195,207 +192,6 @@ const AjustesContent = () => {
   );
 };
 
-const ActualizarDatosContent = () => {
-  const dispatch = useDispatch();
-  const { theme: currentTheme } = useTheme();
-  const { authenticateWithBiometrics, checkBiometricAvailability } = useBiometricAuth();
-  const { biometricPreferences, currentAccount, subscriptions } = useSelector((state: RootState) => state.auth);
-  const { showError } = useNotificationContext();
-
-  // Pre-calcular el estado inicial para evitar flash
-  const initialVerificationState = useMemo(() => {
-    return !biometricPreferences.useBiometricForPassword;
-  }, [biometricPreferences.useBiometricForPassword]);
-
-  const [isVerified, setIsVerified] = useState(initialVerificationState);
-  const [isInitialized, setIsInitialized] = useState(false);
-
-  useEffect(() => {
-    const initializeTab = async () => {
-      // Sincronizar el estado con las preferencias actuales
-      setIsVerified(!biometricPreferences.useBiometricForPassword);
-      
-      if (!currentAccount && subscriptions.length === 0) {
-        dispatch(loadSubscriptionsData() as any);
-      }
-      
-      // Micro delay solo para asegurar que el render sea estable
-      await new Promise(resolve => setTimeout(resolve, 10));
-      setIsInitialized(true);
-    };
-    
-    initializeTab();
-  }, [biometricPreferences.useBiometricForPassword, dispatch, currentAccount, subscriptions.length]);
-
-  const dynamicStyles = createDynamicStyles(currentTheme);
-
-  const handleSecureAction = async () => {
-    if (biometricPreferences.useBiometricForPassword) {
-      const isAvailable = await checkBiometricAvailability();
-      if (isAvailable) {
-        const result = await authenticateWithBiometrics();
-        if (result.success) {
-          setIsVerified(true);
-        } else {
-          showError('Autenticación fallida', 'La verificación biométrica no fue exitosa');
-        }
-      } else {
-        showError('Biometría no disponible', 'Autenticación biométrica no disponible en este dispositivo');
-      }
-    } else {
-      setIsVerified(true);
-    }
-  };
-
-  // Mostrar loading mientras se inicializa para evitar flash
-  if (!isInitialized) {
-    return (
-      <View style={dynamicStyles.tabContent}>
-        <Text style={dynamicStyles.tabTitle}>Perfil</Text>
-        <View style={dynamicStyles.loadingContainer}>
-          <Text style={dynamicStyles.loadingText}>Cargando...</Text>
-        </View>
-      </View>
-    );
-  }
-
-  if (!isVerified) {
-    return (
-      <ScrollView style={dynamicStyles.tabContent}>
-        <Text style={dynamicStyles.tabTitle}>Perfil</Text>
-        <View style={dynamicStyles.verificationContainer}>
-          <View style={dynamicStyles.verificationCard}>
-            <Text style={dynamicStyles.verificationText}>
-              Esta acción requiere verificación de identidad
-            </Text>
-            <Button 
-              title={biometricPreferences.useBiometricForPassword ? 'Verificar con biometría' : 'Continuar'}
-              onPress={handleSecureAction}
-              style={dynamicStyles.verificationButton}
-            />
-          </View>
-        </View>
-      </ScrollView>
-    );
-  }
-
-  return (
-    <ScrollView style={dynamicStyles.tabContent}>
-      <View style={dynamicStyles.sectionContainer}>
-        <Text style={dynamicStyles.subTitle}>Actualizar Datos</Text>
-        <View style={dynamicStyles.formContainer}>
-          <Input placeholder="Contraseña actual" secureTextEntry />
-          <Input placeholder="Correo" value={currentAccount?.partner?.email || ''} />
-          <Input placeholder="Teléfono móvil" value={currentAccount?.partner?.mobile || ''} />
-          <Input placeholder="Teléfono fijo" value={currentAccount?.partner?.phone || ''} />
-          <Input placeholder="Dirección" value={currentAccount?.partner?.street || ''} />
-          <Input placeholder="Ciudad" value={currentAccount?.partner?.city || ''} />
-        </View>
-      </View>
-    </ScrollView>
-  );
-};
-
-const CambiarContrasenaContent = () => {
-  const dispatch = useDispatch();
-  const { theme: currentTheme } = useTheme();
-  const { uid, username, rememberMe } = useSelector((state: RootState) => state.auth);
-  const [currentPassword, setCurrentPassword] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const { showSuccess, showError, showWarning } = useNotificationContext();
-
-  const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      showError('Error de validación', 'Las contraseñas no coinciden. Verifica que ambas sean idénticas.');
-      return;
-    }
-    if (newPassword.length < 4) {
-      showError('Contraseña débil', 'La contraseña debe tener al menos 4 caracteres.');
-      return;
-    }
-
-    try {
-      const { authService } = await import('@/services/auth');
-      const { secureStorageService } = await import('@/services/secure-storage');
-      const credentials = await secureStorageService.getCredentials();
-      if (!credentials) {
-        showWarning('Credenciales no encontradas', 'No se pudieron recuperar las credenciales guardadas. Intenta cerrar sesión y volver a iniciarla.');
-        return;
-      }
-      
-
-      if (credentials.password !=currentPassword ) {
-        showError('Contraseña incorrecta', 'La contraseña actual ingresada no es correcta.');
-        return;
-      }
-
-      const response = await authService.changePassword(newPassword);
-      if (response.success) {
-        if (uid && username) {
-          await dispatch(updateStoredPassword({ 
-            newPassword, 
-            uid, 
-            username, 
-            rememberMe 
-          }) as any);
-        }
-        showSuccess(
-          '¡Contraseña actualizada!',
-          'Tu contraseña ha sido cambiada exitosamente. Ya puedes usar la nueva contraseña para iniciar sesión.',
-          5000
-        );
-        setCurrentPassword('');
-        setNewPassword('');
-        setConfirmPassword('');
-      } else {
-        showError(
-          'Error al cambiar contraseña',
-          response.error || 'No se pudo cambiar la contraseña. Inténtalo nuevamente.',
-          5000
-        );
-      }
-    } catch (error) {
-      showError(
-        'Error inesperado',
-        'Ocurrió un error inesperado al cambiar la contraseña. Verifica tu conexión e inténtalo nuevamente.',
-        5000
-      );
-    }
-  };
-
-  const dynamicStyles = createDynamicStyles(currentTheme);
-
-  return (
-    <View style={dynamicStyles.tabContent}>
-      <View style={dynamicStyles.sectionContainer}>
-        <Text style={dynamicStyles.subTitle}>Cambiar contraseña</Text>
-        <View style={dynamicStyles.formContainer}>
-          <Input
-            placeholder="Contraseña actual"
-            secureTextEntry
-            value={currentPassword}
-            onChangeText={setCurrentPassword}
-          />
-          <Input
-            placeholder="Contraseña nueva"
-            secureTextEntry
-            value={newPassword}
-            onChangeText={setNewPassword}
-          />
-          <Input
-            placeholder="Confirmar nueva contraseña"
-            secureTextEntry
-            value={confirmPassword}
-            onChangeText={setConfirmPassword}
-          />
-          <Button title='Actualizar contraseña' onPress={handleChangePassword} />
-        </View>
-      </View>
-    </View>
-  );
-};
-
 /* --- Pantalla principal --- */
 export default function PerfilScreen() {
   const router = useRouter();
@@ -420,30 +216,7 @@ export default function PerfilScreen() {
       />
 
       <View style={[dynamicStyles.segmentedContainer, isTablet && { marginTop: 10 } ]}>
-        <SegmentedControl
-          segments={[
-            {
-              id: 'ajustes',
-              label: 'Configuración',
-              content: <AjustesContent />,
-            },
-            {
-              id: 'actualizar-datos',
-              label: 'Perfil',
-              content: <ActualizarDatosContent />,
-            },
-            {
-              id: 'cambiar-contraseña',
-              label: 'Seguridad',
-              content: <CambiarContrasenaContent />,
-            },
-          ]}
-          variant="material"
-          animated={true}
-          size="md"
-          tintColor={currentTheme.colors.primary}
-          contentStyle={dynamicStyles.segmentContent}
-        />
+        <AjustesContent />
       </View>
     </SafeAreaView>
   );

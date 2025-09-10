@@ -7,6 +7,7 @@ interface CardProps extends BaseComponentProps {
   children: React.ReactNode;
   variant?: 'elevated' | 'outlined' | 'flat';
   padding?: 'xs' | 'sm' | 'md' | 'lg' | 'xl' | 'xxl';
+  ref?: React.RefObject<View | null>;
 }
 
 export const Card: React.FC<CardProps> = ({
@@ -15,6 +16,7 @@ export const Card: React.FC<CardProps> = ({
                                             padding = 'md',
                                             style,
                                             testID,
+                                            ref
                                           }) => {
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
@@ -27,7 +29,7 @@ export const Card: React.FC<CardProps> = ({
   ];
 
   return (
-    <View style={cardStyle} testID={testID}>
+    <View style={cardStyle} testID={testID} ref={ref}>
       {children}
     </View>
   );

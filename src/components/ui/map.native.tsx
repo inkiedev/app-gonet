@@ -1,5 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
-import { Platform, StyleSheet, Image } from 'react-native';
+import { Image, Platform, StyleSheet } from 'react-native';
 import MapView, { Marker, Polygon, UrlTile } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
 
@@ -26,14 +26,16 @@ interface MapProps {
     height?: number;
   }[];
   onMarkerPress?: (marker: any) => void;
-    userLocation?: { latitude: number; longitude: number } | null;
+  onPress?: (event: { coordinate: { latitude: number; longitude: number } }) => void;
+  userLocation?: { latitude: number; longitude: number } | null;
+  onMapReady?: () => void;
 }
 
 export interface MapRef {
   animateToRegion: (region: { latitude: number; longitude: number; }, duration?: number) => void;
 }
 
-export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, userLocation }, ref) => {
+export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, onPress, userLocation, onMapReady }, ref) => {
   const mapRef = useRef<MapView>(null);
   const webviewRef = useRef<WebView>(null);
 
@@ -43,11 +45,12 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
         const script = `map.flyTo([${region.latitude}, ${region.longitude}], 15, { animate: true, duration: ${duration / 1000} });`;
         webviewRef.current?.injectJavaScript(script);
       } else {
-        mapRef.current?.animateToRegion({
+        const animatedRegion = {
           ...region,
-          latitudeDelta: 0.01,
-          longitudeDelta: 0.01,
-        }, duration);
+          latitudeDelta: 0.005,
+          longitudeDelta: 0.005,
+        };
+        mapRef.current?.animateToRegion(animatedRegion, duration);
       }
     }
   }));
@@ -84,15 +87,32 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
               L.polygon(${JSON.stringify(polygon.coordinates.map(c => [c.latitude, c.longitude]))}, {color: '${polygon.strokeColor}', fillColor: '${polygon.fillColor}', fillOpacity: 0.5, weight: 0}).addTo(map);
             `).join('')}
 
-            ${markers?.map(marker => `
-              const markerIcon_${marker.id} = L.icon({
-                  iconUrl: '${marker.image}',
-                  iconSize: [${marker.width || 38}, ${marker.height || 38}], // size of the icon
+            ${onPress ? `
+              map.on('click', function(e) {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'mapPress',
+                  coordinate: { latitude: e.latlng.lat, longitude: e.latlng.lng }
+                }));
               });
-              L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}], {icon: markerIcon_${marker.id}})
+            ` : ''}
+
+            ${markers?.map(marker => `
+              ${marker.image ? `
+                const markerIcon_${marker.id} = L.icon({
+                    iconUrl: '${marker.image}',
+                    iconSize: [${marker.width || 38}, ${marker.height || 38}],
+                });
+                L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}], {icon: markerIcon_${marker.id}})
+              ` : `
+                L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}])
+              `}
                 .addTo(map)
+                .bindPopup('${marker.title || ''}${marker.description ? '<br>' + marker.description : ''}')
                 .on('click', () => {
-                  window.ReactNativeWebView.postMessage(JSON.stringify(${JSON.stringify(marker)}));
+                  window.ReactNativeWebView.postMessage(JSON.stringify({
+                    type: 'markerPress',
+                    marker: ${JSON.stringify(marker)}
+                  }));
                 });
             `).join('')}
           </script>
@@ -108,9 +128,15 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
         style={[styles.map, style]}
         javaScriptEnabled={true}
         domStorageEnabled={true}
+        onLoad={() => {
+          onMapReady?.();
+        }}
         onMessage={(event) => {
-            if (onMarkerPress) {
-                onMarkerPress(JSON.parse(event.nativeEvent.data));
+            const data = JSON.parse(event.nativeEvent.data);
+            if (data.type === 'markerPress' && onMarkerPress) {
+                onMarkerPress(data.marker);
+            } else if (data.type === 'mapPress' && onPress) {
+                onPress({ coordinate: data.coordinate });
             }
         }}
       />
@@ -124,6 +150,15 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
       style={[styles.map, style]}
       mapType="none"
       showsUserLocation
+      onPress={(event) => {
+        console.log('Native map press event:', event);
+        if (onPress && event && event.nativeEvent && event.nativeEvent.coordinate) {
+          onPress({ coordinate: event.nativeEvent.coordinate });
+        }
+      }}
+      onMapReady={() => {
+        onMapReady?.();
+      }}
     >
       <UrlTile
         urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -149,8 +184,11 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
           title={marker.title}
           description={marker.description}
           onPress={() => onMarkerPress && onMarkerPress(marker)}
+          pinColor={marker.id === 'selected' ? 'red' : marker.id === 'user' ? 'blue' : 'red'}
         >
-          <Image source={{ uri: marker.image }} style={{ width: marker.width || 40, height: marker.height || 40 }} />
+          {marker.image && (
+            <Image source={{ uri: marker.image }} style={{ width: marker.width || 40, height: marker.height || 40 }} />
+          )}
         </Marker>
       ))}
     </MapView>
