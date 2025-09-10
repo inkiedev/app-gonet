@@ -20,6 +20,7 @@ interface ExpandableCardProps extends BaseComponentProps {
   onToggle?: (expanded: boolean) => void;
   renderHeader?: (isExpanded: boolean, onToggle: () => void, rotation: any) => React.ReactNode;
   headerStyle?: ViewStyle;
+  backgroundComponent?: React.ReactNode;
 }
 
 export const ExpandableCard: React.FC<ExpandableCardProps> = ({
@@ -32,6 +33,7 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
   headerStyle,
   style,
   testID,
+  backgroundComponent,
 }) => {
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
@@ -96,6 +98,9 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
 
   const cardStyle: ViewStyle[] = [dynamicStyles.card];
   if (style) cardStyle.push(style as ViewStyle);
+  if (backgroundComponent) {
+    cardStyle.push({ backgroundColor: 'transparent' });
+  }
 
   const renderDefaultHeader = () => (
     <View style={[dynamicStyles.cardHeader, headerStyle]}>
@@ -113,11 +118,12 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
     </View>
   );
 
-  return (
-    <View style={cardStyle} testID={testID}>
+  const content = (
+    <>
       <TouchableOpacity
         onPress={handleToggle}
         activeOpacity={0.8}
+        style={{ backgroundColor: 'transparent' }}
       >
         {renderHeader ? renderHeader(isExpanded, handleToggle, rotation) : renderDefaultHeader()}
       </TouchableOpacity>
@@ -146,6 +152,13 @@ export const ExpandableCard: React.FC<ExpandableCardProps> = ({
           {children}
         </View>
       </Animated.View>
+    </>
+  );
+
+  return (
+    <View style={cardStyle} testID={testID}>
+      {backgroundComponent}
+      {content}
     </View>
   );
 };
@@ -155,6 +168,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     backgroundColor: theme.colors.surface,
     borderRadius: theme.borderRadius.lg,
     ...theme.shadows.sm,
+    overflow: 'hidden',
   },
   cardHeader: {
     flexDirection: 'row',
