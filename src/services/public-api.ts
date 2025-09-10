@@ -9,6 +9,8 @@ export interface Promotion {
   is_promotion: boolean;
   total: number;
   extras: PromotionExtra[];
+  "speed:_download": number;
+  create_date: string;
 }
 export interface PromotionDetail {
   id: number;

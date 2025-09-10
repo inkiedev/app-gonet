@@ -65,7 +65,7 @@ export default function ProtectedLayout() {
 const createDynamicStyles = (theme: any) => StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: theme.colors.background
+    backgroundColor: 'transparent'
   },
   content: {
     flex: 1,
