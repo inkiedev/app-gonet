@@ -1,10 +1,11 @@
+import { Button } from '@/components/ui/custom-button';
 import Text from '@/components/ui/custom-text';
 import { Map, MapRef } from "@/components/ui/map";
 import { useTheme } from "@/contexts/theme-context";
-import { useCoverage, Coordinate, CoveragePolygon } from "@/hooks/useCoverage";
+import { Coordinate, CoveragePolygon, useCoverage } from "@/hooks/useCoverage";
 import { useLocation } from "@/hooks/useLocation";
 import { Ionicons } from "@expo/vector-icons";
-import React, { useCallback, useImperativeHandle, useRef, useState, forwardRef } from "react";
+import React, { forwardRef, useCallback, useImperativeHandle, useRef, useState } from "react";
 import {
   Modal,
   StyleSheet,
@@ -204,6 +205,12 @@ export const LocationPicker = forwardRef<LocationPickerRef, LocationPickerProps>
             </View>
           )}
         </View>
+        <View style={dynamicStyles.bottomButtonContainer}>
+          <Button
+            title="listo"
+            onPress={() => setShowExpandedMap(false)}
+          />
+        </View>
       </SafeAreaView>
     </Modal>
   );
@@ -335,12 +342,15 @@ const createDynamicStyles = (theme: any, mapHeight: number) => StyleSheet.create
     shadowOpacity: 0.1,
     shadowRadius: 4,
     elevation: 3,
-    width: '80%'
+    width: '85%'
   },
   statusText: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.medium,
     marginLeft: theme.spacing.sm,
+  },
+  bottomButtonContainer : {
+    margin: theme.spacing.sm,
   },
 });
 
