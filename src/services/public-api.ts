@@ -119,3 +119,37 @@ export const getImageLink = (fileId: number): string => {
     console.log(`${API_URL}/app/img_link/${fileId}`)
     return `${API_URL}/app/img_link/${fileId}`;
 };
+
+// Interfaces for Ads
+export interface Ad {
+  id: number;
+  file_id: number;
+}
+
+export interface AdsApiResponse {
+  status: string;
+  count: number;
+  data: Ad[];
+}
+
+// Function to get ads cover
+export const getAdsCover = async (): Promise<Ad[]> => {
+  const response = await fetch(`${API_URL}/app/ads_cover`, {
+    method: "GET",
+    headers: {},
+  });
+  if (!response.ok) {
+    throw new Error(`Network error: ${response.statusText}`);
+  }
+  const data: AdsApiResponse = await response.json();
+  if (data.status !== "success") {
+    throw new Error("API returned an error while fetching ads");
+  }
+  return data.data;
+};
+
+export const getFileUrl = (fileId: number): string => {
+    const url = `${API_URL}/app/img_link/${fileId}`;
+    console.log('Generated Image URL:', url);
+    return url;
+};

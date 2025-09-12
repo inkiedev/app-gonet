@@ -25,6 +25,7 @@ import { useNotificationContext } from '@/contexts/notification-context';
 import { authService } from '@/services/auth';
 import { secureStorageService } from '@/services/secure-storage';
 import { loginSuccess, setSubscriptions } from '@/store/slices/auth-slice';
+import { clearAds } from '@/store/slices/ads-slice';
 import { useTheme } from '@/contexts/theme-context';
 import { FontAwesome } from '@expo/vector-icons';
 
@@ -77,6 +78,7 @@ export default function LoginScreen() {
           // Dispatch login success and subscriptions
           dispatch(loginSuccess(loginData));
           dispatch(setSubscriptions(result.subscriptions));
+          dispatch(clearAds());
 
           if (data.rememberMe) {
             console.log('Guardando credenciales en el dispositivo')
