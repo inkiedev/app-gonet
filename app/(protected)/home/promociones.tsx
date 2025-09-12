@@ -1,10 +1,10 @@
+import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/custom-button";
 import { useTheme } from "@/contexts/theme-context";
 import { router } from "expo-router";
 import React from "react";
-import Back from '@/assets/images/iconos gonet back.svg';
 import { Image, Platform, ScrollView, StyleSheet, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 

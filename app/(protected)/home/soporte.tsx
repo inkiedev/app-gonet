@@ -1,3 +1,4 @@
+import Whatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
 import Back from '@/assets/images/iconos gonet back.svg';
 import { Header } from "@/components/layout/header";
 import { Card } from "@/components/ui/card";
@@ -11,7 +12,7 @@ import { useTheme } from "@/contexts/theme-context";
 import { Coordinate } from "@/hooks/useCoverage";
 import { RootState } from '@/store';
 import { Subscription } from '@/types/subscription';
-import { Foundation, Ionicons, MaterialIcons } from "@expo/vector-icons";
+import { Foundation, Ionicons } from "@expo/vector-icons";
 import { createSelector } from '@reduxjs/toolkit';
 import { router } from "expo-router";
 import React, { useCallback, useRef, useState } from "react";
@@ -212,7 +213,7 @@ export default function SoporteScreen() {
   }, []);
 
   const handleLocationError = useCallback((error: string | undefined) => {
-    setErrors(prev => ({ ...prev, location: error }));
+    setErrors(prev => ({ ...prev, location: error } as FormErrors));
   }, []);
 
   const handleTrasladoSubmit = useCallback(async () => {
@@ -401,7 +402,7 @@ export default function SoporteScreen() {
                   dynamicStyles.selectOptionText,
                   isSelected && { color: theme.colors.primary }
                 ]}>
-                  {option.label}
+                  {option.value}
                 </Text>
                 {isSelected && (
                   <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
@@ -472,7 +473,7 @@ export default function SoporteScreen() {
                   dynamicStyles.selectOptionText,
                   isSelected && { color: theme.colors.primary }
                 ]}>
-                  {option.label}
+                  {option.value}
                 </Text>
                 {isSelected && (
                   <Ionicons name="checkmark" size={16} color={theme.colors.primary} />
@@ -551,7 +552,7 @@ export default function SoporteScreen() {
         <View style={dynamicStyles.contactContainer}>
           <TouchableOpacity style={dynamicStyles.contactCard} onPress={handleWhatsAppContact}>
             <View style={[dynamicStyles.contactIcon, { backgroundColor: '#25D366' + '20' }]}>
-              <MaterialIcons name="whatsapp" size={32} color="#25D366" />
+              <Whatsapp />
             </View>
             <View style={dynamicStyles.contactInfo}>
               <Text style={dynamicStyles.contactTitle}>WhatsApp</Text>
@@ -691,13 +692,12 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   
   // Segmented Control
   segmentedContainer: {
-    margin: theme.spacing.lg,
-    marginBottom: 0,
+    margin: theme.spacing.md,
+    marginBottom: theme.spacing.lg
   },
   
   // Tab Content
   tabContent: {
-    margin: theme.spacing.lg,
     marginTop: 0,
   },
   formCard: {

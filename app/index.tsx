@@ -43,7 +43,7 @@ const iconOptions = [
 ];
 
 export default function PublicHomeScreen() {
-  const {height: ScreenHeight} = useResponsive() 
+  const { height: ScreenHeight } = useResponsive() 
   const router = useRouter();
   const { theme } = useTheme();
   const { isInitialized } = useAuthRoute();
@@ -54,8 +54,8 @@ export default function PublicHomeScreen() {
   const isSomePlanExpanded = Object.values(expandedPlans).some(isExpanded => isExpanded);
   const [promotionDetails, setPromotionDetails] = useState<Record<string, PromotionDetail | null>>({});
   const [loadingDetails, setLoadingDetails] = useState<Record<string, boolean>>({});
-  const { showSuccess, showError } = useNotificationContext();
-  const { height, isTablet } = useResponsive();
+  const { showError } = useNotificationContext();
+  const { isTablet } = useResponsive();
 
   const isNewPromotion = (createDate: string): boolean => {
     const promotionDate = new Date(createDate);

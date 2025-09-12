@@ -5,10 +5,10 @@ import Text from "@/components/ui/custom-text";
 import { useTheme } from "@/contexts/theme-context";
 import { apiService, Invoice, InvoicesResponse } from '@/services/api';
 import { RootState } from '@/store';
-import { AntDesign, Ionicons } from "@expo/vector-icons";
+import { AntDesign } from "@expo/vector-icons";
 import { createSelector } from '@reduxjs/toolkit';
 import { useRouter } from "expo-router";
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -102,7 +102,7 @@ export default function HistorialFacturasScreen() {
         <View style={dynamicStyles.invoiceInfo}>
           <View style={dynamicStyles.invoiceNumberContainer}>
             <AntDesign 
-              name="filetext1" 
+              name="file-text" 
               size={16} 
               color={theme.colors.primary} 
             />
@@ -153,7 +153,7 @@ export default function HistorialFacturasScreen() {
   const renderEmptyState = () => (
     <View style={dynamicStyles.emptyContainer}>
       <AntDesign 
-        name="filetext1" 
+        name="file-text" 
         size={64} 
         color={theme.colors.text.secondary} 
         style={dynamicStyles.emptyIcon}

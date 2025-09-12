@@ -3,7 +3,6 @@ import React, { createContext, useContext, useState } from 'react';
 interface CardExpansionContextType {
   isExpanded: boolean;
   toggleExpansion: () => void;
-  showFooter: boolean;
 }
 
 const CardExpansionContext = createContext<CardExpansionContextType | undefined>(undefined);
@@ -23,7 +22,6 @@ export const CardExpansionProvider: React.FC<{ children: React.ReactNode }> = ({
       value={{
         isExpanded,
         toggleExpansion,
-        showFooter,
       }}
     >
       {children}

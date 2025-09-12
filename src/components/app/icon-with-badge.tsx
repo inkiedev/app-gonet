@@ -40,7 +40,7 @@ export const IconWithBadge: React.FC<IconWithBadgeProps> = ({
       testID={testID}
     >
       <View style={styles.iconContainer}>
-        <SvgComponent width={size} height={size} fill={isDark ? 'white' : iconColor} color={isDark ? 'rgba(219, 219, 219, 1)' : iconColor} />
+        <SvgComponent width={size} height={size} strokeWidth={9000} fill={isDark ? 'white' : iconColor} color={isDark ? 'rgba(219, 219, 219, 1)' : iconColor} />
         {showBadge && (
           <Badge style={dynamicStyles.badge}>
             <Text style={dynamicStyles.badgeText}>
@@ -68,7 +68,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   label: {
     marginTop: theme.spacing.xs,
-    fontSize: theme.fontSize.xs,
+    fontSize: theme.fontSize.xs * 0.9,
     color: theme.colors.primaryDark,
     textAlign: 'center',
   },

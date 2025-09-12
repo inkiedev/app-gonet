@@ -1,5 +1,4 @@
 import { Footer } from '@/components/layout/footer';
-import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useTheme } from '@/contexts/theme-context';
 import { useAuthRoute } from '@/providers/auth-route-provider';
 import { RootState } from '@/store';
@@ -7,14 +6,12 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Redirect, Slot } from 'expo-router';
 import React from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import Animated, { FadeInDown, FadeOutDown } from 'react-native-reanimated';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useSelector } from 'react-redux';
 
 const ProtectedLayoutContent: React.FC = () => {
   const { theme } = useTheme();
   const dynamicStyles = createDynamicStyles(theme);
-  const { showFooter } = useCardExpansion();
   const { isInitialized } = useAuthRoute();
   const { isAuthenticated, needsBiometricVerification } = useSelector((state: RootState) => state.auth);
 
@@ -44,11 +41,7 @@ const ProtectedLayoutContent: React.FC = () => {
       <View style={dynamicStyles.container}>
         <Slot />
 
-        {showFooter && 
-          <Animated.View exiting={FadeOutDown.duration(400)} entering={FadeInDown.duration(400)}>
-            <Footer />
-          </Animated.View>
-        }
+        <Footer />
       </View>
     </LinearGradient>
   );

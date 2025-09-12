@@ -3,7 +3,6 @@ import Instagram from '@/assets/images/iconos gonet app svg_instagram.svg';
 import Location from '@/assets/images/iconos gonet app svg_ubicacion.svg';
 import Web from '@/assets/images/iconos gonet app svg_web.svg';
 import Whatsapp from '@/assets/images/iconos gonet app svg_wpp.svg';
-import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useTheme } from '@/contexts/theme-context';
 import { BaseComponentProps } from '@/types/common';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -30,7 +29,6 @@ export const Footer: React.FC<FooterProps> = ({
 }) => {
   const { theme, isDark } = useTheme();
   const dynamicStyles = createDynamicStyles(theme, isDark);
-  const { showFooter } = useCardExpansion();
 
   const iconColor = isDark ? '#f0f0f0' : theme.colors.text.inverse;
 
@@ -61,11 +59,7 @@ export const Footer: React.FC<FooterProps> = ({
       name: 'Location',
     },
   ];
-
-  if (!showFooter) {
-    return null;
-  }
-
+  
   const handleSocialPress = async (url: string, name: string) => {
     try {
       const supported = await Linking.canOpenURL(url);
@@ -123,7 +117,7 @@ export const Footer: React.FC<FooterProps> = ({
 const createDynamicStyles = (theme: any, isDark: boolean) =>
   StyleSheet.create({
     container: {
-      height: 80,
+      height: 70,
     },
     gradient: {
       flex: 1,
@@ -138,8 +132,7 @@ const createDynamicStyles = (theme: any, isDark: boolean) =>
       flexDirection: 'row',
       justifyContent: 'center',
       alignItems: 'center',
-      gap: theme.spacing.md + theme.spacing.xs,
-      paddingHorizontal: theme.spacing.lg,
+      gap: theme.spacing.lg + theme.spacing.xs,
       flexWrap: 'wrap',
     },
     versionText: {

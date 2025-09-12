@@ -98,7 +98,7 @@ export const LocationPicker = forwardRef<LocationPickerRef, LocationPickerProps>
     if (!covered) {
       onLocationError?.('Esta ubicación no está dentro del área de cobertura');
     } else {
-      onLocationError?.(undefined);
+      onLocationError?.("");
     }
 
     onLocationSelect?.(coordinate, covered);
@@ -123,7 +123,7 @@ export const LocationPicker = forwardRef<LocationPickerRef, LocationPickerProps>
       if (!covered) {
         onLocationError?.('Tu ubicación actual no está dentro del área de cobertura');
       } else {
-        onLocationError?.(undefined);
+        onLocationError?.("");
       }
 
       onLocationSelect?.(coordinate, covered);
@@ -207,7 +207,9 @@ export const LocationPicker = forwardRef<LocationPickerRef, LocationPickerProps>
         </View>
         <View style={dynamicStyles.bottomButtonContainer}>
           <Button
-            title="listo"
+            disabled={selectedLocation ? !isPointCovered(selectedLocation) : false}
+            title="Listo"
+            fullWidth
             onPress={() => setShowExpandedMap(false)}
           />
         </View>
@@ -345,7 +347,7 @@ const createDynamicStyles = (theme: any, mapHeight: number) => StyleSheet.create
     width: '85%'
   },
   statusText: {
-    fontSize: theme.fontSize.md,
+    fontSize: theme.fontSize.sm,
     fontWeight: theme.fontWeight.medium,
     marginLeft: theme.spacing.sm,
   },

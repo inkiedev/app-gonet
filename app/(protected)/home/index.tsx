@@ -8,10 +8,10 @@ import { HomeExpandableCard } from '@/components/app/home-expandable-card';
 import { IconWithBadge } from '@/components/app/icon-with-badge';
 import { SideMenu } from '@/components/app/side-menu';
 import { Header } from '@/components/layout/header';
+import { Card } from '@/components/ui/card';
 import Text from '@/components/ui/custom-text';
 import { ImageCarousel } from '@/components/ui/image-carousel';
 import { NotificationsModal, type Notification } from '@/components/ui/notifications-modal';
-import { useCardExpansion } from '@/contexts/card-expansion-container';
 import { useNotificationContext } from '@/contexts/notification-context';
 import { useTheme } from '@/contexts/theme-context';
 import { useResponsive } from '@/hooks/use-responsive';
@@ -23,7 +23,6 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import React, { useEffect, useState } from 'react';
 import { BackHandler, Modal, StyleSheet, TouchableOpacity, TouchableWithoutFeedback, View } from 'react-native';
-import Animated, { useAnimatedStyle, useSharedValue, withTiming } from 'react-native-reanimated';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useDispatch, useSelector } from 'react-redux';
 
@@ -108,17 +107,16 @@ const mockNotifications: Notification[] = [
 export default function HomeScreen() {
   const [menuVisible, setMenuVisible] = useState(false);
   const [notificationsVisible, setNotificationsVisible] = useState(false);
-  const [accountSelectorVisible, setAccountSelectorVisible] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
-  const opacity = useSharedValue(1);
-  const heightAnimation = useSharedValue(60);
+  const [cardModalVisible, setCardModalVisible] = useState(false);
+  const [accountSelectorVisible, setAccountSelectorVisible] = useState(false);
+  
   const router = useRouter();
   const dispatch = useDispatch();
   
   const { currentAccount, subscriptions, selectedAccountIndex } = useSelector((state: RootState) => state.auth);
   
   const { showSuccess, showError } = useNotificationContext();
-  const { toggleExpansion } = useCardExpansion();
   const { height } = useResponsive();
   const { theme } = useTheme();
   const styles = createDynamicStyles(theme);
@@ -152,18 +150,14 @@ export default function HomeScreen() {
     setMenuVisible(false);
   };
 
-  const handleCardToggle = (expanded: boolean) => {
-    toggleExpansion();
-    opacity.value = withTiming(expanded ? 0 : 1, { duration: 500 });
-    heightAnimation.value = withTiming(expanded ? 0 : 60, { duration: 500 });
+  // Función para abrir el modal
+  const openCardModal = () => {
+    setCardModalVisible(true);
   };
 
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      opacity: opacity.value,
-      height: heightAnimation.value,
-    };
-  });
+  const closeCardModal = () => {
+    setCardModalVisible(false);
+  };
 
   const handleMenuNavigation = (item: string) => {
     const routeMap: { [key: string]: string } = {
@@ -227,6 +221,9 @@ export default function HomeScreen() {
     );
   };
 
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   const handleAccountSelectorPress = () => {
     if (subscriptions.length > 1) {
       setAccountSelectorVisible(true);
@@ -242,8 +239,6 @@ export default function HomeScreen() {
       2000
     );
   };
-
-  const unreadCount = notifications.filter(n => !n.read).length;
 
   const handleIconPress = (option: any) => {
     switch (option.action) {
@@ -278,28 +273,9 @@ export default function HomeScreen() {
       <View style={styles.bannerContainer}>
         <ImageCarousel
           style={styles.banner}
-          height={height * 0.55}
+          height={height * 0.5}
         />
         <Header
-          leftAction={
-            subscriptions.length > 1 ? {
-              icon: (
-                <View style={styles.accountBadgeContainer}>
-                  <Ionicons 
-                    name="people-outline" 
-                    size={24} 
-                    color={'white'}
-                  />
-                  <View style={styles.accountBadge}>
-                    <Text style={styles.accountBadgeText}>
-                      {subscriptions.length}
-                    </Text>
-                  </View>
-                </View>
-              ),
-              onPress: handleAccountSelectorPress,
-            } : undefined
-          }
           rightAction={{
             icon: <Menu width={24} height={24} fill={theme.colors.primary} />,
             onPress: toggleMenu,
@@ -320,14 +296,54 @@ export default function HomeScreen() {
       />
 
       <View style={styles.content}>
+        {/* Account Selector */}
+        {subscriptions.length > 0 && (
+          <View style={{ paddingHorizontal: theme.spacing.md, width: '100%' }}>
+          <TouchableOpacity 
+            onPress={handleAccountSelectorPress}
+            style={styles.accountSelector}
+            activeOpacity={0.7}
+            disabled={subscriptions.length <= 1}
+          >
+            <View style={styles.accountSelectorContent}>
+              <View style={styles.accountInfo}>
+                <Ionicons 
+                  name="person-circle" 
+                  size={24} 
+                  color={theme.colors.primaryDark} 
+                />
+                <View style={styles.accountDetails}>
+                  <Text style={styles.accountLabel}>Cuenta activa</Text>
+                  <Text style={styles.accountName} numberOfLines={1}>
+                    {currentAccount?.partner.name || 'Seleccionar cuenta'}
+                  </Text>
+                </View>
+              </View>
+              {subscriptions.length > 1 && (
+                <View style={styles.accountActions}>
+                  <View style={styles.accountBadge}>
+                    <Text style={styles.accountBadgeText}>{subscriptions.length}</Text>
+                  </View>
+                  <Ionicons 
+                    name="chevron-down" 
+                    size={18} 
+                    color={theme.colors.primaryDark} 
+                  />
+                </View>
+              )}
+            </View>
+          </TouchableOpacity>
+          </View>
+        )}
+        
         <HomeExpandableCard
           plan="GoNet"
           speed={750}
           style={styles.planCard}
-          onToggle={handleCardToggle}
+          onDetailsPress={openCardModal}
         />
 
-        <Animated.View style={[styles.iconsGrid, animatedStyle]}>
+        <View style={styles.iconsGrid}>
           {iconOptions.map((option, index) => (
             <IconWithBadge
               key={index}
@@ -338,7 +354,7 @@ export default function HomeScreen() {
               onPress={() => handleIconPress(option)}
             />
           ))}
-        </Animated.View>
+        </View>
 
         <NotificationsModal
           visible={notificationsVisible}
@@ -347,7 +363,7 @@ export default function HomeScreen() {
           onNotificationPress={handleNotificationPress}
           onMarkAsRead={handleMarkAsRead}
         />
-
+        
         {/* Account Selector Modal */}
         <Modal
           visible={accountSelectorVisible}
@@ -398,7 +414,79 @@ export default function HomeScreen() {
             </View>
           </TouchableWithoutFeedback>
         </Modal>
+
       </View>
+
+      {/* Card Modal Overlay */}
+      <Modal
+        visible={cardModalVisible}
+        transparent
+        animationType="fade"
+        onRequestClose={closeCardModal}
+      >
+        <View style={styles.detailsModalOverlay}>
+          <TouchableWithoutFeedback onPress={closeCardModal}>
+            <View style={styles.detailsModalBackground} />
+          </TouchableWithoutFeedback>
+          
+          <View style={styles.detailsModalCard}>
+            <Card style={styles.detailsCard} variant="elevated">
+              <View style={styles.modalCardHeader}>
+                <Text style={styles.clientName}>
+                  {currentAccount?.partner.name}
+                </Text>
+                <Text style={styles.planName}>
+                  {formatGoWord(currentAccount?.plan[0]?.name)}
+                </Text>
+                <View style={styles.speedContainer}>
+                  <Text style={styles.speedNumber}>
+                    {currentAccount?.plan[0]?.name.match(/\d+/)}
+                  </Text>
+                  <Text style={styles.speedUnit}>Mbps</Text>
+                </View>
+              </View>
+              
+              {/* Detalles del plan */}
+              <View style={styles.detailsContent}>
+                <View style={styles.detailItem}>
+                  <Servicios width={24} height={24} color={theme.colors.primaryDark} />
+                  <Text style={styles.detailLabel}>
+                    Lite Tv Streaming
+                  </Text>
+                  <Text style={styles.detailValue}>
+                    1 pantalla
+                  </Text>
+                  <View style={[styles.upgradeIcon, { backgroundColor: theme.colors.success }]}>
+                    <Text style={styles.upgradeText}>+</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.detailItem}>
+                  <Soporte width={24} height={24} color={theme.colors.primaryDark} />
+                  <Text style={styles.detailLabel}>
+                    Wifi Total
+                  </Text>
+                  <Text style={styles.detailValue}>
+                    Wifi6
+                  </Text>
+                  <View style={[styles.upgradeIcon, { backgroundColor: theme.colors.success }]}>
+                    <Text style={styles.upgradeText}>+</Text>
+                  </View>
+                </View>
+                
+                <View style={styles.addServices}>
+                  <View style={[styles.addIcon, { backgroundColor: theme.colors.secondary }]}>
+                    <Text style={styles.addText}>+</Text>
+                  </View>
+                  <Text style={styles.addServiceLabel}>
+                    Agrega mas servicios
+                  </Text>
+                </View>
+              </View>
+            </Card>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -427,42 +515,217 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
     flexDirection: 'column',
     justifyContent: 'space-evenly',
     alignItems: 'center',
-    paddingHorizontal: 16,
-    gap: 16,
+    gap: theme.spacing.sm + 4,
   },
   planCard: {
     alignSelf: 'center',
     width: '100%',
     maxWidth: 700,
+    paddingHorizontal: theme.spacing.md
   },
   iconsGrid: {
+    width: '95%',
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    alignItems: 'center',
+    maxWidth: 700,
+  },
+  detailsModalOverlay: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+    backgroundColor: 'transparent',
+  },
+  modalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  modalCard: {
+    width: '90%',
+    maxWidth: 400,
+    zIndex: 1001,
+  },
+  expandedCardStyle: {
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.xxl,
+    ...theme.shadows.lg,
+  },
+  detailsModalBackground: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0, 0, 0, 0.6)',
+  },
+  detailsModalCard: {
+    width: '90%',
+    maxWidth: 400,
+    zIndex: 1001,
+  },
+  detailsCard: {
+    borderRadius: theme.borderRadius.xxl,
+    padding: theme.spacing.lg,
+    alignItems: 'center',
+    backgroundColor: theme.colors.surface,
+    ...theme.shadows.lg,
+  },
+  modalCardHeader: {
     width: '100%',
     flexDirection: 'row',
     justifyContent: 'space-around',
     alignItems: 'center',
-    maxWidth: 700
+    marginBottom: theme.spacing.lg,
   },
-  accountBadgeContainer: {
-    position: 'relative',
+  notificationIcon: {
+    padding: theme.spacing.xs,
   },
-  accountBadge: {
-    position: 'absolute',
-    top: -4,
-    right: -10,
-    backgroundColor: theme.colors.background,
-    borderRadius: 10,
-    minWidth: 18,
-    height: 18,
+  clientName: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.medium,
+    textAlign: 'center',
+    flexWrap: 'wrap',
+    width: '25%',
+    color: theme.colors.primaryDark,
+  },
+  planName: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    textAlign: 'center',
+    color: theme.colors.primaryDark,
+  },
+  speedContainer: {
+    flexDirection: 'column',
+    alignItems: 'center',
+  },
+  speedNumber: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    textAlign: 'center',
+    color: theme.colors.primaryDark,
+  },
+  speedUnit: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.primaryDark,
+  },
+  detailsContent: {
+    width: '100%',
+  },
+  detailItem: {
+    width: '100%',
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.sm,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
+  },
+  detailLabel: {
+    fontSize: theme.fontSize.xs,
+    maxWidth: theme.spacing.xxl * 2,
+    textAlign: 'center',
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text.primary,
+  },
+  detailValue: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primaryDark,
+  },
+  upgradeIcon: {
+    width: theme.spacing.md,
+    height: theme.spacing.md,
+    borderRadius: theme.spacing.xs,
     justifyContent: 'center',
     alignItems: 'center',
-    borderWidth: 2,
-    borderColor: theme.colors.primary,
+  },
+  upgradeText: {
+    color: theme.colors.text.inverse,
+    fontSize: theme.fontSize.xs * 0.8,
+    fontWeight: theme.fontWeight.bold,
+  },
+  addServices: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: theme.spacing.sm,
+    paddingVertical: theme.spacing.lg,
+  },
+  addIcon: {
+    width: theme.spacing.md,
+    height: theme.spacing.md,
+    borderRadius: theme.spacing.xs,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  addText: {
+    color: theme.colors.text.inverse,
+    fontSize: theme.fontSize.xs * 0.8,
+    fontWeight: theme.fontWeight.bold,
+  },
+  addServiceLabel: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primaryDark,
+  },
+  accountSelector: {
+    width: '100%',
+    backgroundColor: theme.colors.surface,
+    borderRadius: theme.borderRadius.xl,
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    marginTop: theme.spacing.md,
+    ...theme.shadows.md,
+  },
+  accountSelectorContent: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+  accountInfo: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.md,
+    flex: 1,
+  },
+  accountDetails: {
+    flex: 1,
+  },
+  accountLabel: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.medium,
+    color: theme.colors.text.secondary,
+    marginBottom: theme.spacing.xs / 2,
+  },
+  accountName: {
+    fontSize: theme.fontSize.xs,
+    fontWeight: theme.fontWeight.semibold,
+    color: theme.colors.primaryDark,
+  },
+  accountActions: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: theme.spacing.sm,
+  },
+  accountBadge: {
+    backgroundColor: theme.colors.primary,
+    borderRadius: theme.borderRadius.full,
+    minWidth: 16,
+    height: 16,
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.xs,
   },
   accountBadgeText: {
     fontSize: theme.fontSize.xs,
     fontWeight: theme.fontWeight.bold,
-    color: theme.colors.text.primary,
-    textAlign: 'center',
+    color: theme.colors.text.inverse,
   },
   modalOverlay: {
     flex: 1,
