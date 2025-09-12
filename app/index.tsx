@@ -403,7 +403,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   planName: {
     fontSize: theme.fontSize.md,
     fontWeight: theme.fontWeight.bold,
-    color: theme.colors.primaryDark,
+    color: '#07827cff',
     fontStyle: 'italic',
   },
   planNameWhite: {
@@ -479,7 +479,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   detailsText: {
     textDecorationLine: 'underline',
-    color: theme.colors.primary,
+    color: theme.colors.primaryDark,
     fontSize: theme.fontSize.sm,
   },
   detailsTextWhite: {
@@ -514,7 +514,7 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   },
   detailItemText: {
     fontSize: theme.fontSize.sm,
-    color: theme.colors.primary,
+    color: theme.colors.primaryDark,
   },
   detailItemTextWhite: {
     color: '#fff',

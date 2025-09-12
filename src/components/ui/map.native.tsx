@@ -2,6 +2,7 @@ import React, { forwardRef, useImperativeHandle, useRef } from 'react';
 import { Image, Platform, StyleSheet } from 'react-native';
 import MapView, { Marker, Polygon, UrlTile } from 'react-native-maps';
 import { WebView } from 'react-native-webview';
+import { useTheme } from '../../contexts/theme-context';
 
 interface MapProps {
   initialRegion: {
@@ -38,6 +39,15 @@ export interface MapRef {
 export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, onPress, userLocation, onMapReady }, ref) => {
   const mapRef = useRef<MapView>(null);
   const webviewRef = useRef<WebView>(null);
+  const { isDark } = useTheme();
+
+  const tileUrl = isDark 
+    ? "https://a.basemaps.cartocdn.com/dark_matter/{z}/{x}/{y}.png"
+    : "https://tile.openstreetmap.org/{z}/{x}/{y}.png";
+
+  const attribution = isDark
+    ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+    : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
 
   useImperativeHandle(ref, () => ({
     animateToRegion: (region, duration = 1000) => {
@@ -56,18 +66,28 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
   }));
 
   if (Platform.OS === 'android') {
-    const htmlContent = `
+    const [isWebViewReady, setWebViewReady] = React.useState(false);
+
+    const htmlContent = React.useMemo(() => `
       <!DOCTYPE html>
       <html>
         <head>
           <meta name="viewport" content="width=device-width, initial-scale=1.0">
           <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
           <style>
-            body { margin: 0; padding: 0; }
-            #map { height: 100vh; width: 100vw; }
-            canvas, img {
-              image-rendering: crisp-edges;
-              image-rendering: pixelated;
+            body { 
+              margin: 0; 
+              padding: 0; 
+              background-color: ${isDark ? '#000' : '#fff'};
+            }
+            #map { 
+              height: 100vh; 
+              width: 100vw; 
+              background-color: ${isDark ? '#000' : '#fff'};
+              ${isDark ? `filter: invert(1) hue-rotate(180deg) brightness(1) contrast(0.8);` : ''}
+            }
+            .leaflet-marker-icon {
+              ${isDark ? `filter: invert(1) hue-rotate(180deg) brightness(1) contrast(0.8);` : ''}
             }
           </style>
         </head>
@@ -75,17 +95,21 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
           <div id="map"></div>
           <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
           <script>
-            const map = L.map('map').setView([${initialRegion.latitude}, ${initialRegion.longitude}], 13);
+            var map = L.map('map').setView([${initialRegion.latitude}, ${initialRegion.longitude}], 13);
+            var leafletMarkers = [];
 
             L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
               maxZoom: 19,
-              tileSize: 256,
-              attribution: '© OpenStreetMap contributors'
+              attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
             }).addTo(map);
 
-            ${polygons?.map(polygon => `
-              L.polygon(${JSON.stringify(polygon.coordinates.map(c => [c.latitude, c.longitude]))}, {color: '${polygon.strokeColor}', fillColor: '${polygon.fillColor}', fillOpacity: 0.5, weight: 0}).addTo(map);
-            `).join('')}
+            ${polygons ? `
+              var polygonData = ${JSON.stringify(polygons)};
+              polygonData.forEach(function(p) {
+                var coords = p.coordinates.map(function(c) { return [c.latitude, c.longitude]; });
+                L.polygon(coords, {color: p.strokeColor, fillColor: p.fillColor, fillOpacity: 0.5, weight: 0}).addTo(map);
+              });
+            ` : ''}
 
             ${onPress ? `
               map.on('click', function(e) {
@@ -95,53 +119,75 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
                 }));
               });
             ` : ''}
-
-            ${markers?.map(marker => `
-              ${marker.image ? `
-                const markerIcon_${marker.id} = L.icon({
-                    iconUrl: '${marker.image}',
-                    iconSize: [${marker.width || 38}, ${marker.height || 38}],
-                });
-                L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}], {icon: markerIcon_${marker.id}})
-              ` : `
-                L.marker([${marker.coordinate.latitude}, ${marker.coordinate.longitude}])
-              `}
-                .addTo(map)
-                .bindPopup('${marker.title || ''}${marker.description ? '<br>' + marker.description : ''}')
-                .on('click', () => {
-                  window.ReactNativeWebView.postMessage(JSON.stringify({
-                    type: 'markerPress',
-                    marker: ${JSON.stringify(marker)}
-                  }));
-                });
-            `).join('')}
           </script>
         </body>
       </html>
-    `;
+    `, [initialRegion.latitude, initialRegion.longitude, isDark, polygons, onPress]);
+
+    React.useEffect(() => {
+      if (isWebViewReady) {
+        const script = `
+          leafletMarkers.forEach(marker => marker.remove());
+          leafletMarkers = [];
+          var markersData = ${JSON.stringify(markers || [])};
+
+          markersData.forEach(function(marker) {
+            var leafletMarker;
+            if (marker.image) {
+              var markerIcon = L.icon({
+                  iconUrl: marker.image,
+                  iconSize: [marker.width || 38, marker.height || 38],
+              });
+              leafletMarker = L.marker([marker.coordinate.latitude, marker.coordinate.longitude], {icon: markerIcon});
+            } else {
+              leafletMarker = L.marker([marker.coordinate.latitude, marker.coordinate.longitude]);
+            }
+            
+            leafletMarker.addTo(map)
+              .bindPopup(marker.title || '' + (marker.description ? '<br>' + marker.description : ''))
+              .on('click', () => {
+                window.ReactNativeWebView.postMessage(JSON.stringify({
+                  type: 'markerPress',
+                  marker: marker
+                }));
+              });
+            leafletMarkers.push(leafletMarker);
+          });
+        `;
+        webviewRef.current?.injectJavaScript(script);
+      }
+    }, [markers, isWebViewReady]);
     
     return (
       <WebView
         ref={webviewRef}
         originWhitelist={['*']}
         source={{ html: htmlContent }}
-        style={[styles.map, style]}
+        style={[styles.map, { backgroundColor: isDark ? '#793f3fff' : '#47a34eff' }, style]}
         javaScriptEnabled={true}
         domStorageEnabled={true}
+        androidHardwareAccelerationDisabled={true} // yo creo que esto se puede retirar
         onLoad={() => {
+          setWebViewReady(true);
           onMapReady?.();
         }}
         onMessage={(event) => {
-            const data = JSON.parse(event.nativeEvent.data);
-            if (data.type === 'markerPress' && onMarkerPress) {
-                onMarkerPress(data.marker);
-            } else if (data.type === 'mapPress' && onPress) {
-                onPress({ coordinate: data.coordinate });
+            try {
+              const data = JSON.parse(event.nativeEvent.data);
+              if (data.type === 'markerPress' && onMarkerPress) {
+                  onMarkerPress(data.marker);
+              } else if (data.type === 'mapPress' && onPress) {
+                  onPress({ coordinate: data.coordinate });
+              }
+            } catch (e) {
+              console.error('Error parsing message from WebView', e);
             }
         }}
       />
     );
   }
+  
+  
 
   return (
     <MapView
@@ -161,12 +207,13 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
       }}
     >
       <UrlTile
-        urlTemplate="https://tile.openstreetmap.org/{z}/{x}/{y}.png"
+        urlTemplate={tileUrl}
         shouldReplaceMapContent={true}
         maximumZ={19}
         flipY={false}
         zIndex={-1}
         tileSize={256}
+        attribution={attribution}
       />
       {polygons?.map((polygon, index) => (
         <Polygon

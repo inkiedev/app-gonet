@@ -16,12 +16,14 @@ import * as Sharing from 'expo-sharing';
 import React, { useEffect, useState } from "react";
 import {
   Alert,
-  Linking,
+  Modal,
   ScrollView,
   StyleSheet,
+  TouchableOpacity,
   View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
+import { WebView } from 'react-native-webview';
 import { useSelector } from 'react-redux';
 
 interface PaymentHistory {
@@ -53,6 +55,8 @@ export default function PaymentsScreen() {
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [isLoadingPayments, setIsLoadingPayments] = useState(false);
   const [isLoadingInvoices, setIsLoadingInvoices] = useState(false);
+  const [showWebView, setShowWebView] = useState(false);
+  const [paymentUrl, setPaymentUrl] = useState<string | null>(null);
 
   const handleGoBack = () => {
     router.back();
@@ -60,16 +64,14 @@ export default function PaymentsScreen() {
 
   
 const handlePaymentPress = async () => {
-    try {
-      const supported = await Linking.canOpenURL(`https://pagos.gonet.ec/payment/${selectedAccount?.partner.dni}`);
-      if (supported) {
-        await Linking.openURL(`https://pagos.gonet.ec/payment/${selectedAccount?.partner.dni}`);
-      } else {
-        console.warn(`Cannot open URL: `);
-      }
-    } catch (error) {
-      console.error(`Error opening ${name}:`, error);
-    }
+    const url = `https://pagos.gonet.ec/payment/${selectedAccount?.partner.dni}`;
+    setPaymentUrl(url);
+    setShowWebView(true);
+};
+
+const handleCloseWebView = () => {
+  setShowWebView(false);
+  setPaymentUrl(null);
 };
 
   useEffect(() => {
@@ -392,7 +394,35 @@ const handlePaymentPress = async () => {
           </ExpandableCard>
         </View>
       </ScrollView>
+
+      <Modal
+        visible={showWebView}
+        onRequestClose={handleCloseWebView}
+        animationType="slide"
+      >
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={dynamicStyles.webViewHeader}>
+            <TouchableOpacity onPress={handleCloseWebView}>
+              <AntDesign name="closecircle" size={24} color={theme.colors.text.primary} />
+            </TouchableOpacity>
+            <Text style={dynamicStyles.webViewTitle}>Enlace de Pago</Text>
+          </View>
+          {paymentUrl && (
+            <WebView
+              source={{ uri: paymentUrl }}
+              style={{ flex: 1 }}
+              javaScriptEnabled={true}
+              domStorageEnabled={true}
+              startInLoadingState={true}
+              scalesPageToFit={true}
+            />
+          )}
+        </SafeAreaView>
+      </Modal>
     </SafeAreaView>
+
+      
+    
   );
 }
 
@@ -584,5 +614,19 @@ const createDynamicStyles = (theme: any) => StyleSheet.create({
   downloadButton: {
     paddingHorizontal: theme.spacing.md,
     paddingVertical: theme.spacing.xs,
+  },
+  webViewHeader: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: theme.spacing.md,
+    backgroundColor: theme.colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: theme.colors.border.light,
+  },
+  webViewTitle: {
+    fontSize: theme.fontSize.lg,
+    fontWeight: theme.fontWeight.bold,
+    marginLeft: theme.spacing.md,
+    color: theme.colors.text.primary,
   },
 });

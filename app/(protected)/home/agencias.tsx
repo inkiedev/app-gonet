@@ -234,6 +234,7 @@ export default function AgenciesScreen() {
   const [selectedAgency, setSelectedAgency] = useState<Agency | null>(null);
   const [visibleAgency, setVisibleAgency] = useState<Agency | null>(null);
   const animatedValue = useRef(new Animated.Value(0)).current;
+  const [isMapReady, setIsMapReady] = useState(false);
 
   const { userLocation } = useUserLocation();
 
@@ -343,15 +344,26 @@ export default function AgenciesScreen() {
     ],
   };
 
-  const initialRegion = useMemo(() => {
-    if (userLocation) {
-      return { latitude: userLocation.latitude, longitude: userLocation.longitude, latitudeDelta: 0.0922, longitudeDelta: 0.0421 };
+  const defaultInitialRegion = {
+    latitude: -1.8312,
+    longitude: -78.1834,
+    latitudeDelta: 7,
+    longitudeDelta: 7,
+  };
+
+  useEffect(() => {
+    if (isMapReady) {
+      const region = userLocation
+        ? { latitude: userLocation.latitude, longitude: userLocation.longitude }
+        : agencies.length > 0
+          ? { latitude: agencies[0].latitude, longitude: agencies[0].longitude }
+          : null;
+
+      if (region) {
+        mapRef.current?.animateToRegion(region);
+      }
     }
-    if (agencies.length > 0) {
-      return { latitude: agencies[0].latitude, longitude: agencies[0].longitude, latitudeDelta: 10, longitudeDelta: 10 };
-    }
-    return undefined;
-  }, [userLocation, agencies]);
+  }, [userLocation, agencies, isMapReady]);
 
   return (
     <SafeAreaView style={dynamicStyles.container} edges={['top']}>
@@ -364,67 +376,61 @@ export default function AgenciesScreen() {
         variant="transparent"
       />
 
-      {!initialRegion ? (
-        <View style={styles.centerContent}>
-          <ActivityIndicator size="large" color={theme.colors.primary} />
-          <Text style={{ marginTop: 10, color: theme.colors.text.primary }}>Cargando mapa...</Text>
-        </View>
-      ) : (
-        <>
-          <Map
-            ref={mapRef}
-            initialRegion={initialRegion}
-            style={styles.map}
-            markers={markers}
-            userLocation={userLocation}
-            onMarkerPress={handleMarkerPress}
-          />
+      <>
+        <Map
+          ref={mapRef}
+          initialRegion={defaultInitialRegion}
+          style={styles.map}
+          markers={markers}
+          userLocation={userLocation}
+          onMarkerPress={handleMarkerPress}
+          onMapReady={() => setIsMapReady(true)}
+        />
 
-          {visibleAgency && (
-            <TouchableOpacity
-              style={StyleSheet.absoluteFill}
-              activeOpacity={1}
-              onPress={() => setSelectedAgency(null)}
-            >
-              <AgencyInfo
-                agency={visibleAgency}
-                style={animatedStyle}
-                onClose={() => {
-                  setSelectedAgency(null);
-                }}
-              />
-            </TouchableOpacity>
-          )}
+        {visibleAgency && (
+          <TouchableOpacity
+            style={StyleSheet.absoluteFill}
+            activeOpacity={1}
+            onPress={() => setSelectedAgency(null)}
+          >
+            <AgencyInfo
+              agency={visibleAgency}
+              style={animatedStyle}
+              onClose={() => {
+                setSelectedAgency(null);
+              }}
+            />
+          </TouchableOpacity>
+        )}
 
-          <BottomSheet ref={bottomSheetRef}>
-            <View style={styles.bottomSheetContent}>
-              <TitleWithLines text="Buscar Agencia" theme={theme} />
-              <CustomInput 
-                placeholder="Escribe el nombre de la agencia..." 
-                value={searchQuery} 
-                onChangeText={setSearchQuery}
-                leftIcon={<LogoSearch width={40} height={20} color={theme.colors.text.secondary} />}
-              />
-              <TitleWithLines text="Listado General" theme={theme} />
-              {loading ? (
-                <ActivityIndicator size="large" color={theme.colors.primary} />
-              ) : (
-                <ScrollView showsVerticalScrollIndicator={false}>
-                  {Object.keys(filteredCities).map((city) => (
-                    <CityGroup
-                      key={city}
-                      city={city}
-                      agencies={filteredCities[city]}
-                      onCitySelect={handleCitySelect}
-                      onAgencyPress={handleAgencyListPress}
-                    />
-                  ))}
-                </ScrollView>
-              )}
-            </View>
-          </BottomSheet>
-        </>
-      )}
+        <BottomSheet ref={bottomSheetRef}>
+          <View style={styles.bottomSheetContent}>
+            <TitleWithLines text="Buscar Agencia" theme={theme} />
+            <CustomInput
+              placeholder="Escribe el nombre de la agencia..."
+              value={searchQuery}
+              onChangeText={setSearchQuery}
+              leftIcon={<LogoSearch width={40} height={20} color={theme.colors.text.secondary} />}
+            />
+            <TitleWithLines text="Listado General" theme={theme} />
+            {loading ? (
+              <ActivityIndicator size="large" color={theme.colors.primary} />
+            ) : (
+              <ScrollView showsVerticalScrollIndicator={false}>
+                {Object.keys(filteredCities).map((city) => (
+                  <CityGroup
+                    key={city}
+                    city={city}
+                    agencies={filteredCities[city]}
+                    onCitySelect={handleCitySelect}
+                    onAgencyPress={handleAgencyListPress}
+                  />
+                ))}
+              </ScrollView>
+            )}
+          </View>
+        </BottomSheet>
+      </>
     </SafeAreaView>
   );
 }

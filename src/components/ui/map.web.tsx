@@ -1,4 +1,5 @@
 import React, { forwardRef, useImperativeHandle, useRef } from 'react';
+import { useTheme } from '../../contexts/theme-context';
 
 // Dynamically import leaflet only on web
 let MapContainer: any, TileLayer: any, LeafletMarker: any, Popup: any, Polygon: any, CircleMarker: any, L: any;
@@ -47,6 +48,7 @@ export interface MapRef {
 
 export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygons, markers, onMarkerPress, onPress, userLocation, onMapReady }, ref) => {
   const mapRef = useRef<any>(null);
+  const { isDark } = useTheme();
 
   useImperativeHandle(ref, () => ({
     animateToRegion: (region, duration = 1000) => {
@@ -75,10 +77,18 @@ export const Map = forwardRef<MapRef, MapProps>(({ initialRegion, style, polygon
 
   return (
     <div style={{ ...style, width: '100%', height: '100%' }}>
+      <style>
+        {`
+          .leaflet-container.dark-map {
+            filter: invert(1) hue-rotate(180deg) brightness(0.8) contrast(1.2);
+          }
+        `}
+      </style>
       <MapContainer
         center={center}
         zoom={zoom}
         style={{ width: '100%', height: '100%' }}
+        className={isDark ? 'dark-map' : ''}
         whenCreated={(mapInstance: any) => { 
           mapRef.current = mapInstance;
           console.log('Web map created');
